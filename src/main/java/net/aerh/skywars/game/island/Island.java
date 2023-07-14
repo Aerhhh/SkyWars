@@ -2,8 +2,7 @@ package net.aerh.skywars.game.island;
 
 import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Location;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class Island {
 
