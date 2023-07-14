@@ -7,6 +7,7 @@ import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.event.GameEvent;
 import net.aerh.skywars.game.event.impl.CageOpenEvent;
 import net.aerh.skywars.game.island.Island;
+import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -24,14 +25,14 @@ public class SkyWarsGame {
     public static final int MAX_PLAYER_COUNT = 12;
 
     private final SkyWarsPlugin plugin;
-    private GameState state;
+    private GameState state = GameState.PRE_GAME;
     private final World world;
     private final Location pregameSpawn;
     private final GameLoop gameLoop;
     private List<Island> islands;
     private BukkitTask countdownTask;
     private final GameSettings settings = new GameSettings();
-    private final Set<Player> players = new HashSet<>();
+    private final Set<SkyWarsPlayer> players = new HashSet<>();
 
     public SkyWarsGame(SkyWarsPlugin plugin, World world, JsonObject config) {
         this.plugin = plugin;
@@ -69,13 +70,16 @@ public class SkyWarsGame {
     }
 
     private void checkPlayerCountForCountdown() {
-
         if (players.size() >= MIN_PLAYER_COUNT && (countdownTask == null)) {
             startCountdown();
         }
     }
 
     private void startCountdown() {
+        islands.stream()
+            .filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().getBukkitPlayer() != null)
+            .forEach(island -> island.getAssignedPlayer().getBukkitPlayer().teleport(island.getSpawnLocation()));
+
         int countdownSeconds = 10;
         countdownTask = new BukkitRunnable() {
             int countdown = countdownSeconds;
@@ -101,7 +105,7 @@ public class SkyWarsGame {
         }.runTaskTimer(plugin, 0, 20L);
     }
 
-    public boolean addPlayer(Player player) {
+    public boolean addPlayer(SkyWarsPlayer player) {
         Island island = islands.stream().filter(i -> i.getAssignedPlayer() == null).findFirst().orElse(null);
 
         if (island == null) {
@@ -110,18 +114,26 @@ public class SkyWarsGame {
 
         island.assignPlayer(player);
         players.add(player);
-        plugin.getLogger().info("Assigned player " + player.getName() + " to island " + island.getSpawnLocation() + "!");
-        Bukkit.getScheduler().runTaskLater(plugin, () -> player.teleport(island.getSpawnLocation().clone().add(0.5, 0, 0.5)), 1L);
 
         checkPlayerCountForCountdown();
 
         return true;
     }
 
+    public void teleportPlayer(Player player, Island island) {
+        plugin.getLogger().info("Assigned player " + player.getName() + " to island " + island.getSpawnLocation() + "!");
+        Bukkit.getScheduler().runTaskLater(plugin, () -> player.teleport(island.getSpawnLocation().clone().add(0.5, 0, 0.5)), 1L);
+    }
+
     public void removePlayer(Player player) {
-        islands.stream().filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(player)).findFirst().ifPresent(island -> island.setAssignedPlayer(null));
-        players.remove(player);
+        SkyWarsPlayer skyWarsPlayer = getPlayer(player);
+        islands.stream().filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(skyWarsPlayer)).findFirst().ifPresent(island -> island.setAssignedPlayer(null));
+        players.remove(skyWarsPlayer);
         checkPlayerCountForCountdown();
+    }
+
+    public SkyWarsPlayer getPlayer(Player player) {
+        return players.stream().filter(p -> p.getUuid().equals(player.getUniqueId())).findFirst().orElse(null);
     }
 
     private List<Island> parseIslands(JsonArray islandsArray) {
@@ -163,8 +175,8 @@ public class SkyWarsGame {
     }
 
     public void broadcast(String message) {
-        for (Player player : players) {
-            player.sendMessage(message);
+        for (SkyWarsPlayer player : players) {
+            player.getBukkitPlayer().sendMessage(message);
         }
     }
 
@@ -172,7 +184,7 @@ public class SkyWarsGame {
         return plugin;
     }
 
-    public Set<Player> getPlayers() {
+    public Set<SkyWarsPlayer> getPlayers() {
         return players;
     }
 

@@ -1,9 +1,11 @@
 package net.aerh.skywars;
 
+import net.aerh.skywars.game.GameState;
 import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.listener.GameListener;
 import net.aerh.skywars.listener.PlayerSessionListener;
 import net.aerh.skywars.map.MapLoader;
+import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -71,10 +73,19 @@ public final class SkyWarsPlugin extends JavaPlugin {
     }
 
     @Nullable
+    public SkyWarsGame findNextFreeGame() {
+        return games.values().stream()
+            .filter(game -> game.getState() == GameState.PRE_GAME)
+            .filter(game -> game.getPlayers().size() < SkyWarsGame.MAX_PLAYER_COUNT)
+            .findFirst()
+            .orElse(null);
+    }
+
+    @Nullable
     public SkyWarsGame findGame(Player player) {
         return games.values().stream()
-                .filter(game -> game.getPlayers().contains(player))
-                .findFirst()
-                .orElse(null);
+            .filter(game -> game.getPlayers().stream().map(SkyWarsPlayer::getUuid).anyMatch(uuid -> uuid.equals(player.getUniqueId())))
+            .findFirst()
+            .orElse(null);
     }
 }

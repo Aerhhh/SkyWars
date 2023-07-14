@@ -1,20 +1,20 @@
 package net.aerh.skywars.game.island;
 
+import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
 
 import javax.annotation.Nullable;
 
 public class Island {
 
     private final Location spawnLocation;
-    private Player assignedPlayer;
+    private SkyWarsPlayer assignedPlayer;
 
     public Island(Location spawnLocation) {
         this.spawnLocation = spawnLocation;
     }
 
-    public void assignPlayer(Player player) {
+    public void assignPlayer(SkyWarsPlayer player) {
         this.assignedPlayer = player;
     }
 
@@ -23,11 +23,11 @@ public class Island {
     }
 
     @Nullable
-    public Player getAssignedPlayer() {
+    public SkyWarsPlayer getAssignedPlayer() {
         return assignedPlayer;
     }
 
-    public void setAssignedPlayer(@Nullable Player assignedPlayer) {
+    public void setAssignedPlayer(@Nullable SkyWarsPlayer assignedPlayer) {
         this.assignedPlayer = assignedPlayer;
     }
 }
