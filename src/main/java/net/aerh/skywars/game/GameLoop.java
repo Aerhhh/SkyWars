@@ -40,10 +40,12 @@ public class GameLoop {
         }
 
         GameEvent gameEvent = gameEvents.poll();
+        plugin.getLogger().info("Next event: " + gameEvent.getClass().getSimpleName());
         countdownTilNextEvent = (int) gameEvent.getDelay() / 20;
         currentTask = new BukkitRunnable() {
             @Override
             public void run() {
+                plugin.getLogger().info("Executing event: " + gameEvent.getClass().getSimpleName());
                 gameEvent.execute();
                 countdownTilNextEvent = 0;
                 next();

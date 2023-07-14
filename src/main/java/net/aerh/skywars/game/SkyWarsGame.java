@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.aerh.skywars.SkyWarsPlugin;
+import net.aerh.skywars.game.event.CageOpenEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -30,6 +31,7 @@ public class SkyWarsGame {
         this.world = world;
 
         Queue<GameEvent> gameEvents = new LinkedList<>();
+        gameEvents.add(new CageOpenEvent(this));
         //gameEvents.add(new ChestRefillEvent(this, 20 * 60 * 5));  // 5 minutes delay
         //gameEvents.add(new ChestRefillEvent(this, 20 * 60 * 5));  // 5 minutes delay
         //gameEvents.add(new DragonSpawnEvent(this, 20 * 60 * 5));  // 5 minutes delay
@@ -156,6 +158,10 @@ public class SkyWarsGame {
         for (Player player : players) {
             player.sendMessage(message);
         }
+    }
+
+    public SkyWarsPlugin getPlugin() {
+        return plugin;
     }
 
     public Set<Player> getPlayers() {
