@@ -38,7 +38,7 @@ public class StartGameCommand implements CommandExecutor {
             return true;
         }
 
-        if (game.getState() != GameState.PRE_GAME) {
+        if (game.getState() != GameState.PRE_GAME || game.getState() != GameState.STARTING) {
             player.sendMessage(ChatColor.RED + "You can only start the game in the pre-game state!");
             return true;
         }

@@ -85,7 +85,7 @@ public final class SkyWarsPlugin extends JavaPlugin {
     @Nullable
     public SkyWarsGame findNextFreeGame() {
         return games.values().stream()
-            .filter(game -> game.getState() == GameState.PRE_GAME)
+            .filter(game -> game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING)
             .filter(game -> game.getPlayers().size() < SkyWarsGame.MAX_PLAYER_COUNT)
             .findFirst()
             .orElse(null);

@@ -1,10 +1,12 @@
 package net.aerh.skywars.listener;
 
 import net.aerh.skywars.SkyWarsPlugin;
+import net.aerh.skywars.game.GameState;
 import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -45,10 +47,17 @@ public class PlayerSessionListener implements Listener {
         SkyWarsPlayer skyWarsPlayer = game.getPlayer(player);
 
         plugin.getLogger().info("Player " + player.getName() + " joined game " + game.getWorld().getName());
-        game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " joined! " + ChatColor.GRAY + "(" + game.getPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT + ")");
 
-        // TODO teleport players to their assigned island if it's counting down
-        player.teleport(game.getPregameSpawn());
+        if (game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING) {
+            game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " joined! " + ChatColor.GRAY + "(" + game.getPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT + ")");
+        }
+
+        if (game.getState() == GameState.STARTING) {
+            Location location = game.getIslands().stream().filter(island -> island.getAssignedPlayer().equals(skyWarsPlayer)).findFirst().get().getSpawnLocation().clone().add(0.5, 0, 0.5);
+            player.teleport(location);
+        } else {
+            player.teleport(game.getPregameSpawn());
+        }
 
         skyWarsPlayer.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
         Bukkit.getOnlinePlayers().forEach(p -> p.hidePlayer(plugin, player));
@@ -77,6 +86,9 @@ public class PlayerSessionListener implements Listener {
 
         game.removePlayer(player);
         plugin.getLogger().info("Player " + player.getName() + " left game " + game.getWorld().getName());
-        game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left! " + ChatColor.GRAY + "(" + game.getPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT + ")");
+
+        if (game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING) {
+            game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left! " + ChatColor.GRAY + "(" + game.getPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT + ")");
+        }
     }
 }

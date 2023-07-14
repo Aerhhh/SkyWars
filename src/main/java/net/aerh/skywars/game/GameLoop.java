@@ -55,6 +55,13 @@ public class GameLoop {
         new BukkitRunnable() {
             @Override
             public void run() {
+                if (game.getPlayers().size() <= 1) {
+                    cancel();
+                    game.end();
+                    game.getPlugin().getLogger().info("Game ended because there are no more players left!");
+                    return;
+                }
+
                 if (countdownTilNextEvent <= 0) {
                     cancel();
                 }
