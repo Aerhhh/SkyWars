@@ -83,7 +83,7 @@ public class SkyWarsGame {
                     countdownTask = null;
                 } else {
                     countdown--;
-                    broadcast(ChatColor.YELLOW + "Game starting in " + ChatColor.RED + countdownSeconds + ChatColor.YELLOW + " second" + (countdownSeconds == 1 ? "" : "s") + "!");
+                    broadcast(ChatColor.YELLOW + "Game starting in " + ChatColor.RED + countdown + ChatColor.YELLOW + " second" + (countdown == 1 ? "" : "s") + "!");
                 }
             }
         }.runTaskTimer(plugin, 0, 20L);
