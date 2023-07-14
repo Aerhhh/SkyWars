@@ -2,6 +2,7 @@ package net.aerh.skywars.listener;
 
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.SkyWarsGame;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -148,6 +149,9 @@ public class GameListener implements Listener {
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
         SkyWarsGame game = plugin.findGame(player);
+
+        event.setFormat(ChatColor.GOLD + "[PLAYER] " + "%s" + ChatColor.RESET + ": %s");
+        event.getRecipients().removeIf(recipient -> !recipient.getWorld().equals(player.getWorld()));
 
         if (game == null) {
             return;
