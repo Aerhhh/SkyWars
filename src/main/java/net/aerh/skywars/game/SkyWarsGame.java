@@ -9,10 +9,7 @@ import net.aerh.skywars.game.event.impl.CageOpenEvent;
 import net.aerh.skywars.game.event.impl.ChestRefillEvent;
 import net.aerh.skywars.game.island.Island;
 import net.aerh.skywars.player.SkyWarsPlayer;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -134,11 +131,19 @@ public class SkyWarsGame {
             return false;
         }
 
-        island.assignPlayer(player);
         players.add(player);
 
-        checkPlayerCountForCountdown();
-        plugin.getLogger().info("Added player " + player.getUuid() + " to island " + island.getSpawnLocation() + "!");
+        if (state == GameState.PRE_GAME) {
+            island.assignPlayer(player);
+            player.getBukkitPlayer().teleport(island.getSpawnLocation().clone().add(0.5, 0, 0.5));
+            plugin.getLogger().info("Added player " + player.getUuid() + " to island " + island.getSpawnLocation() + "!");
+            checkPlayerCountForCountdown();
+        } else {
+            // TODO: proper spectator support
+            player.getBukkitPlayer().setGameMode(GameMode.SPECTATOR);
+            player.getBukkitPlayer().teleport(pregameSpawn);
+        }
+
         return true;
     }
 
@@ -159,7 +164,10 @@ public class SkyWarsGame {
         islands.stream().filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(skyWarsPlayer)).findFirst().ifPresent(island -> island.setAssignedPlayer(null));
         players.remove(skyWarsPlayer);
         plugin.getLogger().info("Removed player " + player.getName() + " from island!");
-        checkPlayerCountForCountdown();
+
+        if (state == GameState.PRE_GAME) {
+            checkPlayerCountForCountdown();
+        }
     }
 
     public SkyWarsPlayer getPlayer(Player player) {
