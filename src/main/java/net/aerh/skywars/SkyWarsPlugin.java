@@ -4,6 +4,7 @@ import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.listener.PlayerSessionListener;
 import net.aerh.skywars.map.MapLoader;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -45,5 +46,12 @@ public final class SkyWarsPlugin extends JavaPlugin {
 
     public Map<UUID, SkyWarsGame> getGames() {
         return games;
+    }
+
+    public SkyWarsGame findGame(Player player) {
+        return games.values().stream()
+                .filter(game -> game.getPlayers().contains(player))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Player is not in a game!"));
     }
 }

@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerSessionListener implements Listener {
 
@@ -21,6 +22,14 @@ public class PlayerSessionListener implements Listener {
 
         SkyWarsGame game = plugin.getGames().values().iterator().next();
         game.addPlayer(player);
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+
+        SkyWarsGame game = plugin.findGame(player);
+        game.removePlayer(player);
     }
 
 }

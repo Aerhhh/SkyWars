@@ -17,6 +17,7 @@ public class SkyWarsGame {
     private final GameLoop gameLoop;
     private List<Island> islands;
     private int nextIsland;
+    private final Set<Player> players = new HashSet<>();
 
     public SkyWarsGame(SkyWarsPlugin plugin, World world, JsonObject config) {
         this.world = world;
@@ -34,7 +35,7 @@ public class SkyWarsGame {
             exception.printStackTrace();
             Bukkit.getServer().shutdown();
         }
-        
+
         this.gameLoop = new GameLoop(plugin, gameEvents);
     }
 
@@ -50,9 +51,20 @@ public class SkyWarsGame {
         if (nextIsland < islands.size()) {
             Island island = islands.get(nextIsland++);
             island.assignPlayer(player);
+            players.add(player);
         } else {
             player.sendMessage("The game is full!");
         }
+    }
+
+    public void removePlayer(Player player) {
+        Island island = islands.stream().filter(i -> i.getAssignedPlayer() != null && i.getAssignedPlayer().equals(player)).findFirst().orElse(null);
+
+        if (island != null) {
+            island.setAssignedPlayer(null);
+        }
+
+        players.remove(player);
     }
 
     private List<Island> parseIslands(JsonArray islandsArray) {
@@ -74,5 +86,9 @@ public class SkyWarsGame {
         }
 
         return islands;
+    }
+
+    public Set<Player> getPlayers() {
+        return players;
     }
 }
