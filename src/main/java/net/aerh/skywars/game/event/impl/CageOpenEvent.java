@@ -17,7 +17,6 @@ public class CageOpenEvent extends GameEvent {
         game.getPlugin().getLogger().info("Opening cages for game " + game.getWorld());
 
         GameSettings settings = game.getSettings();
-        settings.setDamage(false);
         settings.setHunger(false);
         settings.setDropItem(false);
 

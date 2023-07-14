@@ -43,4 +43,11 @@ public class SkyWarsPlayer {
     public Player getBukkitPlayer() {
         return Bukkit.getPlayer(uuid);
     }
+
+    @Override
+    public String toString() {
+        return "SkyWarsPlayer{" +
+            "uuid=" + uuid +
+            '}';
+    }
 }

@@ -76,13 +76,14 @@ public class SkyWarsGame {
     }
 
     private void startCountdown() {
-        islands.stream()
-            .filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().getBukkitPlayer() != null)
-            .forEach(island -> island.getAssignedPlayer().getBukkitPlayer().teleport(island.getSpawnLocation()));
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            islands.stream()
+                .filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().getBukkitPlayer() != null)
+                .forEach(island -> island.getAssignedPlayer().getBukkitPlayer().teleport(island.getSpawnLocation()));
+        }, 1L);
 
-        int countdownSeconds = 10;
         countdownTask = new BukkitRunnable() {
-            int countdown = countdownSeconds;
+            int countdown = 10;
 
             @Override
             public void run() {
@@ -102,7 +103,7 @@ public class SkyWarsGame {
                     countdown--;
                 }
             }
-        }.runTaskTimer(plugin, 0, 20L);
+        }.runTaskTimer(plugin, 5, 20L);
     }
 
     public boolean addPlayer(SkyWarsPlayer player) {
@@ -116,11 +117,11 @@ public class SkyWarsGame {
         players.add(player);
 
         checkPlayerCountForCountdown();
-
+        plugin.getLogger().info("Added player " + player.getUuid() + " to island " + island.getSpawnLocation() + "!");
         return true;
     }
 
-    public void teleportPlayer(Player player, Island island) {
+    public void teleportPlayers(Player player, Island island) {
         plugin.getLogger().info("Assigned player " + player.getName() + " to island " + island.getSpawnLocation() + "!");
         Bukkit.getScheduler().runTaskLater(plugin, () -> player.teleport(island.getSpawnLocation().clone().add(0.5, 0, 0.5)), 1L);
     }
@@ -129,6 +130,7 @@ public class SkyWarsGame {
         SkyWarsPlayer skyWarsPlayer = getPlayer(player);
         islands.stream().filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(skyWarsPlayer)).findFirst().ifPresent(island -> island.setAssignedPlayer(null));
         players.remove(skyWarsPlayer);
+        plugin.getLogger().info("Removed player " + player.getName() + " from island!");
         checkPlayerCountForCountdown();
     }
 

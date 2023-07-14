@@ -5,7 +5,7 @@ public class GameSettings {
     private boolean blockBreak = true;
     private boolean blockPlace = true;
     private boolean hunger = true;
-    private boolean damage = true;
+    private boolean damage = false;
     private boolean dropItem = true;
     private boolean pickupItem = true;
     private boolean interact = true;
