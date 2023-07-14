@@ -28,7 +28,6 @@ public class PlayerSessionListener implements Listener {
         }
 
         plugin.getLogger().info("Player " + player.getName() + " joined game " + game.getWorld().getName());
-        plugin.getLogger().info("Pregame spawn: " + game.getPregameSpawn().toString());
         player.teleport(game.getPregameSpawn());
     }
 
