@@ -49,11 +49,15 @@ public class PlayerSessionListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
-
         event.setQuitMessage(null);
 
+        Player player = event.getPlayer();
         SkyWarsGame game = plugin.findGame(player);
+
+        if (game == null) {
+            return;
+        }
+
         game.removePlayer(player);
         plugin.getLogger().info("Player " + player.getName() + " left game " + game.getWorld().getName());
         game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left! " + ChatColor.GRAY + "(" + game.getPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT + ")");
