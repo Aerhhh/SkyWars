@@ -2,6 +2,7 @@ package net.aerh.skywars.player;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -9,6 +10,7 @@ import java.util.UUID;
 public class SkyWarsPlayer {
 
     private final UUID uuid;
+    private Scoreboard scoreboard;
     private int kills;
 
     public SkyWarsPlayer(UUID uuid) {
@@ -37,6 +39,18 @@ public class SkyWarsPlayer {
 
     public void resetKills() {
         kills = 0;
+    }
+
+    public Scoreboard getScoreboard() {
+        return scoreboard;
+    }
+
+    public void setScoreboard(Scoreboard scoreboard) {
+        this.scoreboard = scoreboard;
+
+        if (getBukkitPlayer() != null) {
+            getBukkitPlayer().setScoreboard(scoreboard);
+        }
     }
 
     @Nullable

@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.event.GameEvent;
 import net.aerh.skywars.game.event.impl.CageOpenEvent;
+import net.aerh.skywars.game.event.impl.ChestRefillEvent;
 import net.aerh.skywars.game.island.Island;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Bukkit;
@@ -15,6 +16,8 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 import java.util.*;
 
@@ -40,6 +43,8 @@ public class SkyWarsGame {
         this.world = world;
 
         gameEvents.add(new CageOpenEvent(this));
+        gameEvents.add(new ChestRefillEvent(this));
+        gameEvents.add(new ChestRefillEvent(this));
         //gameEvents.add(new ChestRefillEvent(this, 20 * 60 * 5));  // 5 minutes delay
         //gameEvents.add(new ChestRefillEvent(this, 20 * 60 * 5));  // 5 minutes delay
         //gameEvents.add(new DragonSpawnEvent(this, 20 * 60 * 5));  // 5 minutes delay
@@ -61,12 +66,28 @@ public class SkyWarsGame {
         state = GameState.IN_GAME;
         gameLoop.start();
         broadcast(ChatColor.GREEN + "Game started!");
+        players.forEach(this::setupPlayerNameColors);
     }
 
     public void end() {
         state = GameState.ENDING;
         gameLoop.stop();
         broadcast(ChatColor.RED + "Game ended!");
+    }
+
+    private void setupPlayerNameColors(SkyWarsPlayer skyWarsPlayer) {
+        plugin.getLogger().info("Setting up player name colors for " + skyWarsPlayer.getUuid() + "!");
+
+        Scoreboard scoreboard = skyWarsPlayer.getScoreboard();
+
+        Team green = scoreboard.registerNewTeam("green");
+        Team red = scoreboard.registerNewTeam("red");
+
+        green.setColor(ChatColor.GREEN);
+        red.setColor(ChatColor.RED);
+
+        green.addEntry(skyWarsPlayer.getBukkitPlayer().getName());
+        players.stream().filter(otherPlayer -> !otherPlayer.equals(skyWarsPlayer)).forEach(otherPlayer -> red.addEntry(otherPlayer.getBukkitPlayer().getName()));
     }
 
     private void checkPlayerCountForCountdown() {
