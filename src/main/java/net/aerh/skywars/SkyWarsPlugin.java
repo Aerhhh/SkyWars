@@ -50,6 +50,13 @@ public final class SkyWarsPlugin extends JavaPlugin {
             }
         });
 
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+            if (games.values().stream().allMatch(game -> game.getState() == GameState.ENDING)) {
+                getLogger().info("All games have ended, shutting down server!");
+                Bukkit.getServer().shutdown();
+            }
+        }, 0L, 20L * 5L);
+
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             games.forEach((uuid, game) -> {
                 try {

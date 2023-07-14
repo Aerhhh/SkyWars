@@ -75,9 +75,9 @@ public class SkyWarsGame {
         broadcast(ChatColor.RED + "Game ended!");
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            players.forEach(player -> {
+            for (SkyWarsPlayer player : players) {
                 player.getBukkitPlayer().kickPlayer(ChatColor.RED + "Game ended!");
-            });
+            }
         }, 20L * 10L);
     }
 
