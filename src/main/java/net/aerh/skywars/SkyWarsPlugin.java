@@ -1,5 +1,6 @@
 package net.aerh.skywars;
 
+import net.aerh.skywars.command.StartGameCommand;
 import net.aerh.skywars.game.GameState;
 import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.listener.GameListener;
@@ -31,6 +32,8 @@ public final class SkyWarsPlugin extends JavaPlugin {
     public void onEnable() {
         getServer().getPluginManager().registerEvents(new PlayerSessionListener(this), this);
         getServer().getPluginManager().registerEvents(new GameListener(this), this);
+
+        getCommand("start").setExecutor(new StartGameCommand(this));
 
         Bukkit.getScheduler().runTask(this, () -> {
             MapLoader mapLoader = new MapLoader(this, getDataFolder().getAbsolutePath() + File.separator + "/map-templates");

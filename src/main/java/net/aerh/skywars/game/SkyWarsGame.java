@@ -33,12 +33,12 @@ public class SkyWarsGame {
     private BukkitTask countdownTask;
     private final GameSettings settings = new GameSettings();
     private final Set<SkyWarsPlayer> players = new HashSet<>();
+    private final Queue<GameEvent> gameEvents = new LinkedList<>();
 
     public SkyWarsGame(SkyWarsPlugin plugin, World world, JsonObject config) {
         this.plugin = plugin;
         this.world = world;
 
-        Queue<GameEvent> gameEvents = new LinkedList<>();
         gameEvents.add(new CageOpenEvent(this));
         //gameEvents.add(new ChestRefillEvent(this, 20 * 60 * 5));  // 5 minutes delay
         //gameEvents.add(new ChestRefillEvent(this, 20 * 60 * 5));  // 5 minutes delay
@@ -215,5 +215,20 @@ public class SkyWarsGame {
 
     public GameSettings getSettings() {
         return settings;
+    }
+
+    public BukkitTask getCountdownTask() {
+        return countdownTask;
+    }
+
+    public void setCountdownTask(BukkitTask countdownTask) {
+        if (!this.countdownTask.isCancelled()) {
+            this.countdownTask.cancel();
+        }
+        this.countdownTask = countdownTask;
+    }
+
+    public Queue<GameEvent> getGameEvents() {
+        return gameEvents;
     }
 }
