@@ -76,11 +76,7 @@ public class SkyWarsGame {
     }
 
     private void startCountdown() {
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            islands.stream()
-                .filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().getBukkitPlayer() != null)
-                .forEach(island -> island.getAssignedPlayer().getBukkitPlayer().teleport(island.getSpawnLocation()));
-        }, 1L);
+        plugin.getServer().getScheduler().runTaskLater(plugin, this::teleportPlayers, 10L);
 
         countdownTask = new BukkitRunnable() {
             int countdown = 10;
@@ -103,7 +99,7 @@ public class SkyWarsGame {
                     countdown--;
                 }
             }
-        }.runTaskTimer(plugin, 5, 20L);
+        }.runTaskTimer(plugin, 10L, 20L);
     }
 
     public boolean addPlayer(SkyWarsPlayer player) {
@@ -121,9 +117,16 @@ public class SkyWarsGame {
         return true;
     }
 
-    public void teleportPlayers(Player player, Island island) {
-        plugin.getLogger().info("Assigned player " + player.getName() + " to island " + island.getSpawnLocation() + "!");
-        Bukkit.getScheduler().runTaskLater(plugin, () -> player.teleport(island.getSpawnLocation().clone().add(0.5, 0, 0.5)), 1L);
+    public void teleportPlayers() {
+        players.forEach(player -> {
+            Island island = islands.stream().filter(i -> i.getAssignedPlayer() != null && i.getAssignedPlayer().equals(player)).findFirst().orElse(null);
+
+            if (island == null || player.getBukkitPlayer() == null) {
+                return;
+            }
+
+            player.getBukkitPlayer().teleport(island.getSpawnLocation().clone().add(0.5, 0, 0.5));
+        });
     }
 
     public void removePlayer(Player player) {
