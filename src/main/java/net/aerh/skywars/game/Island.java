@@ -16,7 +16,6 @@ public class Island {
 
     public void assignPlayer(Player player) {
         this.assignedPlayer = player;
-        player.teleport(spawnLocation);
     }
 
     public Location getSpawnLocation() {

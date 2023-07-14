@@ -9,9 +9,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public final class SkyWarsPlugin extends JavaPlugin {
 
@@ -37,6 +41,21 @@ public final class SkyWarsPlugin extends JavaPlugin {
                 Bukkit.getServer().shutdown();
             }
         });
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            games.forEach((uuid, game) -> {
+                try {
+                    getLogger().info("Attempting to delete world " + game.getWorld().getName());
+                    try (Stream<Path> path = Files.walk(game.getWorld().getWorldFolder().toPath())) {
+                        path.sorted(Comparator.reverseOrder())
+                            .map(Path::toFile)
+                            .forEach(File::delete);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        }));
     }
 
     @Override

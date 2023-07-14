@@ -19,9 +19,17 @@ public class PlayerSessionListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-
         SkyWarsGame game = plugin.getGames().values().iterator().next();
-        game.addPlayer(player);
+
+        // TODO move to pre login event so they never log in
+        if (!game.addPlayer(player)) {
+            player.kickPlayer("Game is full!");
+            return;
+        }
+
+        plugin.getLogger().info("Player " + player.getName() + " joined game " + game.getWorld().getName());
+        plugin.getLogger().info("Pregame spawn: " + game.getPregameSpawn().toString());
+        player.teleport(game.getPregameSpawn());
     }
 
     @EventHandler

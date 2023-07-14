@@ -13,13 +13,16 @@ import java.util.*;
 
 public class SkyWarsGame {
 
+    private final SkyWarsPlugin plugin;
     private final World world;
+    private final Location pregameSpawn;
     private final GameLoop gameLoop;
     private List<Island> islands;
     private int nextIsland;
     private final Set<Player> players = new HashSet<>();
 
     public SkyWarsGame(SkyWarsPlugin plugin, World world, JsonObject config) {
+        this.plugin = plugin;
         this.world = world;
 
         Queue<GameEvent> gameEvents = new LinkedList<>();
@@ -36,6 +39,7 @@ public class SkyWarsGame {
             Bukkit.getServer().shutdown();
         }
 
+        this.pregameSpawn = parseLocation(config, "pregame");
         this.gameLoop = new GameLoop(plugin, gameEvents);
     }
 
@@ -47,23 +51,25 @@ public class SkyWarsGame {
         gameLoop.stop();
     }
 
-    public void addPlayer(Player player) {
+    public boolean addPlayer(Player player) {
         if (nextIsland < islands.size()) {
-            Island island = islands.get(nextIsland++);
+            Island island = islands.stream().filter(i -> i.getAssignedPlayer() == null).findFirst().orElse(null);
+
+            if (island == null) {
+                return false;
+            }
+
             island.assignPlayer(player);
             players.add(player);
-        } else {
-            player.sendMessage("The game is full!");
+            plugin.getLogger().info("Assigned player " + player.getName() + " to island " + island.getSpawnLocation() + "!");
+            return true;
         }
+
+        return false;
     }
 
     public void removePlayer(Player player) {
-        Island island = islands.stream().filter(i -> i.getAssignedPlayer() != null && i.getAssignedPlayer().equals(player)).findFirst().orElse(null);
-
-        if (island != null) {
-            island.setAssignedPlayer(null);
-        }
-
+        islands.stream().filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(player)).findFirst().ifPresent(island -> island.setAssignedPlayer(null));
         players.remove(player);
     }
 
@@ -88,7 +94,40 @@ public class SkyWarsGame {
         return islands;
     }
 
+    private Location parseLocation(JsonObject config, String field) {
+        JsonObject locationsObject = config.getAsJsonObject("locations");
+        JsonObject desiredLocation = locationsObject.getAsJsonObject(field);
+
+        Location location = new Location(world, desiredLocation.get("x").getAsDouble(), desiredLocation.get("y").getAsDouble(), desiredLocation.get("z").getAsDouble());
+
+        if (desiredLocation.has("yaw")) {
+            location.setYaw(desiredLocation.get("yaw").getAsFloat());
+        }
+
+        if (desiredLocation.has("pitch")) {
+            location.setPitch(desiredLocation.get("pitch").getAsFloat());
+        }
+
+        return location;
+    }
+
     public Set<Player> getPlayers() {
         return players;
+    }
+
+    public Location getPregameSpawn() {
+        return pregameSpawn;
+    }
+
+    public World getWorld() {
+        return world;
+    }
+
+    public GameLoop getGameLoop() {
+        return gameLoop;
+    }
+
+    public List<Island> getIslands() {
+        return islands;
     }
 }
