@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -27,7 +28,7 @@ public final class SkyWarsPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         getServer().getPluginManager().registerEvents(new PlayerSessionListener(this), this);
-        getServer().getPluginManager().registerEvents(new GameListener(), this);
+        getServer().getPluginManager().registerEvents(new GameListener(this), this);
 
         Bukkit.getScheduler().runTask(this, () -> {
             MapLoader mapLoader = new MapLoader(this, getDataFolder().getAbsolutePath() + File.separator + "/map-templates");
@@ -69,10 +70,11 @@ public final class SkyWarsPlugin extends JavaPlugin {
         return games;
     }
 
+    @Nullable
     public SkyWarsGame findGame(Player player) {
         return games.values().stream()
                 .filter(game -> game.getPlayers().contains(player))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Player is not in a game!"));
+                .orElse(null);
     }
 }

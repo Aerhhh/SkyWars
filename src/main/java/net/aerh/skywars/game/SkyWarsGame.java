@@ -30,6 +30,7 @@ public class SkyWarsGame {
     private final GameLoop gameLoop;
     private List<Island> islands;
     private BukkitTask countdownTask;
+    private final GameSettings settings = new GameSettings();
     private final Set<Player> players = new HashSet<>();
 
     public SkyWarsGame(SkyWarsPlugin plugin, World world, JsonObject config) {
@@ -193,5 +194,9 @@ public class SkyWarsGame {
 
     public GameState getState() {
         return state;
+    }
+
+    public GameSettings getSettings() {
+        return settings;
     }
 }

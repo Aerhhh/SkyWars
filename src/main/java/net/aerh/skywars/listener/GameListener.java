@@ -1,19 +1,160 @@
 package net.aerh.skywars.listener;
 
+import net.aerh.skywars.SkyWarsPlugin;
+import net.aerh.skywars.game.SkyWarsGame;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.world.TimeSkipEvent;
 
 public class GameListener implements Listener {
 
-    @EventHandler
+    private final SkyWarsPlugin plugin;
+
+    public GameListener(SkyWarsPlugin plugin) {
+        this.plugin = plugin;
+    }
+
+    @EventHandler (ignoreCancelled = true)
     public void onWeatherChange(WeatherChangeEvent event) {
         event.setCancelled(true);
     }
 
-    @EventHandler
+    @EventHandler (ignoreCancelled = true)
     public void onTimeChange(TimeSkipEvent event) {
         event.setCancelled(true);
+    }
+
+    @EventHandler (ignoreCancelled = true)
+    public void onBlockBreak(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        SkyWarsGame game = plugin.findGame(player);
+
+        if (game == null) {
+            return;
+        }
+
+        if (!game.getSettings().isBlockBreak()) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler (ignoreCancelled = true)
+    public void onBlockPlace(BlockPlaceEvent event) {
+        Player player = event.getPlayer();
+        SkyWarsGame game = plugin.findGame(player);
+
+        if (game == null) {
+            return;
+        }
+
+        if (!game.getSettings().isBlockPlace()) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler (ignoreCancelled = true)
+    public void onDamage(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player)) {
+            return;
+        }
+
+        Player player = (Player) event.getEntity();
+        SkyWarsGame game = plugin.findGame(player);
+
+        if (game == null) {
+            return;
+        }
+
+        if (!game.getSettings().isDamage()) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler (ignoreCancelled = true)
+    public void onPlayerHunger(FoodLevelChangeEvent event) {
+        if (!(event.getEntity() instanceof Player)) {
+            return;
+        }
+
+        Player player = (Player) event.getEntity();
+        SkyWarsGame game = plugin.findGame(player);
+
+        if (game == null) {
+            return;
+        }
+
+        if (!game.getSettings().isHunger()) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onItemDrop(PlayerDropItemEvent event) {
+        Player player = event.getPlayer();
+        SkyWarsGame game = plugin.findGame(player);
+
+        if (game == null) {
+            return;
+        }
+
+        if (!game.getSettings().isDropItem()) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler (ignoreCancelled = true)
+    public void onItemPickup(EntityPickupItemEvent event) {
+        if (!(event.getEntity() instanceof Player)) {
+            return;
+        }
+
+        Player player = (Player) event.getEntity();
+        SkyWarsGame game = plugin.findGame(player);
+
+        if (game == null) {
+            return;
+        }
+
+        if (!game.getSettings().isPickupItem()) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler (ignoreCancelled = true)
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        SkyWarsGame game = plugin.findGame(player);
+
+        if (game == null) {
+            return;
+        }
+
+        if (!game.getSettings().isInteract()) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler (ignoreCancelled = true)
+    public void onPlayerChat(AsyncPlayerChatEvent event) {
+        Player player = event.getPlayer();
+        SkyWarsGame game = plugin.findGame(player);
+
+        if (game == null) {
+            return;
+        }
+
+        if (!game.getSettings().isChat()) {
+            event.setCancelled(true);
+        }
     }
 }
