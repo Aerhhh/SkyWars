@@ -45,6 +45,13 @@ public class PlayerSessionListener implements Listener {
         plugin.getLogger().info("Player " + player.getName() + " joined game " + game.getWorld().getName());
         game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " joined! " + ChatColor.GRAY + "(" + game.getPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT + ")");
         player.teleport(game.getPregameSpawn());
+
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            plugin.getGames().values()
+                .stream()
+                .filter(g -> !g.equals(game))
+                .forEach(g -> g.getPlayers().forEach(p -> player.hidePlayer(plugin, p.getBukkitPlayer())));
+        }, 1L);
     }
 
     @EventHandler
