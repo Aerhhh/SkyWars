@@ -1,6 +1,7 @@
 package net.aerh.skywars.game;
 
 import net.aerh.skywars.SkyWarsPlugin;
+import net.aerh.skywars.game.event.GameEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -61,6 +62,6 @@ public class GameLoop {
                     countdownTilNextEvent--;
                 }
             }
-        }.runTaskTimer(plugin, 20, 20);  // Run every second
+        }.runTaskTimer(plugin, 20, 20);
     }
 }

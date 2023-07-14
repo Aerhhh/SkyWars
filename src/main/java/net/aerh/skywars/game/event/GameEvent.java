@@ -1,4 +1,6 @@
-package net.aerh.skywars.game;
+package net.aerh.skywars.game.event;
+
+import net.aerh.skywars.game.SkyWarsGame;
 
 public abstract class GameEvent {
 

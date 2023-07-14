@@ -1,8 +1,8 @@
-package net.aerh.skywars.game.event;
+package net.aerh.skywars.game.event.impl;
 
-import net.aerh.skywars.game.GameEvent;
-import net.aerh.skywars.game.Island;
+import net.aerh.skywars.game.island.Island;
 import net.aerh.skywars.game.SkyWarsGame;
+import net.aerh.skywars.game.event.GameEvent;
 import org.bukkit.Material;
 
 public class CageOpenEvent extends GameEvent {

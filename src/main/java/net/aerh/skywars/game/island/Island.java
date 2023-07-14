@@ -1,4 +1,4 @@
-package net.aerh.skywars.game;
+package net.aerh.skywars.game.island;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;

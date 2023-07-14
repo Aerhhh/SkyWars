@@ -4,7 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.aerh.skywars.SkyWarsPlugin;
-import net.aerh.skywars.game.event.CageOpenEvent;
+import net.aerh.skywars.game.event.GameEvent;
+import net.aerh.skywars.game.event.impl.CageOpenEvent;
+import net.aerh.skywars.game.island.Island;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -16,6 +18,10 @@ import org.bukkit.scheduler.BukkitTask;
 import java.util.*;
 
 public class SkyWarsGame {
+
+    // TODO could be configured per map
+    public static final int MIN_PLAYER_COUNT = 2;
+    public static final int MAX_PLAYER_COUNT = 12;
 
     private final SkyWarsPlugin plugin;
     private GameState state;
@@ -50,19 +56,20 @@ public class SkyWarsGame {
     }
 
     public void start() {
+        state = GameState.IN_GAME;
         gameLoop.start();
         broadcast(ChatColor.GREEN + "Game started!");
     }
 
     public void end() {
+        state = GameState.ENDING;
         gameLoop.stop();
         broadcast(ChatColor.RED + "Game ended!");
     }
 
     private void checkPlayerCountForCountdown() {
-        int minPlayers = 2;
 
-        if (players.size() >= minPlayers && (countdownTask == null)) {
+        if (players.size() >= MIN_PLAYER_COUNT && (countdownTask == null)) {
             startCountdown();
         }
     }
@@ -74,7 +81,7 @@ public class SkyWarsGame {
 
             @Override
             public void run() {
-                if (players.size() < 2) {
+                if (players.size() < MIN_PLAYER_COUNT) {
                     cancel();
                     countdownTask = null;
                     broadcast(ChatColor.RED + "Not enough players to start the game!");
@@ -182,5 +189,9 @@ public class SkyWarsGame {
 
     public List<Island> getIslands() {
         return islands;
+    }
+
+    public GameState getState() {
+        return state;
     }
 }
