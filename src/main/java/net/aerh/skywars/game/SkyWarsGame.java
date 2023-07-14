@@ -49,10 +49,12 @@ public class SkyWarsGame {
 
     public void start() {
         gameLoop.start();
+        broadcast(ChatColor.GREEN + "Game started!");
     }
 
     public void end() {
         gameLoop.stop();
+        broadcast(ChatColor.RED + "Game ended!");
     }
 
     private void checkPlayerCountForCountdown() {
@@ -82,8 +84,8 @@ public class SkyWarsGame {
                     cancel();
                     countdownTask = null;
                 } else {
-                    countdown--;
                     broadcast(ChatColor.YELLOW + "Game starting in " + ChatColor.RED + countdown + ChatColor.YELLOW + " second" + (countdown == 1 ? "" : "s") + "!");
+                    countdown--;
                 }
             }
         }.runTaskTimer(plugin, 0, 20L);
