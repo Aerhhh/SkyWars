@@ -1,7 +1,6 @@
 package net.aerh.skywars.game;
 
 import net.aerh.skywars.game.event.GameEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -38,13 +37,13 @@ public class GameLoop {
 
         if (gameEvents.isEmpty()) {
             game.getPlugin().getLogger().info("No more events left!");
+            game.end();
             return;
         }
 
         GameEvent gameEvent = gameEvents.poll();
         game.getPlugin().getLogger().info("Next event: " + gameEvent.getClass().getSimpleName() + " in " + gameEvent.getDelay() + " ticks (" + gameEvents.size() + " events left)");
         countdownTilNextEvent = (int) gameEvent.getDelay() / 20;
-        game.getPlugin().getLogger().info("Time set: " + countdownTilNextEvent);
 
         if (gameEvent.getDelay() <= 0) {
             game.getPlugin().getLogger().info("Executing event: " + gameEvent.getClass().getSimpleName());
@@ -56,9 +55,7 @@ public class GameLoop {
         new BukkitRunnable() {
             @Override
             public void run() {
-                game.getPlugin().getLogger().info("Countdown: " + countdownTilNextEvent);
                 if (countdownTilNextEvent <= 0) {
-                    Bukkit.broadcastMessage("cancelled");
                     cancel();
                 }
 
