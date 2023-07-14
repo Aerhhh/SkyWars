@@ -5,20 +5,24 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.aerh.skywars.SkyWarsPlugin;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
 
 public class SkyWarsGame {
 
     private final SkyWarsPlugin plugin;
+    private GameState state;
     private final World world;
     private final Location pregameSpawn;
     private final GameLoop gameLoop;
     private List<Island> islands;
-    private int nextIsland;
+    private BukkitTask countdownTask;
     private final Set<Player> players = new HashSet<>();
 
     public SkyWarsGame(SkyWarsPlugin plugin, World world, JsonObject config) {
@@ -51,27 +55,61 @@ public class SkyWarsGame {
         gameLoop.stop();
     }
 
-    public boolean addPlayer(Player player) {
-        if (nextIsland < islands.size()) {
-            Island island = islands.stream().filter(i -> i.getAssignedPlayer() == null).findFirst().orElse(null);
+    private void checkPlayerCountForCountdown() {
+        int minPlayers = 2;
 
-            if (island == null) {
-                return false;
+        if (players.size() >= minPlayers && (countdownTask == null)) {
+            startCountdown();
+        }
+    }
+
+    private void startCountdown() {
+        int countdownSeconds = 10;
+        countdownTask = new BukkitRunnable() {
+            int countdown = countdownSeconds;
+
+            @Override
+            public void run() {
+                if (players.size() < 2) {
+                    cancel();
+                    countdownTask = null;
+                    broadcast(ChatColor.RED + "Not enough players to start the game!");
+                    return;
+                }
+
+                if (countdown <= 0) {
+                    start();
+                    cancel();
+                    countdownTask = null;
+                } else {
+                    countdown--;
+                    broadcast(ChatColor.YELLOW + "Game starting in " + ChatColor.RED + countdownSeconds + ChatColor.YELLOW + " second" + (countdownSeconds == 1 ? "" : "s") + "!");
+                }
             }
+        }.runTaskTimer(plugin, 0, 20L);
+    }
 
-            island.assignPlayer(player);
-            players.add(player);
-            plugin.getLogger().info("Assigned player " + player.getName() + " to island " + island.getSpawnLocation() + "!");
-            Bukkit.getScheduler().runTaskLater(plugin, () -> player.teleport(island.getSpawnLocation().clone().add(0.5, 0, 0.5)), 1L);
-            return true;
+    public boolean addPlayer(Player player) {
+        Island island = islands.stream().filter(i -> i.getAssignedPlayer() == null).findFirst().orElse(null);
+
+        if (island == null) {
+            return false;
         }
 
-        return false;
+        island.assignPlayer(player);
+        players.add(player);
+        plugin.getLogger().info("Assigned player " + player.getName() + " to island " + island.getSpawnLocation() + "!");
+        Bukkit.getScheduler().runTaskLater(plugin, () -> player.teleport(island.getSpawnLocation().clone().add(0.5, 0, 0.5)), 1L);
+
+        checkPlayerCountForCountdown();
+
+        return true;
     }
 
     public void removePlayer(Player player) {
         islands.stream().filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(player)).findFirst().ifPresent(island -> island.setAssignedPlayer(null));
         players.remove(player);
+        checkPlayerCountForCountdown();
     }
 
     private List<Island> parseIslands(JsonArray islandsArray) {
@@ -110,6 +148,12 @@ public class SkyWarsGame {
         }
 
         return location;
+    }
+
+    public void broadcast(String message) {
+        for (Player player : players) {
+            player.sendMessage(message);
+        }
     }
 
     public Set<Player> getPlayers() {
