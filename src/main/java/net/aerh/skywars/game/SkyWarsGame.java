@@ -59,14 +59,14 @@ public class SkyWarsGame {
         }
 
         this.pregameSpawn = parseLocation(config, "pregame");
-        this.gameLoop = new GameLoop(plugin, gameEvents);
+        this.gameLoop = new GameLoop(this, gameEvents);
     }
 
     public void start() {
         state = GameState.IN_GAME;
-        gameLoop.start();
         broadcast(ChatColor.GREEN + "Game started!");
         players.forEach(this::setupPlayerNameColors);
+        gameLoop.start();
     }
 
     public void end() {
@@ -76,10 +76,7 @@ public class SkyWarsGame {
     }
 
     private void setupPlayerNameColors(SkyWarsPlayer skyWarsPlayer) {
-        plugin.getLogger().info("Setting up player name colors for " + skyWarsPlayer.getUuid() + "!");
-
         Scoreboard scoreboard = skyWarsPlayer.getScoreboard();
-
         Team green = scoreboard.registerNewTeam("green");
         Team red = scoreboard.registerNewTeam("red");
 
@@ -87,7 +84,8 @@ public class SkyWarsGame {
         red.setColor(ChatColor.RED);
 
         green.addEntry(skyWarsPlayer.getBukkitPlayer().getName());
-        players.stream().filter(otherPlayer -> !otherPlayer.equals(skyWarsPlayer)).forEach(otherPlayer -> red.addEntry(otherPlayer.getBukkitPlayer().getName()));
+        players.stream().filter(otherPlayer -> !otherPlayer.equals(skyWarsPlayer))
+            .forEach(otherPlayer -> red.addEntry(otherPlayer.getBukkitPlayer().getName()));
     }
 
     private void checkPlayerCountForCountdown() {

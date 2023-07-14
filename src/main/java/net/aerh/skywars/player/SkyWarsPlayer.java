@@ -41,6 +41,11 @@ public class SkyWarsPlayer {
         kills = 0;
     }
 
+    @Nullable
+    public Player getBukkitPlayer() {
+        return Bukkit.getPlayer(uuid);
+    }
+
     public Scoreboard getScoreboard() {
         return scoreboard;
     }
@@ -49,13 +54,8 @@ public class SkyWarsPlayer {
         this.scoreboard = scoreboard;
 
         if (getBukkitPlayer() != null) {
-            getBukkitPlayer().setScoreboard(scoreboard);
+            getBukkitPlayer().setScoreboard(this.scoreboard);
         }
-    }
-
-    @Nullable
-    public Player getBukkitPlayer() {
-        return Bukkit.getPlayer(uuid);
     }
 
     @Override
