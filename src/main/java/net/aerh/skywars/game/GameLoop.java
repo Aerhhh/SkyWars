@@ -1,7 +1,7 @@
 package net.aerh.skywars.game;
 
-import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.event.GameEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -10,13 +10,13 @@ import java.util.Queue;
 
 public class GameLoop {
 
-    private final SkyWarsPlugin plugin;
+    private final SkyWarsGame game;
     private final Queue<GameEvent> gameEvents;
     private BukkitTask currentTask;
     private int countdownTilNextEvent;
 
-    public GameLoop(SkyWarsPlugin plugin, Queue<GameEvent> gameEvents) {
-        this.plugin = plugin;
+    public GameLoop(SkyWarsGame game, Queue<GameEvent> gameEvents) {
+        this.game = game;
         this.gameEvents = new LinkedList<>(gameEvents);
     }
 
@@ -37,31 +37,47 @@ public class GameLoop {
         }
 
         if (gameEvents.isEmpty()) {
+            game.getPlugin().getLogger().info("No more events left!");
             return;
         }
 
         GameEvent gameEvent = gameEvents.poll();
-        plugin.getLogger().info("Next event: " + gameEvent.getClass().getSimpleName());
+        game.getPlugin().getLogger().info("Next event: " + gameEvent.getClass().getSimpleName() + " in " + gameEvent.getDelay() + " ticks (" + gameEvents.size() + " events left)");
         countdownTilNextEvent = (int) gameEvent.getDelay() / 20;
-        currentTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                plugin.getLogger().info("Executing event: " + gameEvent.getClass().getSimpleName());
-                gameEvent.execute();
-                countdownTilNextEvent = 0;
-                next();
-            }
-        }.runTaskLater(plugin, gameEvent.getDelay());
+        game.getPlugin().getLogger().info("Time set: " + countdownTilNextEvent);
+
+        if (gameEvent.getDelay() <= 0) {
+            game.getPlugin().getLogger().info("Executing event: " + gameEvent.getClass().getSimpleName());
+            gameEvent.execute();
+            next();
+            return;
+        }
 
         new BukkitRunnable() {
             @Override
             public void run() {
+                game.getPlugin().getLogger().info("Countdown: " + countdownTilNextEvent);
                 if (countdownTilNextEvent <= 0) {
-                    this.cancel();
-                } else {
-                    countdownTilNextEvent--;
+                    Bukkit.broadcastMessage("cancelled");
+                    cancel();
                 }
+
+                countdownTilNextEvent--;
             }
-        }.runTaskTimer(plugin, 20, 20);
+        }.runTaskTimer(game.getPlugin(), 0, 20L);
+
+        currentTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                countdownTilNextEvent = 0;
+                game.getPlugin().getLogger().info("Executing event: " + gameEvent.getClass().getSimpleName());
+                gameEvent.execute();
+                next();
+            }
+        }.runTaskLater(game.getPlugin(), gameEvent.getDelay());
+    }
+
+    public int getTimeUntilNextEvent() {
+        return countdownTilNextEvent;
     }
 }
