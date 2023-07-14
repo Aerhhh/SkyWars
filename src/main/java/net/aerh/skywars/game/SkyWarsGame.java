@@ -62,6 +62,7 @@ public class SkyWarsGame {
             island.assignPlayer(player);
             players.add(player);
             plugin.getLogger().info("Assigned player " + player.getName() + " to island " + island.getSpawnLocation() + "!");
+            Bukkit.getScheduler().runTaskLater(plugin, () -> player.teleport(island.getSpawnLocation().clone().add(0.5, 0, 0.5)), 1L);
             return true;
         }
 
