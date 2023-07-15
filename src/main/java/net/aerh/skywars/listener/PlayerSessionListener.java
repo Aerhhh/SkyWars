@@ -7,7 +7,6 @@ import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -45,8 +44,12 @@ public class PlayerSessionListener implements Listener {
 
         Player player = event.getPlayer();
         SkyWarsGame game = plugin.findGame(player);
-        SkyWarsPlayer skyWarsPlayer = game.getPlayer(player);
 
+        if (game == null) {
+            return;
+        }
+
+        SkyWarsPlayer skyWarsPlayer = game.getPlayer(player);
         plugin.getLogger().info("Player " + player.getName() + " joined game " + game.getWorld().getName());
         player.setGameMode(GameMode.ADVENTURE);
 
@@ -55,8 +58,9 @@ public class PlayerSessionListener implements Listener {
         }
 
         if (game.getState() == GameState.STARTING) {
-            Location location = game.getIslands().stream().filter(island -> island.getAssignedPlayer().equals(skyWarsPlayer)).findFirst().get().getSpawnLocation().clone().add(0.5, 0, 0.5);
-            player.teleport(location);
+            game.getIslands().stream().filter(island -> island.getAssignedPlayer().equals(skyWarsPlayer)).findFirst().ifPresent(island -> {
+                player.teleport(island.getSpawnLocation().clone().add(0.5, 0, 0.5));
+            });
         } else {
             player.teleport(game.getPregameSpawn());
         }
@@ -87,14 +91,7 @@ public class PlayerSessionListener implements Listener {
             return;
         }
 
-        SkyWarsPlayer skyWarsPlayer = game.getPlayer(player);
-
-        if (skyWarsPlayer == null) {
-            return;
-        }
-
-
-        game.removePlayer(skyWarsPlayer);
+        game.removePlayerFromPlayersOrSpectators(player);
         plugin.getLogger().info("Player " + player.getName() + " left game " + game.getWorld().getName());
 
         if (game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING) {

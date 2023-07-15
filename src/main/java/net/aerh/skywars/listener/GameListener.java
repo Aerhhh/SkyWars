@@ -63,7 +63,7 @@ public class GameListener implements Listener {
 
         event.setCancelled(true);
         player.sendTitle(ChatColor.RED + ChatColor.BOLD.toString() + "YOU DIED!", ChatColor.GRAY + "Better luck next time!", 0, 20 * 5, 20);
-        game.setSpectator(player);
+        game.setSpectator(game.getPlayer(player));
 
         // TODO fancy death messages
         UUID uuid = lastDamager.getIfPresent(player.getUniqueId());

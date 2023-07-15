@@ -221,6 +221,16 @@ public class SkyWarsGame {
         spectators.remove(player);
     }
 
+    public void removePlayerFromPlayersOrSpectators(Player player) {
+        if (getPlayer(player) != null) {
+            players.remove(getPlayer(player));
+        }
+
+        if (getSpectator(player) != null) {
+            spectators.remove(getSpectator(player));
+        }
+    }
+
     public void teleportPlayers() {
         players.forEach(player -> {
             Island island = getIsland(player);
@@ -241,6 +251,43 @@ public class SkyWarsGame {
     @Nullable
     public SkyWarsPlayer getPlayer(UUID uuid) {
         return players.stream().filter(p -> p.getUuid().equals(uuid)).findFirst().orElse(null);
+    }
+
+    @Nullable
+    public SkyWarsPlayer getSpectator(Player player) {
+        return spectators.stream().filter(p -> p.getUuid().equals(player.getUniqueId())).findFirst().orElse(null);
+    }
+
+    @Nullable
+    public SkyWarsPlayer getSpectator(UUID uuid) {
+        return spectators.stream().filter(p -> p.getUuid().equals(uuid)).findFirst().orElse(null);
+    }
+
+    @Nullable
+    public Island getIsland(Player player) {
+        return getIsland(getPlayer(player));
+    }
+
+    @Nullable
+    public Player getPlayerOrSpectator(UUID uuid) {
+        SkyWarsPlayer player = getPlayer(uuid);
+
+        if (player != null) {
+            return player.getBukkitPlayer();
+        }
+
+        SkyWarsPlayer spectator = getSpectator(uuid);
+
+        if (spectator != null) {
+            return spectator.getBukkitPlayer();
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public Player getPlayerOrSpectator(Player player) {
+        return getPlayerOrSpectator(player.getUniqueId());
     }
 
     public List<Player> getBukkitPlayers() {

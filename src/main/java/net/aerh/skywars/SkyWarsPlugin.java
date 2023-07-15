@@ -36,7 +36,7 @@ public final class SkyWarsPlugin extends JavaPlugin {
             try {
                 for (int i = 0; i < DESIRED_GAME_COUNT; i++) {
                     SkyWarsGame game = mapLoader.loadRandomMap("game-" + (i + 1));
-                    games.put(UUID.randomUUID(), game);
+                    games.add(game);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
