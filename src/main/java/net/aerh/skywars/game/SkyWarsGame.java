@@ -85,9 +85,12 @@ public class SkyWarsGame {
             broadcast(ChatColor.GREEN + "No winner!");
         }
 
+        players.forEach(skyWarsPlayer -> setSpectator(skyWarsPlayer.getBukkitPlayer()));
+        players.clear();
+
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            for (SkyWarsPlayer player : players) {
-                player.getBukkitPlayer().kickPlayer(ChatColor.RED + "Game ended!");
+            for (Player spectator : spectators) {
+                spectator.kickPlayer(ChatColor.RED + "Game ended!");
             }
         }, 20L * 10L);
     }
@@ -103,7 +106,8 @@ public class SkyWarsGame {
         gray.setColor(ChatColor.GRAY);
 
         green.addEntry(skyWarsPlayer.getBukkitPlayer().getName());
-        players.stream().filter(otherPlayer -> !otherPlayer.equals(skyWarsPlayer))
+        players.stream()
+            .filter(otherPlayer -> !otherPlayer.equals(skyWarsPlayer))
             .forEach(otherPlayer -> red.addEntry(otherPlayer.getBukkitPlayer().getName()));
     }
 
@@ -142,17 +146,23 @@ public class SkyWarsGame {
     }
 
     public void setSpectator(Player player) {
+        players.remove(players.stream().filter(p -> p.getBukkitPlayer().equals(player)).findFirst().orElse(null));
+        spectators.add(player);
+
         player.setHealth(20.0);
         player.setFoodLevel(20);
+        player.setAllowFlight(true);
+        player.setFlying(true);
         player.getInventory().clear();
         player.getInventory().setArmorContents(null);
-        player.setGameMode(GameMode.SPECTATOR);
+        player.getScoreboard().getTeam("gray").addEntry(player.getName());
         player.teleport(pregameSpawn);
 
         for (Player otherPlayer : players.stream().map(SkyWarsPlayer::getBukkitPlayer).collect(Collectors.toList())) {
             otherPlayer.hidePlayer(plugin, player);
             otherPlayer.getScoreboard().getTeam("gray").addEntry(player.getName());
         }
+
     }
 
     public boolean addPlayer(SkyWarsPlayer player) {
@@ -201,6 +211,10 @@ public class SkyWarsGame {
         return players.stream().filter(p -> p.getUuid().equals(player.getUniqueId())).findFirst().orElse(null);
     }
 
+    public SkyWarsPlayer getPlayer(UUID uuid) {
+        return players.stream().filter(p -> p.getUuid().equals(uuid)).findFirst().orElse(null);
+    }
+
     private List<Island> parseIslands(JsonArray islandsArray) {
         List<Island> islands = new ArrayList<>();
 
@@ -241,7 +255,13 @@ public class SkyWarsGame {
 
     public void broadcast(String message) {
         for (SkyWarsPlayer player : players) {
-            player.getBukkitPlayer().sendMessage(message);
+            if (player.getBukkitPlayer() != null) {
+                player.getBukkitPlayer().sendMessage(message);
+            }
+        }
+
+        for (Player spectator : spectators) {
+            spectator.sendMessage(message);
         }
     }
 
