@@ -51,7 +51,7 @@ public class PlayerSessionListener implements Listener {
         player.setGameMode(GameMode.ADVENTURE);
 
         if (game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING) {
-            game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " joined! " + ChatColor.GRAY + "(" + game.getPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT + ")");
+            game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " joined! " + ChatColor.GRAY + "(" + game.getBukkitPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT + ")");
         }
 
         if (game.getState() == GameState.STARTING) {
@@ -65,12 +65,13 @@ public class PlayerSessionListener implements Listener {
         Bukkit.getOnlinePlayers().forEach(p -> p.hidePlayer(plugin, player));
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            plugin.getGames().values()
-                .stream()
+            plugin.getGames().stream()
                 .filter(g -> g.equals(game))
                 .forEach(g -> {
-                    g.getPlayers().forEach(p -> p.getBukkitPlayer().showPlayer(plugin, player));
-                    g.getPlayers().forEach(p -> player.showPlayer(plugin, p.getBukkitPlayer()));
+                    g.getBukkitPlayers().forEach(p -> {
+                        p.showPlayer(plugin, player);
+                        player.showPlayer(plugin, p);
+                    });
                 });
         }, 1L);
     }
@@ -86,11 +87,18 @@ public class PlayerSessionListener implements Listener {
             return;
         }
 
-        game.removePlayer(player);
+        SkyWarsPlayer skyWarsPlayer = game.getPlayer(player);
+
+        if (skyWarsPlayer == null) {
+            return;
+        }
+
+
+        game.removePlayer(skyWarsPlayer);
         plugin.getLogger().info("Player " + player.getName() + " left game " + game.getWorld().getName());
 
         if (game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING) {
-            game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left! " + ChatColor.GRAY + "(" + game.getPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT + ")");
+            game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left! " + ChatColor.GRAY + "(" + game.getBukkitPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT + ")");
         }
     }
 }

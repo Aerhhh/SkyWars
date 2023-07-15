@@ -52,7 +52,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        if (game.getSpectators().contains(player)) {
+        if (game.getBukkitSpectators().contains(player)) {
             event.setCancelled(true);
             return;
         }
@@ -71,6 +71,7 @@ public class GameListener implements Listener {
 
         if (killer != null && killer.getBukkitPlayer() != null) {
             game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " was killed by " + ChatColor.GOLD + killer.getBukkitPlayer().getName());
+            killer.addKill();
         } else {
             game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " died!");
         }
@@ -112,7 +113,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        if (game.getSpectators().contains(player)) {
+        if (game.getBukkitSpectators().contains(player)) {
             event.setCancelled(true);
             return;
         }
@@ -131,7 +132,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        if (game.getSpectators().contains(player)) {
+        if (game.getBukkitSpectators().contains(player)) {
             event.setCancelled(true);
             return;
         }
@@ -154,7 +155,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        if (game.getSpectators().contains(player)) {
+        if (game.getBukkitSpectators().contains(player)) {
             event.setCancelled(true);
             return;
         }
@@ -191,7 +192,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        if (game.getSpectators().contains(player)) {
+        if (game.getBukkitSpectators().contains(player)) {
             event.setCancelled(true);
             return;
         }
@@ -214,7 +215,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        if (game.getSpectators().contains(player)) {
+        if (game.getBukkitSpectators().contains(player)) {
             event.setCancelled(true);
             return;
         }
@@ -253,9 +254,9 @@ public class GameListener implements Listener {
         if (game.getPlayer(player) != null) {
             format = ChatColor.GOLD + "[PLAYER] " + "%s" + ChatColor.RESET + ": %s";
             filter = recipient -> !recipient.getWorld().equals(player.getWorld());
-        } else if (game.getSpectators().contains(player)) {
+        } else if (game.getBukkitSpectators().contains(player)) {
             format = ChatColor.GRAY + "[SPECTATOR] " + "%s" + ChatColor.RESET + ": %s";
-            filter = recipient -> !game.getSpectators().contains(recipient);
+            filter = recipient -> !game.getBukkitSpectators().contains(recipient);
         }
 
         if (!game.getSettings().isChat()) {

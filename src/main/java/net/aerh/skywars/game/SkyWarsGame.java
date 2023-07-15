@@ -18,7 +18,9 @@ import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SkyWarsGame {
 
@@ -27,21 +29,24 @@ public class SkyWarsGame {
     public static final int MAX_PLAYER_COUNT = 12;
 
     private final SkyWarsPlugin plugin;
-    private GameState state = GameState.PRE_GAME;
     private final World world;
     private final Location pregameSpawn;
     private final GameLoop gameLoop;
+    private final GameSettings settings = new GameSettings();
+    private final Set<SkyWarsPlayer> players;
+    private final Set<SkyWarsPlayer> spectators;
+    private final Queue<GameEvent> gameEvents;
+    private GameState state = GameState.PRE_GAME;
     private List<Island> islands;
     private BukkitTask countdownTask;
-    private final GameSettings settings = new GameSettings();
-    private final Set<SkyWarsPlayer> players = new HashSet<>();
-    private final Set<Player> spectators = new HashSet<>();
     private SkyWarsPlayer winner;
-    private final Queue<GameEvent> gameEvents = new LinkedList<>();
 
     public SkyWarsGame(SkyWarsPlugin plugin, World world, JsonObject config) {
         this.plugin = plugin;
         this.world = world;
+        this.players = new HashSet<>();
+        this.spectators = new HashSet<>();
+        this.gameEvents = new LinkedList<>();
 
         gameEvents.add(new CageOpenEvent(this));
         gameEvents.add(new ChestRefillEvent(this));
@@ -54,7 +59,7 @@ public class SkyWarsGame {
         try {
             this.islands = parseIslands(config.get("islands").getAsJsonArray());
         } catch (IllegalStateException exception) {
-            plugin.getLogger().severe("Failed to parse islands!");
+            log(Level.SEVERE, "Failed to parse islands!");
             exception.printStackTrace();
             Bukkit.getServer().shutdown();
         }
@@ -66,16 +71,18 @@ public class SkyWarsGame {
     public void start() {
         state = GameState.IN_GAME;
         broadcast(ChatColor.GREEN + "Game started!");
-        players.forEach((player) -> {
+
+        getBukkitPlayers().forEach(player -> {
             setupPlayerNameColors(player);
-            player.getBukkitPlayer().setGameMode(GameMode.SURVIVAL);
+            player.setGameMode(GameMode.SURVIVAL);
         });
+
         gameLoop.start();
     }
 
     public void end() {
-        state = GameState.ENDING;
         gameLoop.stop();
+        state = GameState.ENDING;
         broadcast(ChatColor.RED + "Game ended!");
 
         if (players.size() == 1) {
@@ -85,18 +92,18 @@ public class SkyWarsGame {
             broadcast(ChatColor.GREEN + "No winner!");
         }
 
-        players.forEach(skyWarsPlayer -> setSpectator(skyWarsPlayer.getBukkitPlayer()));
+        players.forEach(this::setSpectator);
         players.clear();
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            for (Player spectator : spectators) {
+            for (Player spectator : getBukkitSpectators()) {
                 spectator.kickPlayer(ChatColor.RED + "Game ended!");
             }
         }, 20L * 10L);
     }
 
-    private void setupPlayerNameColors(SkyWarsPlayer skyWarsPlayer) {
-        Scoreboard scoreboard = skyWarsPlayer.getScoreboard();
+    private void setupPlayerNameColors(Player player) {
+        Scoreboard scoreboard = player.getScoreboard();
         Team green = scoreboard.registerNewTeam("green");
         Team gray = scoreboard.registerNewTeam("gray");
         Team red = scoreboard.registerNewTeam("red");
@@ -105,10 +112,8 @@ public class SkyWarsGame {
         red.setColor(ChatColor.RED);
         gray.setColor(ChatColor.GRAY);
 
-        green.addEntry(skyWarsPlayer.getBukkitPlayer().getName());
-        players.stream()
-            .filter(otherPlayer -> !otherPlayer.equals(skyWarsPlayer))
-            .forEach(otherPlayer -> red.addEntry(otherPlayer.getBukkitPlayer().getName()));
+        green.addEntry(player.getName());
+        getBukkitPlayers().stream().filter(otherPlayer -> !otherPlayer.equals(player)).forEach(otherPlayer -> red.addEntry(otherPlayer.getName()));
     }
 
     private void checkPlayerCountForCountdown() {
@@ -145,11 +150,18 @@ public class SkyWarsGame {
         }.runTaskTimer(plugin, 10L, 20L);
     }
 
-    public void setSpectator(Player player) {
-        removePlayer(player);
-        spectators.add(player);
+    public void setSpectator(SkyWarsPlayer skyWarsPlayer) {
+        removePlayer(skyWarsPlayer);
+        spectators.add(skyWarsPlayer);
 
-        plugin.getLogger().info("Setting " + player.getName() + " to spectator mode in world " + world.getName());
+        Player player = skyWarsPlayer.getBukkitPlayer();
+
+        if (player == null) {
+            log(Level.SEVERE, "Failed to set " + skyWarsPlayer.getUuid() + " to spectator mode!");
+            return;
+        }
+
+        log(Level.INFO, "Setting " + player.getName() + " to spectator mode!");
 
         player.setHealth(20.0);
         player.setFoodLevel(20);
@@ -160,9 +172,15 @@ public class SkyWarsGame {
         player.getScoreboard().getTeam("gray").addEntry(player.getName());
         player.teleport(pregameSpawn);
 
-        for (Player otherPlayer : players.stream().map(SkyWarsPlayer::getBukkitPlayer).collect(Collectors.toList())) {
+        for (Player otherPlayer : getBukkitPlayers()) {
             otherPlayer.hidePlayer(plugin, player);
             otherPlayer.getScoreboard().getTeam("gray").addEntry(player.getName());
+        }
+
+        for (Player spectator : getBukkitSpectators()) {
+            if (!spectator.equals(player)) {
+                player.hidePlayer(plugin, spectator);
+            }
         }
     }
 
@@ -173,21 +191,39 @@ public class SkyWarsGame {
             return false;
         }
 
-        if (state == GameState.PRE_GAME || state == GameState.STARTING) {
-            island.assignPlayer(player);
-            players.add(player);
-
-            checkPlayerCountForCountdown();
-            plugin.getLogger().info("Added player " + player.getUuid() + " to island " + island.getSpawnLocation() + "!");
-            return true;
+        if (state == GameState.IN_GAME || state == GameState.ENDING) {
+            log(Level.INFO, "Player " + player.getUuid() + " tried to join but the game is already running!");
+            return false;
         }
 
-        return false;
+        players.add(player);
+        island.assignPlayer(player);
+
+        checkPlayerCountForCountdown();
+        log(Level.INFO, "Added player " + player.getUuid() + " to island " + island.getSpawnLocation() + "!");
+
+        return true;
+    }
+
+    public void removePlayer(SkyWarsPlayer player) {
+        if (state == GameState.PRE_GAME) {
+            checkPlayerCountForCountdown();
+        }
+
+        Island island = getIsland(player);
+
+        if (island == null) {
+            return;
+        }
+
+        island.setAssignedPlayer(null);
+        players.remove(player);
+        spectators.remove(player);
     }
 
     public void teleportPlayers() {
         players.forEach(player -> {
-            Island island = islands.stream().filter(i -> i.getAssignedPlayer() != null && i.getAssignedPlayer().equals(player)).findFirst().orElse(null);
+            Island island = getIsland(player);
 
             if (island == null || player.getBukkitPlayer() == null) {
                 return;
@@ -197,23 +233,18 @@ public class SkyWarsGame {
         });
     }
 
-    public void removePlayer(Player player) {
-        SkyWarsPlayer skyWarsPlayer = getPlayer(player);
-        islands.stream().filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(skyWarsPlayer)).findFirst().ifPresent(island -> island.setAssignedPlayer(null));
-        players.remove(skyWarsPlayer);
-        plugin.getLogger().info("Removed player " + player.getName() + " from island!");
-
-        if (state == GameState.PRE_GAME) {
-            checkPlayerCountForCountdown();
-        }
-    }
-
+    @Nullable
     public SkyWarsPlayer getPlayer(Player player) {
         return players.stream().filter(p -> p.getUuid().equals(player.getUniqueId())).findFirst().orElse(null);
     }
 
+    @Nullable
     public SkyWarsPlayer getPlayer(UUID uuid) {
         return players.stream().filter(p -> p.getUuid().equals(uuid)).findFirst().orElse(null);
+    }
+
+    public List<Player> getBukkitPlayers() {
+        return players.stream().map(SkyWarsPlayer::getBukkitPlayer).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     private List<Island> parseIslands(JsonArray islandsArray) {
@@ -237,6 +268,11 @@ public class SkyWarsGame {
         return islands;
     }
 
+    @Nullable
+    private Island getIsland(SkyWarsPlayer skyWarsPlayer) {
+        return islands.stream().filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(skyWarsPlayer)).findFirst().orElse(null);
+    }
+
     private Location parseLocation(JsonObject config, String field) {
         JsonObject locationsObject = config.getAsJsonObject("locations");
         JsonObject desiredLocation = locationsObject.getAsJsonObject(field);
@@ -255,23 +291,13 @@ public class SkyWarsGame {
     }
 
     public void broadcast(String message) {
-        for (SkyWarsPlayer player : players) {
-            if (player.getBukkitPlayer() != null) {
-                player.getBukkitPlayer().sendMessage(message);
-            }
-        }
-
-        for (Player spectator : spectators) {
-            spectator.sendMessage(message);
-        }
+        Stream.concat(players.stream(), spectators.stream())
+            .filter(player -> player.getBukkitPlayer() != null)
+            .forEach(player -> player.getBukkitPlayer().sendMessage(message));
     }
 
     public SkyWarsPlugin getPlugin() {
         return plugin;
-    }
-
-    public Set<SkyWarsPlayer> getPlayers() {
-        return players;
     }
 
     public Location getPregameSpawn() {
@@ -322,7 +348,11 @@ public class SkyWarsGame {
         this.winner = winner;
     }
 
-    public Set<Player> getSpectators() {
-        return spectators;
+    public Set<Player> getBukkitSpectators() {
+        return spectators.stream().map(SkyWarsPlayer::getBukkitPlayer).filter(Objects::nonNull).collect(Collectors.toSet());
+    }
+
+    public void log(Level level, String message) {
+        plugin.getLogger().log(level, "[" + world.getName() + "] " + message);
     }
 }

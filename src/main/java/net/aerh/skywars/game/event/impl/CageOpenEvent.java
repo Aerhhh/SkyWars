@@ -6,6 +6,8 @@ import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.game.event.GameEvent;
 import org.bukkit.Material;
 
+import java.util.logging.Level;
+
 public class CageOpenEvent extends GameEvent {
 
     public CageOpenEvent(SkyWarsGame game) {
@@ -14,13 +16,13 @@ public class CageOpenEvent extends GameEvent {
 
     @Override
     public void execute() {
-        game.getPlugin().getLogger().info("Opening cages for game " + game.getWorld());
+        game.log(Level.INFO, "Opening cages!");
 
         GameSettings settings = game.getSettings();
         settings.setHunger(false);
         settings.setDropItem(false);
 
-        for (Island island : getGame().getIslands()) {
+        for (Island island : game.getIslands()) {
             // TODO handle cages more elegantly
             island.getSpawnLocation().getBlock().getRelative(0, -1, 0).setType(Material.AIR);
         }

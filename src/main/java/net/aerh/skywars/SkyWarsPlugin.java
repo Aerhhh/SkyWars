@@ -15,17 +15,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 public final class SkyWarsPlugin extends JavaPlugin {
 
     private static final int DESIRED_GAME_COUNT = 5;
 
-    private final Map<UUID, SkyWarsGame> games = new HashMap<>();
+    private final Set<SkyWarsGame> games = new HashSet<>();
 
     @Override
     public void onEnable() {
@@ -50,14 +47,14 @@ public final class SkyWarsPlugin extends JavaPlugin {
         });
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
-            if (games.values().stream().allMatch(game -> game.getState() == GameState.ENDING)) {
+            if (games.stream().allMatch(game -> game.getState() == GameState.ENDING)) {
                 getLogger().info("All games have ended, shutting down server!");
                 Bukkit.getServer().shutdown();
             }
         }, 0L, 20L * 5L);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            games.forEach((uuid, game) -> {
+            games.forEach(game -> {
                 try {
                     getLogger().info("Attempting to delete world " + game.getWorld().getName());
                     try (Stream<Path> path = Files.walk(game.getWorld().getWorldFolder().toPath())) {
@@ -77,23 +74,31 @@ public final class SkyWarsPlugin extends JavaPlugin {
         // TODO delete worlds
     }
 
-    public Map<UUID, SkyWarsGame> getGames() {
+    public Set<SkyWarsGame> getGames() {
         return games;
     }
 
     @Nullable
+    public SkyWarsGame getGame(String worldName) {
+        return games.stream()
+            .filter(game -> game.getWorld().getName().equals(worldName))
+            .findFirst()
+            .orElse(null);
+    }
+
+    @Nullable
     public SkyWarsGame findNextFreeGame() {
-        return games.values().stream()
+        return games.stream()
             .filter(game -> game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING)
-            .filter(game -> game.getPlayers().size() < SkyWarsGame.MAX_PLAYER_COUNT)
+            .filter(game -> game.getBukkitPlayers().size() < SkyWarsGame.MAX_PLAYER_COUNT)
             .findFirst()
             .orElse(null);
     }
 
     @Nullable
     public SkyWarsGame findGame(Player player) {
-        return games.values().stream()
-            .filter(game -> game.getSpectators().contains(player) || game.getPlayer(player) != null)
+        return games.stream()
+            .filter(game -> game.getBukkitSpectators().contains(player) || game.getPlayer(player) != null)
             .findFirst()
             .orElse(null);
     }
