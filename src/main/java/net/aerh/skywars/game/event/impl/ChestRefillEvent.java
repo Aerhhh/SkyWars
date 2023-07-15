@@ -6,7 +6,7 @@ import net.aerh.skywars.game.event.GameEvent;
 public class ChestRefillEvent extends GameEvent {
 
     public ChestRefillEvent(SkyWarsGame game) {
-        super(game, 20L * 60 * 5);
+        super(game, 20L * 60L * 5L);
     }
 
     @Override

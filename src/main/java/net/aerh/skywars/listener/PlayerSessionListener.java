@@ -6,6 +6,7 @@ import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -47,6 +48,7 @@ public class PlayerSessionListener implements Listener {
         SkyWarsPlayer skyWarsPlayer = game.getPlayer(player);
 
         plugin.getLogger().info("Player " + player.getName() + " joined game " + game.getWorld().getName());
+        player.setGameMode(GameMode.ADVENTURE);
 
         if (game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING) {
             game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " joined! " + ChatColor.GRAY + "(" + game.getPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT + ")");

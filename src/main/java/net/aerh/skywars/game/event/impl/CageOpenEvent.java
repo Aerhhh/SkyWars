@@ -9,7 +9,7 @@ import org.bukkit.Material;
 public class CageOpenEvent extends GameEvent {
 
     public CageOpenEvent(SkyWarsGame game) {
-        super(game, 0);
+        super(game, 0L);
     }
 
     @Override

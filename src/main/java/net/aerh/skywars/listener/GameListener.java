@@ -25,6 +25,35 @@ public class GameListener implements Listener {
         this.plugin = plugin;
     }
 
+    @EventHandler
+    public void onEntityDamage(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player)) {
+            return;
+        }
+
+        Player player = (Player) event.getEntity();
+        SkyWarsGame game = plugin.findGame(player);
+
+        if (game == null || event.getFinalDamage() < player.getHealth()) {
+            return;
+        }
+
+        if (game.getSpectators().contains(player)) {
+            event.setCancelled(true);
+            return;
+        }
+
+        if (player.getHealth() - event.getFinalDamage() > 0) {
+            return;
+        }
+
+        event.setCancelled(true);
+        player.sendTitle(ChatColor.RED + "YOU DIED!", "", 0, 20 * 5, 0);
+        game.setSpectator(player);
+        game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " died!");
+        // TODO fancy death messages
+    }
+
     @EventHandler (ignoreCancelled = true)
     public void onWeatherChange(WeatherChangeEvent event) {
         event.setCancelled(true);

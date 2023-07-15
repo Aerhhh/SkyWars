@@ -9,17 +9,16 @@ import net.aerh.skywars.game.event.impl.CageOpenEvent;
 import net.aerh.skywars.game.event.impl.ChestRefillEvent;
 import net.aerh.skywars.game.island.Island;
 import net.aerh.skywars.player.SkyWarsPlayer;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SkyWarsGame {
 
@@ -36,6 +35,8 @@ public class SkyWarsGame {
     private BukkitTask countdownTask;
     private final GameSettings settings = new GameSettings();
     private final Set<SkyWarsPlayer> players = new HashSet<>();
+    private final Set<Player> spectators = new HashSet<>();
+    private SkyWarsPlayer winner;
     private final Queue<GameEvent> gameEvents = new LinkedList<>();
 
     public SkyWarsGame(SkyWarsPlugin plugin, World world, JsonObject config) {
@@ -65,7 +66,10 @@ public class SkyWarsGame {
     public void start() {
         state = GameState.IN_GAME;
         broadcast(ChatColor.GREEN + "Game started!");
-        players.forEach(this::setupPlayerNameColors);
+        players.forEach((player) -> {
+            setupPlayerNameColors(player);
+            player.getBukkitPlayer().setGameMode(GameMode.SURVIVAL);
+        });
         gameLoop.start();
     }
 
@@ -73,6 +77,13 @@ public class SkyWarsGame {
         state = GameState.ENDING;
         gameLoop.stop();
         broadcast(ChatColor.RED + "Game ended!");
+
+        if (players.size() == 1) {
+            winner = players.iterator().next();
+            broadcast(ChatColor.GREEN + "Winner: " + winner.getBukkitPlayer().getName());
+        } else {
+            broadcast(ChatColor.GREEN + "No winner!");
+        }
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             for (SkyWarsPlayer player : players) {
@@ -84,10 +95,12 @@ public class SkyWarsGame {
     private void setupPlayerNameColors(SkyWarsPlayer skyWarsPlayer) {
         Scoreboard scoreboard = skyWarsPlayer.getScoreboard();
         Team green = scoreboard.registerNewTeam("green");
+        Team gray = scoreboard.registerNewTeam("gray");
         Team red = scoreboard.registerNewTeam("red");
 
         green.setColor(ChatColor.GREEN);
         red.setColor(ChatColor.RED);
+        gray.setColor(ChatColor.GRAY);
 
         green.addEntry(skyWarsPlayer.getBukkitPlayer().getName());
         players.stream().filter(otherPlayer -> !otherPlayer.equals(skyWarsPlayer))
@@ -126,6 +139,20 @@ public class SkyWarsGame {
                 }
             }
         }.runTaskTimer(plugin, 10L, 20L);
+    }
+
+    public void setSpectator(Player player) {
+        player.setHealth(20.0);
+        player.setFoodLevel(20);
+        player.getInventory().clear();
+        player.getInventory().setArmorContents(null);
+        player.setGameMode(GameMode.SPECTATOR);
+        player.teleport(pregameSpawn);
+
+        for (Player otherPlayer : players.stream().map(SkyWarsPlayer::getBukkitPlayer).collect(Collectors.toList())) {
+            otherPlayer.hidePlayer(plugin, player);
+            otherPlayer.getScoreboard().getTeam("gray").addEntry(player.getName());
+        }
     }
 
     public boolean addPlayer(SkyWarsPlayer player) {
@@ -263,5 +290,18 @@ public class SkyWarsGame {
 
     public Queue<GameEvent> getGameEvents() {
         return gameEvents;
+    }
+
+    @Nullable
+    public SkyWarsPlayer getWinner() {
+        return winner;
+    }
+
+    public void setWinner(@Nullable SkyWarsPlayer winner) {
+        this.winner = winner;
+    }
+
+    public Set<Player> getSpectators() {
+        return spectators;
     }
 }
