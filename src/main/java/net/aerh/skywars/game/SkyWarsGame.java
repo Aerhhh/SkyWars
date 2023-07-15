@@ -146,8 +146,10 @@ public class SkyWarsGame {
     }
 
     public void setSpectator(Player player) {
-        players.remove(players.stream().filter(p -> p.getBukkitPlayer().equals(player)).findFirst().orElse(null));
+        removePlayer(player);
         spectators.add(player);
+
+        plugin.getLogger().info("Setting " + player.getName() + " to spectator mode in world " + world.getName());
 
         player.setHealth(20.0);
         player.setFoodLevel(20);
@@ -162,7 +164,6 @@ public class SkyWarsGame {
             otherPlayer.hidePlayer(plugin, player);
             otherPlayer.getScoreboard().getTeam("gray").addEntry(player.getName());
         }
-
     }
 
     public boolean addPlayer(SkyWarsPlayer player) {

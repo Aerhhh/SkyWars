@@ -6,7 +6,6 @@ import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.listener.GameListener;
 import net.aerh.skywars.listener.PlayerSessionListener;
 import net.aerh.skywars.map.MapLoader;
-import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -94,7 +93,7 @@ public final class SkyWarsPlugin extends JavaPlugin {
     @Nullable
     public SkyWarsGame findGame(Player player) {
         return games.values().stream()
-            .filter(game -> game.getPlayers().stream().map(SkyWarsPlayer::getUuid).anyMatch(uuid -> uuid.equals(player.getUniqueId())))
+            .filter(game -> game.getSpectators().contains(player) || game.getPlayer(player) != null)
             .findFirst()
             .orElse(null);
     }
