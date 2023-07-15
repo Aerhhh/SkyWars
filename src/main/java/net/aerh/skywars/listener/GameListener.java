@@ -1,6 +1,7 @@
 package net.aerh.skywars.listener;
 
 import net.aerh.skywars.SkyWarsPlugin;
+import net.aerh.skywars.game.GameState;
 import net.aerh.skywars.game.SkyWarsGame;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -34,7 +35,7 @@ public class GameListener implements Listener {
         Player player = (Player) event.getEntity();
         SkyWarsGame game = plugin.findGame(player);
 
-        if (game == null || event.getFinalDamage() < player.getHealth()) {
+        if (game == null || game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING) {
             return;
         }
 
