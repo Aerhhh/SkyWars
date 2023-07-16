@@ -58,9 +58,7 @@ public class PlayerSessionListener implements Listener {
         }
 
         if (game.getState() == GameState.STARTING) {
-            game.getIslands().stream().filter(island -> island.getAssignedPlayer().equals(skyWarsPlayer)).findFirst().ifPresent(island -> {
-                player.teleport(island.getSpawnLocation().clone().add(0.5, 0, 0.5));
-            });
+            player.teleport(game.getIsland(player).getSpawnLocation());
         } else {
             player.teleport(game.getPregameSpawn());
         }

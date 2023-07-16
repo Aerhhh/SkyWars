@@ -92,13 +92,21 @@ public class SkyWarsGame {
             broadcast(ChatColor.GREEN + "No winner!");
         }
 
-        players.forEach(this::setSpectator);
+        players.stream().filter(player -> !player.getBukkitPlayer().getUniqueId().equals(winner.getUuid())).forEach(this::setSpectator);
         players.clear();
+        islands.clear();
+        plugin.getGames().remove(this);
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             for (Player spectator : getBukkitSpectators()) {
                 spectator.kickPlayer(ChatColor.RED + "Game ended!");
             }
+
+            if (winner != null && winner.getBukkitPlayer() != null) {
+                winner.getBukkitPlayer().kickPlayer(ChatColor.GREEN + "You won!");
+            }
+
+            spectators.clear();
         }, 20L * 10L);
     }
 
