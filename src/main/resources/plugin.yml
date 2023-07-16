@@ -9,3 +9,6 @@ commands:
     aliases:
       - sg
       - startgame
+  games:
+    aliases:
+      - listgames

@@ -1,5 +1,6 @@
 package net.aerh.skywars;
 
+import net.aerh.skywars.command.GamesCommand;
 import net.aerh.skywars.command.StartGameCommand;
 import net.aerh.skywars.game.GameState;
 import net.aerh.skywars.game.SkyWarsGame;
@@ -30,6 +31,7 @@ public final class SkyWarsPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new GameListener(this), this);
 
         getCommand("start").setExecutor(new StartGameCommand(this));
+        getCommand("games").setExecutor(new GamesCommand(this));
 
         Bukkit.getScheduler().runTask(this, () -> {
             MapLoader mapLoader = new MapLoader(this, getDataFolder().getAbsolutePath() + File.separator + "/map-templates");
@@ -47,7 +49,7 @@ public final class SkyWarsPlugin extends JavaPlugin {
         });
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
-            if (games.stream().allMatch(game -> game.getState() == GameState.ENDING)) {
+            if (games.isEmpty()) {
                 getLogger().info("All games have ended, shutting down server!");
                 Bukkit.getServer().shutdown();
             }
@@ -71,7 +73,6 @@ public final class SkyWarsPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // TODO delete worlds
     }
 
     public Set<SkyWarsGame> getGames() {
