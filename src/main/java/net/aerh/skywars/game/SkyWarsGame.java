@@ -95,7 +95,6 @@ public class SkyWarsGame {
         players.stream().filter(player -> !player.getBukkitPlayer().getUniqueId().equals(winner.getUuid())).forEach(this::setSpectator);
         players.clear();
         islands.clear();
-        plugin.getGames().remove(this);
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             for (Player spectator : getBukkitSpectators()) {
@@ -107,6 +106,7 @@ public class SkyWarsGame {
             }
 
             spectators.clear();
+            plugin.getGames().remove(this);
         }, 20L * 10L);
     }
 
@@ -121,7 +121,7 @@ public class SkyWarsGame {
         gray.setColor(ChatColor.GRAY);
 
         green.addEntry(player.getName());
-        getBukkitPlayers().stream().filter(otherPlayer -> !otherPlayer.equals(player)).forEach(otherPlayer -> red.addEntry(otherPlayer.getName()));
+        getBukkitPlayers().stream().filter(otherPlayer -> !otherPlayer.getUniqueId().equals(player.getUniqueId())).forEach(otherPlayer -> red.addEntry(otherPlayer.getName()));
     }
 
     private void checkPlayerCountForCountdown() {
@@ -180,15 +180,13 @@ public class SkyWarsGame {
         player.getScoreboard().getTeam("gray").addEntry(player.getName());
         player.teleport(pregameSpawn);
 
+        // TODO fix this not hiding some players
         for (Player otherPlayer : getBukkitPlayers()) {
             otherPlayer.hidePlayer(plugin, player);
-            otherPlayer.getScoreboard().getTeam("gray").addEntry(player.getName());
-        }
-
-        for (Player spectator : getBukkitSpectators()) {
-            if (!spectator.equals(player)) {
-                player.hidePlayer(plugin, spectator);
+            if (getSpectator(otherPlayer) != null) {
+                player.hidePlayer(plugin, otherPlayer);
             }
+            otherPlayer.getScoreboard().getTeam("gray").addEntry(player.getName());
         }
     }
 

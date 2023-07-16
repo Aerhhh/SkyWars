@@ -64,6 +64,7 @@ public class PlayerSessionListener implements Listener {
         }
 
         skyWarsPlayer.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+        // todo fix issue with hiding and showing players in other games
         Bukkit.getOnlinePlayers().forEach(p -> p.hidePlayer(plugin, player));
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
