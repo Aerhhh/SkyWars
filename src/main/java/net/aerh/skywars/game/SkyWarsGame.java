@@ -180,17 +180,12 @@ public class SkyWarsGame {
         player.getScoreboard().getTeam("gray").addEntry(player.getName());
         player.teleport(pregameSpawn);
 
-        // TODO fix this not hiding some players
-        for (Player otherPlayer : getBukkitPlayers()) {
-            otherPlayer.hidePlayer(plugin, player);
-            if (getSpectator(otherPlayer) != null) {
-                player.hidePlayer(plugin, otherPlayer);
-            }
-            otherPlayer.getScoreboard().getTeam("gray").addEntry(player.getName());
-        }
+        // TODO fix players not being hidden correctly
     }
 
     public boolean addPlayer(SkyWarsPlayer player) {
+        log(Level.INFO, "Adding player " + player.getUuid());
+
         Island island = islands.stream().filter(i -> i.getAssignedPlayer() == null).findFirst().orElse(null);
 
         if (island == null) {

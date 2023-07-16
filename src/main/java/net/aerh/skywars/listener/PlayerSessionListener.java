@@ -58,7 +58,7 @@ public class PlayerSessionListener implements Listener {
         }
 
         if (game.getState() == GameState.STARTING) {
-            player.teleport(game.getIsland(player).getSpawnLocation());
+            player.teleport(game.getIsland(player).getSpawnLocation().clone().add(0.5, 0, 0.5));
         } else {
             player.teleport(game.getPregameSpawn());
         }
