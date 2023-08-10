@@ -121,6 +121,10 @@ public class GameListener implements Listener {
         if (!game.getSettings().isBlockBreak()) {
             event.setCancelled(true);
         }
+
+        if (game.isRefillableChest(event.getBlock().getLocation())) {
+            game.removeRefillableChest(event.getBlock().getLocation());
+        }
     }
 
     @EventHandler(ignoreCancelled = true)

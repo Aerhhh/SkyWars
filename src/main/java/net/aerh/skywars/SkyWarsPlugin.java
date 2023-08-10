@@ -2,6 +2,7 @@ package net.aerh.skywars;
 
 import net.aerh.skywars.command.GamesCommand;
 import net.aerh.skywars.command.StartGameCommand;
+import net.aerh.skywars.command.TestChestCommand;
 import net.aerh.skywars.game.GameState;
 import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.listener.GameListener;
@@ -32,9 +33,10 @@ public final class SkyWarsPlugin extends JavaPlugin {
 
         getCommand("start").setExecutor(new StartGameCommand(this));
         getCommand("games").setExecutor(new GamesCommand(this));
+        getCommand("testchest").setExecutor(new TestChestCommand(this));
 
         Bukkit.getScheduler().runTask(this, () -> {
-            MapLoader mapLoader = new MapLoader(this, getDataFolder().getAbsolutePath() + File.separator + "/map-templates");
+            MapLoader mapLoader = new MapLoader(this, getDataFolder().getAbsolutePath() + File.separator + "map-templates");
             try {
                 for (int i = 0; i < DESIRED_GAME_COUNT; i++) {
                     SkyWarsGame game = mapLoader.loadRandomMap("game-" + (i + 1));

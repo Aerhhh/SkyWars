@@ -12,3 +12,4 @@ commands:
   games:
     aliases:
       - listgames
+  testchest:

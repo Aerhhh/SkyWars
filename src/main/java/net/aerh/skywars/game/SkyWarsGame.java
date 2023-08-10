@@ -4,11 +4,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.aerh.skywars.SkyWarsPlugin;
+import net.aerh.skywars.game.chest.RefillableChest;
 import net.aerh.skywars.game.event.GameEvent;
 import net.aerh.skywars.game.event.impl.CageOpenEvent;
 import net.aerh.skywars.game.event.impl.ChestRefillEvent;
 import net.aerh.skywars.game.island.Island;
 import net.aerh.skywars.player.SkyWarsPlayer;
+import net.aerh.skywars.util.Utils;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -38,6 +40,7 @@ public class SkyWarsGame {
     private final Queue<GameEvent> gameEvents;
     private GameState state = GameState.PRE_GAME;
     private List<Island> islands;
+    private final Set<RefillableChest> refillableChests;
     private BukkitTask countdownTask;
     private SkyWarsPlayer winner;
 
@@ -47,6 +50,7 @@ public class SkyWarsGame {
         this.players = new HashSet<>();
         this.spectators = new HashSet<>();
         this.gameEvents = new LinkedList<>();
+        this.refillableChests = new HashSet<>();
 
         gameEvents.add(new CageOpenEvent(this));
         gameEvents.add(new ChestRefillEvent(this));
@@ -88,11 +92,12 @@ public class SkyWarsGame {
         if (players.size() == 1) {
             winner = players.iterator().next();
             broadcast(ChatColor.GREEN + "Winner: " + winner.getBukkitPlayer().getName());
+            players.stream().filter(skyWarsPlayer -> !skyWarsPlayer.getUuid().equals(winner.getUuid())).forEach(this::setSpectator);
         } else {
             broadcast(ChatColor.GREEN + "No winner!");
+            players.forEach(this::setSpectator);
         }
 
-        players.stream().filter(player -> !player.getBukkitPlayer().getUniqueId().equals(winner.getUuid())).forEach(this::setSpectator);
         players.clear();
         islands.clear();
 
@@ -201,7 +206,7 @@ public class SkyWarsGame {
         island.assignPlayer(player);
 
         checkPlayerCountForCountdown();
-        log(Level.INFO, "Added player " + player.getUuid() + " to island " + island.getSpawnLocation() + "!");
+        log(Level.INFO, "Added player " + player.getUuid() + " to island " + Utils.parseLocationToString(island.getSpawnLocation()) + "!");
 
         return true;
     }
@@ -344,6 +349,12 @@ public class SkyWarsGame {
             .forEach(player -> player.getBukkitPlayer().sendMessage(message));
     }
 
+    public void broadcastTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
+        Stream.concat(players.stream(), spectators.stream())
+            .filter(player -> player.getBukkitPlayer() != null)
+            .forEach(player -> player.getBukkitPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut));
+    }
+
     public SkyWarsPlugin getPlugin() {
         return plugin;
     }
@@ -362,6 +373,18 @@ public class SkyWarsGame {
 
     public List<Island> getIslands() {
         return islands;
+    }
+
+    public Set<RefillableChest> getRefillableChests() {
+        return refillableChests;
+    }
+
+    public boolean isRefillableChest(Location location) {
+        return refillableChests.stream().anyMatch(refillableChest -> Utils.locationsMatch(refillableChest.getLocation(), location));
+    }
+
+    public void removeRefillableChest(Location location) {
+        refillableChests.removeIf(refillableChest -> refillableChest.getLocation().equals(location));
     }
 
     public GameState getState() {
