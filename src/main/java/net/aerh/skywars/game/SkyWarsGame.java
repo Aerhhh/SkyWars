@@ -384,7 +384,7 @@ public class SkyWarsGame {
     }
 
     public void removeRefillableChest(Location location) {
-        refillableChests.removeIf(refillableChest -> refillableChest.getLocation().equals(location));
+        refillableChests.removeIf(refillableChest -> Utils.locationsMatch(refillableChest.getLocation(), location));
     }
 
     public GameState getState() {

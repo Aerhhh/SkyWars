@@ -7,6 +7,7 @@ import net.aerh.skywars.game.GameState;
 import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -122,8 +123,10 @@ public class GameListener implements Listener {
             event.setCancelled(true);
         }
 
-        if (game.isRefillableChest(event.getBlock().getLocation())) {
-            game.removeRefillableChest(event.getBlock().getLocation());
+        Location location = event.getBlock().getLocation();
+
+        if (game.isRefillableChest(location)) {
+            game.removeRefillableChest(location);
         }
     }
 
