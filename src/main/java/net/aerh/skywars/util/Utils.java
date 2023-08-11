@@ -8,6 +8,10 @@ public class Utils {
 
     public static final DecimalFormat TWO_DECIMAL_PLACES_FORMAT = new DecimalFormat("#.##");
 
+    private Utils() {
+        throw new UnsupportedOperationException("Cannot instantiate utility class.");
+    }
+
     public static String parseLocationToString(Location location) {
         String output = "";
 
