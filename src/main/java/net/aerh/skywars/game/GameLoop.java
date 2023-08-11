@@ -13,6 +13,7 @@ public class GameLoop {
     private final SkyWarsGame game;
     private final Queue<GameEvent> gameEvents;
     private BukkitTask currentTask;
+    private BukkitTask endTask;
     private int countdownTilNextEvent;
 
     public GameLoop(SkyWarsGame game, Queue<GameEvent> gameEvents) {
@@ -31,9 +32,13 @@ public class GameLoop {
         }
     }
 
-    private void next() {
+    public void next() {
         if (currentTask != null) {
             currentTask.cancel();
+        }
+
+        if (endTask != null) {
+            endTask.cancel();
         }
 
         if (gameEvents.isEmpty()) {
@@ -51,7 +56,7 @@ public class GameLoop {
             return;
         }
 
-        new BukkitRunnable() {
+        endTask = new BukkitRunnable() {
             @Override
             public void run() {
                 if (game.getBukkitPlayers().size() <= 1) {

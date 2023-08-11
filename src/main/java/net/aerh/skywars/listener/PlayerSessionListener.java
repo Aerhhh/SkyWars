@@ -7,6 +7,7 @@ import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -40,9 +41,14 @@ public class PlayerSessionListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        event.setJoinMessage(null);
-
         Player player = event.getPlayer();
+
+        event.setJoinMessage(null);
+        player.getInventory().clear();
+        player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20.0D);
+        player.setHealth(20.0D);
+        player.setSaturation(20.0F);
+
         SkyWarsGame game = plugin.findGame(player);
 
         if (game == null) {

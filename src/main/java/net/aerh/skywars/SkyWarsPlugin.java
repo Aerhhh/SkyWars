@@ -1,6 +1,7 @@
 package net.aerh.skywars;
 
 import net.aerh.skywars.command.GamesCommand;
+import net.aerh.skywars.command.SkipEventCommand;
 import net.aerh.skywars.command.StartGameCommand;
 import net.aerh.skywars.command.TestChestCommand;
 import net.aerh.skywars.game.GameState;
@@ -34,6 +35,7 @@ public final class SkyWarsPlugin extends JavaPlugin {
         getCommand("start").setExecutor(new StartGameCommand(this));
         getCommand("games").setExecutor(new GamesCommand(this));
         getCommand("testchest").setExecutor(new TestChestCommand(this));
+        getCommand("skipevent").setExecutor(new SkipEventCommand(this));
 
         Bukkit.getScheduler().runTask(this, () -> {
             MapLoader mapLoader = new MapLoader(this, getDataFolder().getAbsolutePath() + File.separator + "map-templates");

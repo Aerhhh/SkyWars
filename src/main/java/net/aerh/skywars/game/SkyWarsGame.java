@@ -92,10 +92,16 @@ public class SkyWarsGame {
         if (players.size() == 1) {
             winner = players.iterator().next();
             broadcast(ChatColor.GREEN + "Winner: " + winner.getBukkitPlayer().getName());
-            players.stream().filter(skyWarsPlayer -> !skyWarsPlayer.getUuid().equals(winner.getUuid())).forEach(this::setSpectator);
         } else {
             broadcast(ChatColor.GREEN + "No winner!");
-            players.forEach(this::setSpectator);
+        }
+
+        for (SkyWarsPlayer skyWarsPlayer : players) {
+            if (winner != null && winner.getUuid().equals(skyWarsPlayer.getUuid())) {
+                continue;
+            }
+
+            setSpectator(skyWarsPlayer);
         }
 
         players.clear();
@@ -164,7 +170,6 @@ public class SkyWarsGame {
     }
 
     public void setSpectator(SkyWarsPlayer skyWarsPlayer) {
-        removePlayer(skyWarsPlayer);
         spectators.add(skyWarsPlayer);
 
         Player player = skyWarsPlayer.getBukkitPlayer();
@@ -176,7 +181,7 @@ public class SkyWarsGame {
 
         log(Level.INFO, "Setting " + player.getName() + " to spectator mode!");
 
-        player.setHealth(20.0);
+        player.setHealth(20.0D);
         player.setFoodLevel(20);
         player.setAllowFlight(true);
         player.setFlying(true);

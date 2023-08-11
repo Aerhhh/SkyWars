@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.SkyWarsGame;
 import org.bukkit.Bukkit;
+import org.bukkit.GameRule;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 
@@ -58,6 +59,9 @@ public class MapLoader {
 
         plugin.getLogger().info("Creating world " + worldName + "...");
         World world = Bukkit.createWorld(new WorldCreator(worldName));
+
+        world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
+        world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
 
         return new SkyWarsGame(plugin, world, config);
     }
