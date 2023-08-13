@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.aerh.skywars.SkyWarsPlugin;
+import net.aerh.skywars.game.chest.ChestType;
 import net.aerh.skywars.game.chest.RefillableChest;
 import net.aerh.skywars.game.event.GameEvent;
 import net.aerh.skywars.game.event.impl.CageOpenEvent;
@@ -11,6 +12,7 @@ import net.aerh.skywars.game.event.impl.ChestRefillEvent;
 import net.aerh.skywars.game.island.Island;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import net.aerh.skywars.util.Utils;
+import net.aerh.skywars.util.WorldSignParser;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -51,6 +53,7 @@ public class SkyWarsGame {
         this.spectators = new HashSet<>();
         this.gameEvents = new LinkedList<>();
         this.refillableChests = new HashSet<>();
+        this.pregameSpawn = parseLocation(config, "pregame");
 
         gameEvents.add(new CageOpenEvent(this));
         gameEvents.add(new ChestRefillEvent(this));
@@ -60,6 +63,8 @@ public class SkyWarsGame {
         //gameEvents.add(new DragonSpawnEvent(this, 20 * 60 * 5));  // 5 minutes delay
         //gameEvents.add(new GameEndEvent(this, 20 * 60 * 5));  // 5 minutes delay
 
+        this.gameLoop = new GameLoop(this, gameEvents);
+
         try {
             this.islands = parseIslands(config.get("islands").getAsJsonArray());
         } catch (IllegalStateException exception) {
@@ -68,8 +73,16 @@ public class SkyWarsGame {
             Bukkit.getServer().shutdown();
         }
 
-        this.pregameSpawn = parseLocation(config, "pregame");
-        this.gameLoop = new GameLoop(this, gameEvents);
+        WorldSignParser signParser = new WorldSignParser(plugin, world, true);
+
+        signParser.getParsedSigns("chest").forEach(sign -> {
+            Location location = sign.getLocation();
+            ChestType chestType = ChestType.valueOf(sign.getOptions().get(0).toUpperCase());
+            RefillableChest refillableChest = new RefillableChest(location, chestType);
+            refillableChests.add(refillableChest);
+            refillableChest.spawn(true);
+            log(Level.INFO, "Registered refillable " + chestType + " chest at " + location);
+        });
     }
 
     public void start() {
@@ -217,6 +230,8 @@ public class SkyWarsGame {
     }
 
     public void removePlayer(SkyWarsPlayer player) {
+        players.remove(player);
+
         if (state == GameState.PRE_GAME) {
             checkPlayerCountForCountdown();
         }
@@ -228,8 +243,6 @@ public class SkyWarsGame {
         }
 
         island.setAssignedPlayer(null);
-        players.remove(player);
-        spectators.remove(player);
     }
 
     public void removePlayerFromPlayersOrSpectators(Player player) {
@@ -349,8 +362,11 @@ public class SkyWarsGame {
     }
 
     public void broadcast(String message) {
-        Stream.concat(players.stream(), spectators.stream())
-            .filter(player -> player.getBukkitPlayer() != null)
+        Stream<SkyWarsPlayer> allPlayers = Stream.concat(players.stream(), spectators.stream());
+
+        log(Level.INFO, "Players: " + allPlayers.count());
+
+        allPlayers.filter(player -> player.getBukkitPlayer() != null)
             .forEach(player -> player.getBukkitPlayer().sendMessage(message));
     }
 

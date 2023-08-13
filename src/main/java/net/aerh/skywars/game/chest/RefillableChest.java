@@ -24,8 +24,12 @@ public class RefillableChest {
         this.loot = ChestLootTables.getLootForChestType(type);
     }
 
-    public void spawn() {
+    public void spawn(boolean refill) {
         location.getBlock().setType(Material.CHEST);
+
+        if (refill) {
+            refillChest();
+        }
     }
 
     public void refillChest() {
