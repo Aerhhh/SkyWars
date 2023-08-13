@@ -66,8 +66,8 @@ public class GameListener implements Listener {
         player.sendTitle(ChatColor.RED + ChatColor.BOLD.toString() + "YOU DIED!", ChatColor.GRAY + "Better luck next time!", 0, 20 * 5, 20);
 
         SkyWarsPlayer skyWarsPlayer = game.getPlayer(player);
-        game.setSpectator(skyWarsPlayer);
         game.removePlayer(skyWarsPlayer);
+        game.setSpectator(skyWarsPlayer);
 
         // TODO fancy death messages
         UUID uuid = lastDamager.getIfPresent(player.getUniqueId());
