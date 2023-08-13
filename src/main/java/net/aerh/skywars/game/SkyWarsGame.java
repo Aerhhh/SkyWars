@@ -108,12 +108,15 @@ public class SkyWarsGame {
             winner = players.iterator().next();
         }
 
-        broadcast(Utils.SEPARATOR + "\n");
+        broadcast(Utils.SEPARATOR);
+        broadcast("\n");
 
         if (winner != null) {
-            broadcast("\n" + CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "Winner: " + ChatColor.GOLD + winner.getBukkitPlayer().getName()));
+            broadcast("\n");
+            broadcast(CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "Winner: " + ChatColor.GOLD + winner.getBukkitPlayer().getName()));
         } else {
-            broadcast("\n" + CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "Nobody won the game!"));
+            broadcast("\n");
+            broadcast(CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "Nobody won the game!"));
         }
 
         broadcast("\n");
