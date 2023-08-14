@@ -41,7 +41,7 @@ public class GameLoop {
             endTask.cancel();
         }
 
-        if (gameEvents.isEmpty()) {
+        if (gameEvents.isEmpty() && game.getState() != GameState.ENDING) {
             game.log(Level.INFO, "No more events left!");
             game.end();
             return;
@@ -82,14 +82,14 @@ public class GameLoop {
         }.runTaskLater(game.getPlugin(), gameEvent.getDelay());
     }
 
-    private void executeEvent(GameEvent gameEvent) {
+    public void executeEvent(GameEvent gameEvent) {
         countdownTilNextEvent = 0;
         game.log(Level.INFO, "Executing event: " + gameEvent.getClass().getSimpleName());
         gameEvent.execute();
         next();
     }
 
-    public int getTimeUntilNextEvent() {
-        return countdownTilNextEvent;
+    public Queue<GameEvent> getGameEvents() {
+        return gameEvents;
     }
 }

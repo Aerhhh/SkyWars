@@ -9,6 +9,8 @@ import net.aerh.skywars.game.chest.RefillableChest;
 import net.aerh.skywars.game.event.GameEvent;
 import net.aerh.skywars.game.event.impl.CageOpenEvent;
 import net.aerh.skywars.game.event.impl.ChestRefillEvent;
+import net.aerh.skywars.game.event.impl.GameEndEvent;
+import net.aerh.skywars.game.event.impl.DragonSpawnEvent;
 import net.aerh.skywars.game.island.Island;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import net.aerh.skywars.util.CenteredMessage;
@@ -59,10 +61,8 @@ public class SkyWarsGame {
         gameEvents.add(new CageOpenEvent(this));
         gameEvents.add(new ChestRefillEvent(this));
         gameEvents.add(new ChestRefillEvent(this));
-        //gameEvents.add(new ChestRefillEvent(this, 20 * 60 * 5));  // 5 minutes delay
-        //gameEvents.add(new ChestRefillEvent(this, 20 * 60 * 5));  // 5 minutes delay
-        //gameEvents.add(new DragonSpawnEvent(this, 20 * 60 * 5));  // 5 minutes delay
-        //gameEvents.add(new GameEndEvent(this, 20 * 60 * 5));  // 5 minutes delay
+        gameEvents.add(new DragonSpawnEvent(this));
+        gameEvents.add(new GameEndEvent(this));
 
         this.gameLoop = new GameLoop(this, gameEvents);
 
