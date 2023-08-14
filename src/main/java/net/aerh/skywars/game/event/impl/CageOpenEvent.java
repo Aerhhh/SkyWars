@@ -4,6 +4,7 @@ import net.aerh.skywars.game.GameSettings;
 import net.aerh.skywars.game.island.Island;
 import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.game.event.GameEvent;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
 import java.util.logging.Level;
@@ -32,5 +33,7 @@ public class CageOpenEvent extends GameEvent {
             settings.setHunger(true);
             settings.setDropItem(true);
         }, 20L);
+
+        game.broadcast(ChatColor.YELLOW + "Cages opened! " + ChatColor.RED + "FIGHT!");
     }
 }

@@ -90,6 +90,16 @@ public class SkyWarsGame {
         state = GameState.IN_GAME;
         broadcast(ChatColor.GREEN + "Game started!");
 
+        broadcast(Utils.SEPARATOR);
+        broadcast(CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "SkyWars"));
+        broadcast("\n");
+        broadcast(CenteredMessage.generate(ChatColor.YELLOW + "Gather resources and equipment on your"));
+        broadcast(CenteredMessage.generate(ChatColor.YELLOW + "island in order to eliminate every other player."));
+        broadcast(CenteredMessage.generate(ChatColor.YELLOW + "Go to the center island for special chests"));
+        broadcast(CenteredMessage.generate(ChatColor.YELLOW + "with special items!"));
+        broadcast("\n");
+        broadcast(Utils.SEPARATOR);
+
         getBukkitPlayers().forEach(player -> {
             setupPlayerNameColors(player);
             player.setGameMode(GameMode.SURVIVAL);
