@@ -1,9 +1,9 @@
 package net.aerh.skywars.game.event.impl;
 
 import net.aerh.skywars.game.GameSettings;
-import net.aerh.skywars.game.island.Island;
 import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.game.event.GameEvent;
+import net.aerh.skywars.game.island.Island;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
@@ -24,8 +24,13 @@ public class CageOpenEvent extends GameEvent {
         settings.setDropItem(false);
 
         for (Island island : game.getIslands()) {
-            // TODO handle cages more elegantly
-            island.getSpawnLocation().getBlock().getRelative(0, -1, 0).setType(Material.AIR);
+            for (int x = -2; x <= 2; x++) {
+                for (int y = -1; y <= 3; y++) {
+                    for (int z = -2; z <= 2; z++) {
+                        island.getSpawnLocation().clone().add(x, y, z).getBlock().setType(Material.AIR);
+                    }
+                }
+            }
         }
 
         game.getPlugin().getServer().getScheduler().runTaskLater(game.getPlugin(), () -> {
