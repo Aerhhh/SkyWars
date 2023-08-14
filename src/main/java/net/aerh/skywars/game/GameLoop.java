@@ -41,13 +41,14 @@ public class GameLoop {
             endTask.cancel();
         }
 
-        if (gameEvents.isEmpty() && game.getState() != GameState.ENDING) {
+        GameEvent gameEvent = gameEvents.poll();
+
+        if (gameEvent == null) {
             game.log(Level.INFO, "No more events left!");
             game.end();
             return;
         }
 
-        GameEvent gameEvent = gameEvents.poll();
         game.log(Level.INFO, "Next event: " + gameEvent.getClass().getSimpleName() + " in " + gameEvent.getDelay() + " ticks (" + gameEvents.size() + " events left)");
         countdownTilNextEvent = (int) gameEvent.getDelay() / 20;
 
