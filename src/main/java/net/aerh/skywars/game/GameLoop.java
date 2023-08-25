@@ -30,6 +30,11 @@ public class GameLoop {
             currentTask.cancel();
             currentTask = null;
         }
+
+        if (endTask != null) {
+            endTask.cancel();
+            endTask = null;
+        }
     }
 
     public void next() {

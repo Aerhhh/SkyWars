@@ -74,6 +74,7 @@ public class SkyWarsGame {
             Bukkit.getServer().shutdown();
         }
 
+        // I made this because the map already has chest signs so it'll be quicker to just use them
         WorldSignParser signParser = new WorldSignParser(plugin, world, true);
 
         signParser.getParsedSigns("chest").forEach(sign -> {
@@ -238,6 +239,9 @@ public class SkyWarsGame {
         player.teleport(pregameSpawn);
 
         // TODO fix players not being hidden correctly
+        Stream.concat(getBukkitPlayers().stream(), getBukkitSpectators().stream()).forEach(otherPlayer -> {
+            otherPlayer.hidePlayer(plugin, player);
+        });
     }
 
     public boolean addPlayer(SkyWarsPlayer player) {

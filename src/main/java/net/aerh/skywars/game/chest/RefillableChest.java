@@ -17,6 +17,7 @@ public class RefillableChest {
     private final Location location;
     private final List<ItemStack> loot;
     private final ChestType type;
+    private int timesRefilled;
 
     public RefillableChest(Location location, ChestType type) {
         this.location = location;
@@ -37,20 +38,23 @@ public class RefillableChest {
             throw new IllegalStateException("Cannot refill chest at " + Utils.parseLocationToString(location) + " with empty loot pool!");
         }
 
+        Collections.shuffle(loot);
+
         BlockState blockState = location.getBlock().getState();
         if (!(blockState instanceof Chest)) {
             throw new IllegalStateException("Block at " + Utils.parseLocationToString(location) + " is not a chest!");
         }
 
-        Collections.shuffle(loot);
+        Inventory chestInventory = ((Chest) blockState).getBlockInventory();
 
         for (int i = 0; i < type.getMaxRefillItems(); i++) {
-            Inventory chestInventory = ((Chest) blockState).getBlockInventory();
             int randomSlot = ThreadLocalRandom.current().nextInt(((Chest) blockState).getBlockInventory().getSize());
             ItemStack randomItem = loot.get(ThreadLocalRandom.current().nextInt(loot.size()));
 
             chestInventory.setItem(randomSlot, randomItem);
         }
+
+        timesRefilled++;
     }
 
     public Location getLocation() {
@@ -63,5 +67,9 @@ public class RefillableChest {
 
     public ChestType getType() {
         return type;
+    }
+
+    public int getTimesRefilled() {
+        return timesRefilled;
     }
 }

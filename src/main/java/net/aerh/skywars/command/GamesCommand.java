@@ -19,6 +19,7 @@ public class GamesCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         sender.sendMessage(ChatColor.GOLD + "Games (" + plugin.getGames().size() + "):");
+
         plugin.getGames().forEach(skyWarsGame -> {
             sender.sendMessage(ChatColor.RESET + skyWarsGame.getWorld().getName() + ChatColor.GRAY + " - " + skyWarsGame.getState());
             sender.sendMessage(ChatColor.YELLOW + "  Players: " + ChatColor.RESET + skyWarsGame.getBukkitPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT);
@@ -28,6 +29,7 @@ public class GamesCommand implements CommandExecutor {
                 sender.sendMessage(ChatColor.YELLOW + "  Winner: " + ChatColor.RESET + skyWarsGame.getWinner().getUuid());
             }
         });
+
         return false;
     }
 }
