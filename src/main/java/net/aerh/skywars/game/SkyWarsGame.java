@@ -238,7 +238,6 @@ public class SkyWarsGame {
         player.getScoreboard().getTeam("gray").addEntry(player.getName());
         player.teleport(pregameSpawn);
 
-        // TODO fix players not being hidden correctly
         Stream.concat(getBukkitPlayers().stream(), getBukkitSpectators().stream()).forEach(otherPlayer -> {
             otherPlayer.hidePlayer(plugin, player);
         });
