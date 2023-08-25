@@ -20,6 +20,8 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.vehicle.VehicleDamageEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.world.TimeSkipEvent;
 
@@ -92,6 +94,11 @@ public class GameListener implements Listener {
         SkyWarsGame game = plugin.findGame(player);
 
         if (game == null) {
+            return;
+        }
+
+        if (game.getBukkitSpectators().contains(damager)) {
+            event.setCancelled(true);
             return;
         }
 
@@ -188,6 +195,11 @@ public class GameListener implements Listener {
             return;
         }
 
+        if (game.getBukkitSpectators().contains(player)) {
+            event.setCancelled(true);
+            return;
+        }
+
         if (!game.getSettings().isHunger()) {
             event.setCancelled(true);
         }
@@ -244,7 +256,48 @@ public class GameListener implements Listener {
             return;
         }
 
+        if (game.getBukkitSpectators().contains(player)) {
+            event.setCancelled(true);
+            return;
+        }
+
         if (!game.getSettings().isInteract()) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onVehicleEnter(VehicleEnterEvent event) {
+        if (!(event.getEntered() instanceof Player)) {
+            return;
+        }
+
+        Player player = (Player) event.getEntered();
+        SkyWarsGame game = plugin.findGame(player);
+
+        if (game == null) {
+            return;
+        }
+
+        if (game.getBukkitSpectators().contains(player)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onVehicleExit(VehicleDamageEvent event) {
+        if (!(event.getAttacker() instanceof Player)) {
+            return;
+        }
+
+        Player player = (Player) event.getAttacker();
+        SkyWarsGame game = plugin.findGame(player);
+
+        if (game == null) {
+            return;
+        }
+
+        if (game.getBukkitSpectators().contains(player)) {
             event.setCancelled(true);
         }
     }
