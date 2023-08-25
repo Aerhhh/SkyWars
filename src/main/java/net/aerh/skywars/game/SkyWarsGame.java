@@ -82,7 +82,7 @@ public class SkyWarsGame {
             ChestType chestType = ChestType.valueOf(sign.getOptions().get(0).toUpperCase());
             RefillableChest refillableChest = new RefillableChest(location, chestType);
             refillableChests.add(refillableChest);
-            refillableChest.spawn(true);
+            refillableChest.spawn(true, sign.getRotation());
             log(Level.INFO, "Registered refillable " + chestType + " chest at " + location);
         });
     }

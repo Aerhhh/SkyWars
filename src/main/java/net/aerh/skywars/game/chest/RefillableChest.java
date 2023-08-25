@@ -3,8 +3,10 @@ package net.aerh.skywars.game.chest;
 import net.aerh.skywars.util.Utils;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
+import org.bukkit.block.data.Directional;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -25,8 +27,13 @@ public class RefillableChest {
         this.loot = ChestLootTables.getLootForChestType(type);
     }
 
-    public void spawn(boolean refill) {
+    public void spawn(boolean refill, BlockFace rotation) {
         location.getBlock().setType(Material.CHEST);
+        BlockState blockState = location.getBlock().getState();
+
+        Directional directional = (Directional) blockState.getBlockData();
+        directional.setFacing(rotation);
+        location.getBlock().setBlockData(directional);
 
         if (refill) {
             refillChest();

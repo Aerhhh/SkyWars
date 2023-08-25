@@ -44,7 +44,7 @@ public class TestChestCommand implements CommandExecutor {
         ChestType chestType = ChestType.valueOfOrElse(args[0].toUpperCase(), ChestType.ISLAND);
         RefillableChest refillableChest = new RefillableChest(player.getLocation(), chestType);
         skyWarsGame.getRefillableChests().add(refillableChest);
-        refillableChest.spawn(true);
+        refillableChest.spawn(true, player.getFacing());
         //Bukkit.getScheduler().runTaskLater(plugin, refillableChest::refillChest, 1L);
 
         player.sendMessage(ChatColor.GREEN + "Spawned " + refillableChest.getType() + " chest at " + Utils.parseLocationToString(refillableChest.getLocation()) + "!");
