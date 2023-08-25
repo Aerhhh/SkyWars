@@ -56,8 +56,12 @@ public class RefillableChest {
 
         for (int i = 0; i < type.getMaxRefillItems(); i++) {
             int randomSlot = ThreadLocalRandom.current().nextInt(((Chest) blockState).getBlockInventory().getSize());
-            ItemStack randomItem = loot.get(ThreadLocalRandom.current().nextInt(loot.size()));
 
+            while (chestInventory.getItem(randomSlot) != null) {
+                randomSlot = ThreadLocalRandom.current().nextInt(((Chest) blockState).getBlockInventory().getSize());
+            }
+
+            ItemStack randomItem = loot.get(ThreadLocalRandom.current().nextInt(loot.size()));
             chestInventory.setItem(randomSlot, randomItem);
         }
 
