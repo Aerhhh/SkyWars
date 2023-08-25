@@ -64,7 +64,9 @@ public final class SkyWarsPlugin extends JavaPlugin {
                 try {
                     getLogger().info("Attempting to delete world " + game.getWorld().getName());
                     try (Stream<Path> path = Files.walk(game.getWorld().getWorldFolder().toPath())) {
-                        path.map(Path::toFile).forEach(File::delete);
+                        path.sorted(Comparator.reverseOrder())
+                            .map(Path::toFile)
+                            .forEach(File::delete);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
