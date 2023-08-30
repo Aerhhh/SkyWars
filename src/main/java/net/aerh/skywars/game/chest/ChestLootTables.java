@@ -10,8 +10,8 @@ import java.util.List;
 public class ChestLootTables {
 
     // TODO implement percentage chances for items to spawn
-    protected static final List<ItemStack> ISLAND_CHEST_LOOT = new ArrayList<>();
-    protected static final List<ItemStack> MIDDLE_CHEST_LOOT = new ArrayList<>();
+    private static final List<ItemStack> ISLAND_CHEST_LOOT = new ArrayList<>();
+    private static final List<ItemStack> MIDDLE_CHEST_LOOT = new ArrayList<>();
 
     static {
         ISLAND_CHEST_LOOT.add(new ItemStack(Material.LEATHER_HELMET));

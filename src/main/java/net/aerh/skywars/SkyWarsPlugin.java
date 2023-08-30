@@ -43,12 +43,9 @@ public final class SkyWarsPlugin extends JavaPlugin {
             MapLoader mapLoader = new MapLoader(this, getDataFolder().getAbsolutePath() + File.separator + "map-templates");
             try {
                 for (int i = 0; i < DESIRED_GAME_COUNT; i++) {
-                    SkyWarsGame game = mapLoader.loadRandomMap("game-" + (i + 1));
-                    games.add(game);
+                    games.add(mapLoader.loadRandomMap("game-" + (i + 1)));
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (IllegalStateException exception) {
+            } catch (IOException | IllegalStateException exception) {
                 exception.printStackTrace();
                 Bukkit.getServer().shutdown();
             }
@@ -56,7 +53,7 @@ public final class SkyWarsPlugin extends JavaPlugin {
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
             if (games.isEmpty()) {
-                getLogger().info("All games have ended, shutting down server!");
+                System.out.println("All games ended, shutting down server!");
                 Bukkit.getServer().shutdown();
             }
         }, 0L, 20L * 5L);
