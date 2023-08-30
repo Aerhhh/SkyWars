@@ -15,7 +15,11 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.logging.Level;
+
 public class PlayerSessionListener implements Listener {
+
+    private static final String GENERIC_KICK_MESSAGE = ChatColor.RED + "An error occurred while trying to join the game!";
 
     private final SkyWarsPlugin plugin;
 
@@ -35,7 +39,7 @@ public class PlayerSessionListener implements Listener {
         SkyWarsPlayer skyWarsPlayer = new SkyWarsPlayer(event.getUniqueId());
 
         if (!game.addPlayer(skyWarsPlayer)) {
-            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatColor.RED + "Couldn't add you to the game!");
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, GENERIC_KICK_MESSAGE);
         }
     }
 
@@ -55,22 +59,22 @@ public class PlayerSessionListener implements Listener {
             return;
         }
 
-        SkyWarsPlayer skyWarsPlayer = game.getPlayer(player);
-        plugin.getLogger().info("Player " + player.getName() + " joined game " + game.getWorld().getName());
+        game.log(Level.INFO, "Player " + player.getName() + " joined the game!");
         player.setGameMode(GameMode.ADVENTURE);
 
         if (game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING) {
             game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " joined! " + ChatColor.GRAY + "(" + game.getBukkitPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT + ")");
         }
 
+        SkyWarsPlayer skyWarsPlayer = game.getPlayer(player);
+
         if (game.getState() == GameState.STARTING) {
-            player.teleport(game.getIsland(player).getSpawnLocation().clone().add(0.5, 0, 0.5));
+            player.teleport(game.getIsland(skyWarsPlayer).getSpawnLocation().clone().add(0.5, 0, 0.5));
         } else {
             player.teleport(game.getPregameSpawn());
         }
 
         skyWarsPlayer.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
-        // todo fix issue with hiding and showing players in other games
         Bukkit.getOnlinePlayers().forEach(p -> p.hidePlayer(plugin, player));
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
@@ -97,7 +101,7 @@ public class PlayerSessionListener implements Listener {
         }
 
         game.removePlayerFromPlayersOrSpectators(player);
-        plugin.getLogger().info("Player " + player.getName() + " left game " + game.getWorld().getName());
+        game.log(Level.INFO, "Player " + player.getName() + " left the game!");
 
         if (game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING) {
             game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left! " + ChatColor.GRAY + "(" + game.getBukkitPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT + ")");

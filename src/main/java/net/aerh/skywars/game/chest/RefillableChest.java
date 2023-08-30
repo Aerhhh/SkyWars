@@ -72,10 +72,6 @@ public class RefillableChest {
         return location;
     }
 
-    public List<ItemStack> getLoot() {
-        return loot;
-    }
-
     public ChestType getType() {
         return type;
     }

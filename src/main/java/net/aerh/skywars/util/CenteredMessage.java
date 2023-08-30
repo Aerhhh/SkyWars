@@ -7,10 +7,10 @@ import org.bukkit.ChatColor;
  */
 public class CenteredMessage {
 
+    private static final int CENTER_PX = 154;
+
     private CenteredMessage() {
     }
-
-    private static final int CENTER_PX = 154;
 
     public static String generate(String message) {
         if (message == null || message.equals("")) {

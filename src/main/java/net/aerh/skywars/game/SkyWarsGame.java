@@ -43,6 +43,7 @@ public class SkyWarsGame {
     private final Set<SkyWarsPlayer> players;
     private final Set<SkyWarsPlayer> spectators;
     private final Queue<GameEvent> gameEvents;
+    private final Set<RefillableChest> refillableChests;
     private GameState state = GameState.PRE_GAME;
     private List<Island> islands;
     private final Set<RefillableChest> refillableChests;
@@ -180,7 +181,9 @@ public class SkyWarsGame {
         gray.setColor(ChatColor.GRAY);
 
         green.addEntry(player.getName());
-        getBukkitPlayers().stream().filter(otherPlayer -> !otherPlayer.getUniqueId().equals(player.getUniqueId())).forEach(otherPlayer -> red.addEntry(otherPlayer.getName()));
+        getBukkitPlayers().stream()
+            .filter(otherPlayer -> !otherPlayer.getUniqueId().equals(player.getUniqueId()))
+            .forEach(otherPlayer -> red.addEntry(otherPlayer.getName()));
     }
 
     private void checkPlayerCountForCountdown() {
