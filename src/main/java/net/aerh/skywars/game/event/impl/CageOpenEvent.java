@@ -21,7 +21,7 @@ public class CageOpenEvent extends GameEvent {
 
         GameSettings settings = game.getSettings();
         settings.setHunger(false);
-        settings.setDropItem(false);
+        settings.allowItemDrops(false);
 
         for (Island island : game.getIslands()) {
             for (int x = -2; x <= 2; x++) {
@@ -34,9 +34,9 @@ public class CageOpenEvent extends GameEvent {
         }
 
         game.getPlugin().getServer().getScheduler().runTaskLater(game.getPlugin(), () -> {
-            settings.setDamage(true);
+            settings.allowDamage(true);
             settings.setHunger(true);
-            settings.setDropItem(true);
+            settings.allowItemDrops(true);
         }, 20L);
 
         game.broadcast(ChatColor.YELLOW + "Cages opened! " + ChatColor.RED + "FIGHT!");

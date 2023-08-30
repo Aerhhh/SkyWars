@@ -35,7 +35,6 @@ public class GameListener implements Listener {
         .expireAfterWrite(10, TimeUnit.SECONDS)
         .build();
 
-
     private final SkyWarsPlugin plugin;
 
     public GameListener(SkyWarsPlugin plugin) {
@@ -71,7 +70,6 @@ public class GameListener implements Listener {
         game.removePlayer(skyWarsPlayer);
         game.setSpectator(skyWarsPlayer);
 
-        // TODO fancy death messages
         UUID uuid = lastDamager.getIfPresent(player.getUniqueId());
         SkyWarsPlayer killer = game.getPlayer(uuid);
 
@@ -129,7 +127,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        if (!game.getSettings().isBlockBreak()) {
+        if (!game.getSettings().canBreakBlocks()) {
             event.setCancelled(true);
         }
 
@@ -154,7 +152,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        if (!game.getSettings().isBlockPlace()) {
+        if (!game.getSettings().canPlaceBlocks()) {
             event.setCancelled(true);
         }
     }
@@ -177,7 +175,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        if (!game.getSettings().isDamage()) {
+        if (!game.getSettings().isDamageEnabled()) {
             event.setCancelled(true);
         }
     }
@@ -200,7 +198,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        if (!game.getSettings().isHunger()) {
+        if (!game.getSettings().isHungerEnabled()) {
             event.setCancelled(true);
         }
     }
@@ -219,7 +217,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        if (!game.getSettings().isDropItem()) {
+        if (!game.getSettings().canDropItems()) {
             event.setCancelled(true);
         }
     }
@@ -242,7 +240,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        if (!game.getSettings().isPickupItem()) {
+        if (!game.getSettings().canPickupItems()) {
             event.setCancelled(true);
         }
     }
@@ -261,7 +259,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        if (!game.getSettings().isInteract()) {
+        if (!game.getSettings().isInteractingEnabled()) {
             event.setCancelled(true);
         }
     }
@@ -322,7 +320,7 @@ public class GameListener implements Listener {
             filter = recipient -> !game.getBukkitSpectators().contains(recipient);
         }
 
-        if (!game.getSettings().isChat()) {
+        if (!game.getSettings().isChatEnabled()) {
             event.setCancelled(true);
         }
 

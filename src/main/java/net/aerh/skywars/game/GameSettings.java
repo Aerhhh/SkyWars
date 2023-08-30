@@ -11,23 +11,23 @@ public class GameSettings {
     private boolean interact = true;
     private boolean chat = true;
 
-    public boolean isBlockBreak() {
+    public boolean canBreakBlocks() {
         return blockBreak;
     }
 
-    public void setBlockBreak(boolean blockBreak) {
+    public void allowBlockBreaking(boolean blockBreak) {
         this.blockBreak = blockBreak;
     }
 
-    public boolean isBlockPlace() {
+    public boolean canPlaceBlocks() {
         return blockPlace;
     }
 
-    public void setBlockPlace(boolean blockPlace) {
+    public void allowBlockPlacing(boolean blockPlace) {
         this.blockPlace = blockPlace;
     }
 
-    public boolean isHunger() {
+    public boolean isHungerEnabled() {
         return hunger;
     }
 
@@ -35,23 +35,23 @@ public class GameSettings {
         this.hunger = hunger;
     }
 
-    public boolean isDamage() {
+    public boolean isDamageEnabled() {
         return damage;
     }
 
-    public void setDamage(boolean damage) {
+    public void allowDamage(boolean damage) {
         this.damage = damage;
     }
 
-    public boolean isDropItem() {
+    public boolean canDropItems() {
         return dropItem;
     }
 
-    public void setDropItem(boolean dropItem) {
+    public void allowItemDrops(boolean dropItem) {
         this.dropItem = dropItem;
     }
 
-    public boolean isPickupItem() {
+    public boolean canPickupItems() {
         return pickupItem;
     }
 
@@ -59,19 +59,19 @@ public class GameSettings {
         this.pickupItem = pickupItem;
     }
 
-    public boolean isInteract() {
+    public boolean isInteractingEnabled() {
         return interact;
     }
 
-    public void setInteract(boolean interact) {
+    public void setInteractable(boolean interact) {
         this.interact = interact;
     }
 
-    public boolean isChat() {
+    public boolean isChatEnabled() {
         return chat;
     }
 
-    public void setChat(boolean chat) {
+    public void setChatEnabled(boolean chat) {
         this.chat = chat;
     }
 }
