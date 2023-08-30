@@ -106,7 +106,7 @@ public class SkyWarsGame {
             player.setGameMode(GameMode.SURVIVAL);
         });
 
-        gameLoop.start();
+        gameLoop.next();
     }
 
     public void end() {

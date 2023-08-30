@@ -18,10 +18,6 @@ public abstract class GameEvent {
         this(game, unit.toMillis(delay) / 50L);
     }
 
-    public SkyWarsGame getGame() {
-        return game;
-    }
-
     public long getDelay() {
         return delay;
     }

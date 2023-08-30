@@ -21,10 +21,6 @@ public class GameLoop {
         this.gameEvents = new LinkedList<>(gameEvents);
     }
 
-    public void start() {
-        next();
-    }
-
     public void stop() {
         if (currentTask != null) {
             currentTask.cancel();
@@ -44,6 +40,10 @@ public class GameLoop {
 
         if (endTask != null) {
             endTask.cancel();
+        }
+
+        if (game.getState() == GameState.ENDING) {
+            return;
         }
 
         GameEvent gameEvent = gameEvents.poll();
