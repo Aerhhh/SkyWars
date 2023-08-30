@@ -9,8 +9,8 @@ import net.aerh.skywars.game.chest.RefillableChest;
 import net.aerh.skywars.game.event.GameEvent;
 import net.aerh.skywars.game.event.impl.CageOpenEvent;
 import net.aerh.skywars.game.event.impl.ChestRefillEvent;
-import net.aerh.skywars.game.event.impl.GameEndEvent;
 import net.aerh.skywars.game.event.impl.DragonSpawnEvent;
+import net.aerh.skywars.game.event.impl.GameEndEvent;
 import net.aerh.skywars.game.island.Island;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import net.aerh.skywars.util.CenteredMessage;
@@ -46,7 +46,6 @@ public class SkyWarsGame {
     private final Set<RefillableChest> refillableChests;
     private GameState state = GameState.PRE_GAME;
     private List<Island> islands;
-    private final Set<RefillableChest> refillableChests;
     private BukkitTask countdownTask;
     private SkyWarsPlayer winner;
 
@@ -384,7 +383,7 @@ public class SkyWarsGame {
     }
 
     @Nullable
-    private Island getIsland(SkyWarsPlayer skyWarsPlayer) {
+    public Island getIsland(SkyWarsPlayer skyWarsPlayer) {
         return islands.stream().filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(skyWarsPlayer)).findFirst().orElse(null);
     }
 

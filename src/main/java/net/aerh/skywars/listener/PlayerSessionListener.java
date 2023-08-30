@@ -41,6 +41,10 @@ public class PlayerSessionListener implements Listener {
         if (!game.addPlayer(skyWarsPlayer)) {
             event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, GENERIC_KICK_MESSAGE);
         }
+
+        if (game.getIsland(skyWarsPlayer) == null) {
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, GENERIC_KICK_MESSAGE);
+        }
     }
 
     @EventHandler
@@ -56,6 +60,7 @@ public class PlayerSessionListener implements Listener {
         SkyWarsGame game = plugin.findGame(player);
 
         if (game == null) {
+            player.kickPlayer(GENERIC_KICK_MESSAGE);
             return;
         }
 
