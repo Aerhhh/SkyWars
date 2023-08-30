@@ -1,9 +1,9 @@
 package net.aerh.skywars;
 
+import net.aerh.skywars.command.GameInfoCommand;
 import net.aerh.skywars.command.GamesCommand;
 import net.aerh.skywars.command.SkipEventCommand;
 import net.aerh.skywars.command.StartGameCommand;
-import net.aerh.skywars.command.TestChestCommand;
 import net.aerh.skywars.game.GameState;
 import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.listener.GameListener;
@@ -36,7 +36,7 @@ public final class SkyWarsPlugin extends JavaPlugin {
 
         getCommand("start").setExecutor(new StartGameCommand(this));
         getCommand("games").setExecutor(new GamesCommand(this));
-        getCommand("testchest").setExecutor(new TestChestCommand(this));
+        getCommand("gameinfo").setExecutor(new GameInfoCommand(this));
         getCommand("skipevent").setExecutor(new SkipEventCommand(this));
 
         Bukkit.getScheduler().runTask(this, () -> {

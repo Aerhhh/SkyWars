@@ -12,5 +12,7 @@ commands:
   games:
     aliases:
       - listgames
-  testchest:
+  gameinfo:
+      aliases:
+      - gi
   skipevent:
