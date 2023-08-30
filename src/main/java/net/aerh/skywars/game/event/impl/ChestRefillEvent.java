@@ -9,12 +9,13 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class ChestRefillEvent extends GameEvent {
 
     public ChestRefillEvent(SkyWarsGame game) {
-        super(game, 20L * 60L * 5L);
+        super(game, 5L, TimeUnit.MINUTES);
     }
 
     @Override

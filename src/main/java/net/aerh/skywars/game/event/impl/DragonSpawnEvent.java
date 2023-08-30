@@ -5,12 +5,14 @@ import net.aerh.skywars.game.event.GameEvent;
 import org.bukkit.Sound;
 import org.bukkit.entity.EnderDragon;
 
+import java.util.concurrent.TimeUnit;
+
 public class DragonSpawnEvent extends GameEvent {
 
     private static final int MAX_DRAGONS = 3;
 
     public DragonSpawnEvent(SkyWarsGame game) {
-        super(game, 20L * 60L * 5L);
+        super(game, 5L, TimeUnit.MINUTES);
     }
 
     @Override
