@@ -22,12 +22,20 @@ public class GamesCommand implements CommandExecutor {
 
         plugin.getGames().forEach(skyWarsGame -> {
             sender.sendMessage(ChatColor.RESET + skyWarsGame.getWorld().getName() + ChatColor.GRAY + " - " + skyWarsGame.getState());
+
+            if (skyWarsGame.getGameLoop().getNextEvent() != null) {
+                sender.sendMessage(ChatColor.YELLOW + "  Next Event: " + ChatColor.RESET + "In " + skyWarsGame.getGameLoop().getTimeUntilNextEvent() + " (" + skyWarsGame.getGameLoop().getNextEvent().getClass().getSimpleName() + ")");
+            } else {
+                sender.sendMessage(ChatColor.YELLOW + "  Next Event: " + ChatColor.RESET + "None");
+            }
+
             sender.sendMessage(ChatColor.YELLOW + "  Players: " + ChatColor.RESET + skyWarsGame.getBukkitPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT);
             sender.sendMessage(ChatColor.YELLOW + "  Spectators: " + ChatColor.RESET + skyWarsGame.getBukkitSpectators().size());
 
             if (skyWarsGame.getWinner() != null) {
                 sender.sendMessage(ChatColor.YELLOW + "  Winner: " + ChatColor.RESET + skyWarsGame.getWinner().getUuid());
             }
+
         });
 
         return false;

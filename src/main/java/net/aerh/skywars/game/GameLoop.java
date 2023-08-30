@@ -95,6 +95,17 @@ public class GameLoop {
         next();
     }
 
+    public String getTimeUntilNextEvent() {
+        int minutes = countdownTilNextEvent / 60;
+        int seconds = countdownTilNextEvent % 60;
+
+        return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    public GameEvent getNextEvent() {
+        return gameEvents.peek();
+    }
+
     public Queue<GameEvent> getGameEvents() {
         return gameEvents;
     }

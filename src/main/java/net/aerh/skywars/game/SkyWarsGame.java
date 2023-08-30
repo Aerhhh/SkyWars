@@ -127,7 +127,7 @@ public class SkyWarsGame {
             broadcast(CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "Winner: " + ChatColor.GOLD + winner.getBukkitPlayer().getName()));
         } else {
             broadcast("\n");
-            broadcast(CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "Nobody won the game!"));
+            broadcast(CenteredMessage.generate(ChatColor.RED + "Nobody won the game!"));
         }
 
         broadcast("\n");
