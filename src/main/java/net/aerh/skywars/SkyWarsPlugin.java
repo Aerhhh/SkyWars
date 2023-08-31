@@ -53,7 +53,7 @@ public final class SkyWarsPlugin extends JavaPlugin {
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
             if (games.isEmpty()) {
-                System.out.println("All games ended, shutting down server!");
+                getLogger().info("All games ended, shutting down server!");
                 Bukkit.getServer().shutdown();
             }
         }, 0L, 20L * 5L);
@@ -61,7 +61,6 @@ public final class SkyWarsPlugin extends JavaPlugin {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             games.forEach(game -> {
                 try {
-                    getLogger().info("Attempting to delete world " + game.getWorld().getName());
                     try (Stream<Path> path = Files.walk(game.getWorld().getWorldFolder().toPath())) {
                         path.sorted(Comparator.reverseOrder())
                             .map(Path::toFile)
