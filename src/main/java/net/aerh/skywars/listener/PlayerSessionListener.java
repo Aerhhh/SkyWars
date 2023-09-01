@@ -73,13 +73,19 @@ public class PlayerSessionListener implements Listener {
 
         SkyWarsPlayer skyWarsPlayer = game.getPlayer(player);
 
+        if (skyWarsPlayer == null) {
+            player.kickPlayer(GENERIC_KICK_MESSAGE);
+            return;
+        }
+
+        skyWarsPlayer.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+
         if (game.getState() == GameState.STARTING) {
             player.teleport(game.getIsland(skyWarsPlayer).getSpawnLocation().clone().add(0.5, 0, 0.5));
         } else {
             player.teleport(game.getPregameSpawn());
         }
 
-        skyWarsPlayer.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
         Bukkit.getOnlinePlayers().forEach(p -> p.hidePlayer(plugin, player));
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
