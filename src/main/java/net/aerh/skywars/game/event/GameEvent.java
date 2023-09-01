@@ -6,16 +6,22 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class GameEvent {
 
+    private final String displayName;
     protected final SkyWarsGame game;
     private final long delay;
 
-    protected GameEvent(SkyWarsGame game, long delay) {
+    protected GameEvent(SkyWarsGame game, String displayName, long delay) {
         this.game = game;
+        this.displayName = displayName;
         this.delay = delay;
     }
 
-    protected GameEvent(SkyWarsGame game, long delay, TimeUnit unit) {
-        this(game, unit.toMillis(delay) / 50L);
+    protected GameEvent(SkyWarsGame game, String displayName, long delay, TimeUnit unit) {
+        this(game, displayName, unit.toMillis(delay) / 50L);
+    }
+
+    public String getDisplayName() {
+        return displayName;
     }
 
     public long getDelay() {

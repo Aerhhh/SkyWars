@@ -15,7 +15,7 @@ import java.util.logging.Level;
 public class ChestRefillEvent extends GameEvent {
 
     public ChestRefillEvent(SkyWarsGame game) {
-        super(game, 5L, TimeUnit.MINUTES);
+        super(game, "Chest Refill", 5L, TimeUnit.MINUTES);
     }
 
     @Override

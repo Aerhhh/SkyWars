@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 public class GameEndEvent extends GameEvent {
 
     public GameEndEvent(SkyWarsGame game) {
-        super(game, 5L, TimeUnit.MINUTES);
+        super(game, "Game End", 5L, TimeUnit.MINUTES);
     }
 
     @Override

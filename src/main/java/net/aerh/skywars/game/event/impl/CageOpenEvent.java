@@ -12,7 +12,7 @@ import java.util.logging.Level;
 public class CageOpenEvent extends GameEvent {
 
     public CageOpenEvent(SkyWarsGame game) {
-        super(game, 0L);
+        super(game, "Game Start", 0L);
     }
 
     @Override
