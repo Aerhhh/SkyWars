@@ -22,6 +22,8 @@ public class CageOpenEvent extends GameEvent {
         GameSettings settings = game.getSettings();
         settings.setHunger(false);
         settings.allowItemDrops(false);
+        settings.allowBlockBreaking(false);
+        settings.allowBlockPlacing(false);
 
         for (Island island : game.getIslands()) {
             for (int x = -2; x <= 2; x++) {

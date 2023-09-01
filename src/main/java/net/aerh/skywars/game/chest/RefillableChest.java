@@ -29,9 +29,10 @@ public class RefillableChest {
 
     public void spawn(boolean refill, BlockFace rotation) {
         location.getBlock().setType(Material.CHEST);
-        BlockState blockState = location.getBlock().getState();
 
+        BlockState blockState = location.getBlock().getState();
         Directional directional = (Directional) blockState.getBlockData();
+
         directional.setFacing(rotation);
         location.getBlock().setBlockData(directional);
 
@@ -55,10 +56,10 @@ public class RefillableChest {
         Inventory chestInventory = ((Chest) blockState).getBlockInventory();
 
         for (int i = 0; i < type.getMaxRefillItems(); i++) {
-            int randomSlot = ThreadLocalRandom.current().nextInt(((Chest) blockState).getBlockInventory().getSize());
+            int randomSlot = ThreadLocalRandom.current().nextInt(chestInventory.getSize());
 
             while (chestInventory.getItem(randomSlot) != null) {
-                randomSlot = ThreadLocalRandom.current().nextInt(((Chest) blockState).getBlockInventory().getSize());
+                randomSlot = ThreadLocalRandom.current().nextInt(chestInventory.getSize());
             }
 
             ItemStack randomItem = loot.get(ThreadLocalRandom.current().nextInt(loot.size()));

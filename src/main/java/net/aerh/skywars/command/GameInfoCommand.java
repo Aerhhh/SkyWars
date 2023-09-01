@@ -46,10 +46,16 @@ public class GameInfoCommand implements CommandExecutor {
             .append(ChatColor.YELLOW).append("  State: ").append(ChatColor.RESET).append(game.getState()).append("\n")
             .append(ChatColor.YELLOW).append("  Players: ").append(ChatColor.RESET).append(game.getBukkitPlayers().size()).append("/").append(SkyWarsGame.MAX_PLAYER_COUNT).append("\n")
             .append(ChatColor.YELLOW).append("  Spectators: ").append(ChatColor.RESET).append(game.getBukkitSpectators().size()).append("\n")
-            .append(ChatColor.YELLOW).append("  Events Remaining: ").append(ChatColor.RESET).append(game.getGameLoop().getGameEvents().size()).append("\n")
-            .append(ChatColor.YELLOW).append("  Next Event: ").append(ChatColor.RESET).append("In ").append(game.getGameLoop().getTimeUntilNextEvent())
-            .append(ChatColor.GRAY).append(" (").append(game.getGameLoop().getNextEvent().getClass().getSimpleName()).append(")").append("\n")
-            .append(ChatColor.YELLOW).append("  Winner: ").append(ChatColor.RESET).append(game.getWinner() != null ? game.getWinner().getUuid() : "None").append("\n")
+            .append(ChatColor.YELLOW).append("  Events Remaining: ").append(ChatColor.RESET).append(game.getGameLoop().getGameEvents().size()).append("\n");
+
+        if (game.getGameLoop().getNextEvent() != null) {
+            stringBuilder.append(ChatColor.YELLOW).append("  Next Event: ").append(ChatColor.RESET).append(game.getGameLoop().getNextEvent().getDisplayName()).append(" in ")
+                .append(game.getGameLoop().getTimeUntilNextEvent()).append(ChatColor.GRAY).append(" (").append(game.getGameLoop().getNextEvent().getClass().getSimpleName()).append(")").append("\n");
+        } else {
+            stringBuilder.append(ChatColor.YELLOW).append("  Next Event: ").append(ChatColor.RESET).append("None").append("\n");
+        }
+
+        stringBuilder.append(ChatColor.YELLOW).append("  Winner: ").append(ChatColor.RESET).append(game.getWinner() != null ? game.getWinner().getUuid() : "None").append("\n")
             .append(ChatColor.YELLOW).append("  Islands: ").append(ChatColor.RESET).append(game.getIslands().size()).append("\n")
             .append(ChatColor.YELLOW).append("  Chests: ").append(ChatColor.RESET).append(game.getRefillableChests().size()).append("\n");
 

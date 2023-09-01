@@ -55,7 +55,7 @@ public class GameSettings {
         return pickupItem;
     }
 
-    public void setPickupItem(boolean pickupItem) {
+    public void allowItemPickup(boolean pickupItem) {
         this.pickupItem = pickupItem;
     }
 

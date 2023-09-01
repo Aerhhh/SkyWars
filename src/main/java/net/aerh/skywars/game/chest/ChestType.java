@@ -10,14 +10,6 @@ public enum ChestType {
         this.maxRefillItems = maxRefillItems;
     }
 
-    public static ChestType valueOfOrElse(String name, ChestType type) {
-        try {
-            return valueOf(name);
-        } catch (IllegalArgumentException exception) {
-            return type;
-        }
-    }
-
     public int getMaxRefillItems() {
         return maxRefillItems;
     }

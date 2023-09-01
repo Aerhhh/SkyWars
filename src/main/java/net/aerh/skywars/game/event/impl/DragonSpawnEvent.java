@@ -12,7 +12,7 @@ public class DragonSpawnEvent extends GameEvent {
     private static final int MAX_DRAGONS = 3;
 
     public DragonSpawnEvent(SkyWarsGame game) {
-        super(game, 5L, TimeUnit.MINUTES);
+        super(game, "Doom", 5L, TimeUnit.MINUTES);
     }
 
     @Override

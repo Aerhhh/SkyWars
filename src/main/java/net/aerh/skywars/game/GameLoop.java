@@ -54,7 +54,7 @@ public class GameLoop {
             return;
         }
 
-        game.log(Level.INFO, "Next event: " + gameEvent.getClass().getSimpleName() + " in " + gameEvent.getDelay() + " ticks (" + gameEvents.size() + " events left)");
+        game.log(Level.INFO, "Next event: " + gameEvent.getDisplayName() + " in " + gameEvent.getDelay() + " ticks (" + gameEvents.size() + " events left)");
         countdownTilNextEvent = (int) gameEvent.getDelay() / 20;
 
         if (gameEvent.getDelay() <= 0) {
@@ -90,7 +90,7 @@ public class GameLoop {
 
     public void executeEvent(GameEvent gameEvent) {
         countdownTilNextEvent = 0;
-        game.log(Level.INFO, "Executing event: " + gameEvent.getClass().getSimpleName());
+        game.log(Level.INFO, "Executing event: " + gameEvent.getDisplayName() + " (" + gameEvent.getClass().getSimpleName() + ")" + " - " + gameEvents.size() + " events left");
         gameEvent.execute();
         next();
     }

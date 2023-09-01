@@ -24,7 +24,7 @@ public class GamesCommand implements CommandExecutor {
             sender.sendMessage(ChatColor.RESET + skyWarsGame.getWorld().getName() + ChatColor.GRAY + " - " + skyWarsGame.getState());
 
             if (skyWarsGame.getGameLoop().getNextEvent() != null) {
-                sender.sendMessage(ChatColor.YELLOW + "  Next Event: " + ChatColor.RESET + "In " + skyWarsGame.getGameLoop().getTimeUntilNextEvent() + " (" + skyWarsGame.getGameLoop().getNextEvent().getClass().getSimpleName() + ")");
+                sender.sendMessage(ChatColor.YELLOW + "  Next Event: " + ChatColor.RESET + "In " + skyWarsGame.getGameLoop().getTimeUntilNextEvent() + " (" + skyWarsGame.getGameLoop().getNextEvent().getDisplayName() + ")");
             } else {
                 sender.sendMessage(ChatColor.YELLOW + "  Next Event: " + ChatColor.RESET + "None");
             }
