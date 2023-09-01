@@ -19,18 +19,10 @@ import java.util.stream.Stream;
 
 public class MapLoader {
 
-    private final SkyWarsPlugin plugin;
-    private final File mapsDir;
-    private final Gson gson;
+    private static final Gson GSON = new Gson();
 
-    public MapLoader(SkyWarsPlugin plugin, String mapsDirPath) {
-        this.plugin = plugin;
-        this.mapsDir = new File(mapsDirPath);
-        this.gson = new Gson();
-    }
-
-    public SkyWarsGame loadRandomMap(String worldName) throws IOException {
-        File[] mapDirs = mapsDir.listFiles(File::isDirectory);
+    public static SkyWarsGame loadRandomMap(SkyWarsPlugin plugin, String filePath, String worldName) throws IOException {
+        File[] mapDirs = new File(filePath).listFiles(File::isDirectory);
 
         if (mapDirs == null || mapDirs.length == 0) {
             throw new IllegalStateException("No map directory found");
@@ -53,7 +45,7 @@ public class MapLoader {
 
         JsonObject config;
         try (FileReader reader = new FileReader(configFile)) {
-            config = gson.fromJson(reader, JsonObject.class);
+            config = GSON.fromJson(reader, JsonObject.class);
             plugin.getLogger().info("Loaded config.json for map " + mapDir.getName());
         }
 
@@ -66,7 +58,7 @@ public class MapLoader {
         return new SkyWarsGame(plugin, world, config);
     }
 
-    private void copyDirectory(File source, File target) throws IOException {
+    private static void copyDirectory(File source, File target) throws IOException {
         try (Stream<Path> paths = Files.walk(source.toPath())) {
             paths.forEach(sourcePath -> {
                 Path targetPath = target.toPath().resolve(source.toPath().relativize(sourcePath));

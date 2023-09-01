@@ -40,10 +40,9 @@ public final class SkyWarsPlugin extends JavaPlugin {
         getCommand("skipevent").setExecutor(new SkipEventCommand(this));
 
         Bukkit.getScheduler().runTask(this, () -> {
-            MapLoader mapLoader = new MapLoader(this, getDataFolder().getAbsolutePath() + File.separator + "map-templates");
             try {
                 for (int i = 0; i < DESIRED_GAME_COUNT; i++) {
-                    games.add(mapLoader.loadRandomMap("game-" + (i + 1)));
+                    games.add(MapLoader.loadRandomMap(this, getDataFolder().getAbsolutePath() + File.separator + "map-templates", "game-" + (i + 1)));
                 }
             } catch (IOException | IllegalStateException exception) {
                 exception.printStackTrace();
