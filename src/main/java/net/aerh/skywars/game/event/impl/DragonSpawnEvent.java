@@ -2,9 +2,11 @@ package net.aerh.skywars.game.event.impl;
 
 import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.game.event.GameEvent;
+import net.aerh.skywars.game.island.Island;
 import org.bukkit.Sound;
 import org.bukkit.entity.EnderDragon;
 
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 public class DragonSpawnEvent extends GameEvent {
@@ -18,11 +20,20 @@ public class DragonSpawnEvent extends GameEvent {
     @Override
     public void execute() {
         for (int i = 0; i < MAX_DRAGONS; i++) {
-            EnderDragon dragon = game.getWorld().spawn(game.getPregameSpawn(), EnderDragon.class);
+            Island randomIsland = game.getIslands().get(ThreadLocalRandom.current().nextInt(game.getIslands().size()));
+            EnderDragon dragon = game.getWorld().spawn(randomIsland.getSpawnLocation().add(0, 10, 0), EnderDragon.class);
 
             dragon.setAware(true);
             dragon.setPhase(EnderDragon.Phase.SEARCH_FOR_BREATH_ATTACK_TARGET);
             dragon.setRemoveWhenFarAway(false);
+
+            game.getPlugin().getServer().getScheduler().runTaskTimer(game.getPlugin(), () -> {
+                if (dragon.getTarget() == null) {
+                    dragon.setPhase(EnderDragon.Phase.SEARCH_FOR_BREATH_ATTACK_TARGET);
+                } else {
+                    dragon.setPhase(EnderDragon.Phase.CHARGE_PLAYER);
+                }
+            }, 0L, 20L * 5L);
         }
 
         game.getBukkitPlayers().forEach(bukkitPlayer -> bukkitPlayer.playSound(bukkitPlayer.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0F, 1.0F));
