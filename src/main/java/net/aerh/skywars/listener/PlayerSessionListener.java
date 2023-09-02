@@ -116,6 +116,8 @@ public class PlayerSessionListener implements Listener {
 
         if (game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING) {
             game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left! " + ChatColor.GRAY + "(" + game.getBukkitPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT + ")");
+        } else {
+            game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left!");
         }
     }
 }
