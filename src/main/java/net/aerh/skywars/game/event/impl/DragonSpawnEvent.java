@@ -26,14 +26,6 @@ public class DragonSpawnEvent extends GameEvent {
             dragon.setAware(true);
             dragon.setPhase(EnderDragon.Phase.SEARCH_FOR_BREATH_ATTACK_TARGET);
             dragon.setRemoveWhenFarAway(false);
-
-            game.getPlugin().getServer().getScheduler().runTaskTimer(game.getPlugin(), () -> {
-                if (dragon.getTarget() == null) {
-                    dragon.setPhase(EnderDragon.Phase.SEARCH_FOR_BREATH_ATTACK_TARGET);
-                } else {
-                    dragon.setPhase(EnderDragon.Phase.CHARGE_PLAYER);
-                }
-            }, 0L, 20L * 5L);
         }
 
         game.getBukkitPlayers().forEach(bukkitPlayer -> bukkitPlayer.playSound(bukkitPlayer.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0F, 1.0F));
