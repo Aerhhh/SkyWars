@@ -111,7 +111,12 @@ public class PlayerSessionListener implements Listener {
             return;
         }
 
-        game.removePlayerFromPlayersOrSpectators(player);
+        SkyWarsPlayer skyWarsPlayer = game.getPlayer(player);
+
+        if (skyWarsPlayer != null) {
+            game.removePlayer(skyWarsPlayer);
+        }
+
         game.log(Level.INFO, "Player " + player.getName() + " left the game!");
 
         if (game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING) {

@@ -17,11 +17,20 @@ public class GameLoop {
     private BukkitTask gameEndTask;
     private int countdownTilNextEvent;
 
+    /**
+     * Represents the game loop of a {@link SkyWarsGame}.
+     *
+     * @param game       the {@link SkyWarsGame} to create the game loop for
+     * @param gameEvents the {@link Queue} of {@link GameEvent}s to execute
+     */
     public GameLoop(SkyWarsGame game, Queue<GameEvent> gameEvents) {
         this.game = game;
         this.gameEvents = new LinkedList<>(gameEvents);
     }
 
+    /**
+     * Stops the game loop.
+     */
     public void stop() {
         if (eventTask != null) {
             eventTask.cancel();
@@ -34,6 +43,9 @@ public class GameLoop {
         }
     }
 
+    /**
+     * Starts the game loop.
+     */
     public void next() {
         if (eventTask != null) {
             eventTask.cancel();
@@ -89,6 +101,11 @@ public class GameLoop {
         }.runTaskLater(game.getPlugin(), gameEvent.getDelay());
     }
 
+    /**
+     * Executes a {@link GameEvent}.
+     *
+     * @param gameEvent the {@link GameEvent} to execute
+     */
     public void executeEvent(GameEvent gameEvent) {
         countdownTilNextEvent = 0;
         game.log(Level.INFO, "Executing event: " + gameEvent.getDisplayName() + " (" + gameEvent.getClass().getSimpleName() + ")" + " - " + gameEvents.size() + " events left");
@@ -96,6 +113,11 @@ public class GameLoop {
         next();
     }
 
+    /**
+     * Gets the time until the next event.
+     *
+     * @return the time until the next event formatted as a string (mm:ss)
+     */
     public String getTimeUntilNextEvent() {
         int minutes = countdownTilNextEvent / 60;
         int seconds = countdownTilNextEvent % 60;
@@ -103,11 +125,21 @@ public class GameLoop {
         return String.format("%02d:%02d", minutes, seconds);
     }
 
+    /**
+     * Gets the next {@link GameEvent} in the queue. Can be null.
+     *
+     * @return the next {@link GameEvent} in the queue or null if there are no more events left
+     */
     @Nullable
     public GameEvent getNextEvent() {
         return gameEvents.peek();
     }
 
+    /**
+     * Gets the {@link Queue} of {@link GameEvent}s.
+     *
+     * @return the {@link Queue} of {@link GameEvent}s
+     */
     public Queue<GameEvent> getGameEvents() {
         return gameEvents;
     }

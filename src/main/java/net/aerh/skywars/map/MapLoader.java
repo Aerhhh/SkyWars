@@ -21,6 +21,15 @@ public class MapLoader {
 
     private static final Gson GSON = new Gson();
 
+    /**
+     * Loads a random map from the given file path and creates a world with the given name.
+     *
+     * @param plugin    the {@link SkyWarsPlugin plugin} instance
+     * @param filePath  the path to the map directory
+     * @param worldName the name of the world to create
+     * @return the {@link SkyWarsGame game} instance
+     * @throws IOException If the map directory could not be copied or the config.json could not be read
+     */
     public static SkyWarsGame loadRandomMap(SkyWarsPlugin plugin, String filePath, String worldName) throws IOException {
         File[] mapDirs = new File(filePath).listFiles(File::isDirectory);
 
@@ -58,6 +67,13 @@ public class MapLoader {
         return new SkyWarsGame(plugin, world, config);
     }
 
+    /**
+     * Copies a directory to another directory.
+     *
+     * @param source the source directory
+     * @param target the target directory
+     * @throws IOException If the directory could not be copied
+     */
     private static void copyDirectory(File source, File target) throws IOException {
         try (Stream<Path> paths = Files.walk(source.toPath())) {
             paths.forEach(sourcePath -> {

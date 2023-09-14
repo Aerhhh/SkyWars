@@ -49,6 +49,13 @@ public class SkyWarsGame {
     private BukkitTask countdownTask;
     private SkyWarsPlayer winner;
 
+    /**
+     * Represents a game of SkyWars.
+     *
+     * @param plugin the {@link SkyWarsPlugin} instance
+     * @param world  the {@link World} of this game
+     * @param config the {@link JsonObject} to parse things from
+     */
     public SkyWarsGame(SkyWarsPlugin plugin, World world, JsonObject config) {
         this.plugin = plugin;
         this.world = world;
@@ -74,7 +81,7 @@ public class SkyWarsGame {
             Bukkit.getServer().shutdown();
         }
 
-        // I made this because the map already has chest signs so it'll be quicker to just use them
+        // I made this because the map I'm using to test already has chest signs so it'll be quicker to just use them
         WorldSignParser signParser = new WorldSignParser(plugin, world, true);
 
         signParser.getParsedSigns("chest").forEach(sign -> {
@@ -87,6 +94,9 @@ public class SkyWarsGame {
         });
     }
 
+    /**
+     * Starts the game.
+     */
     public void start() {
         state = GameState.IN_GAME;
         broadcast(ChatColor.GREEN + "Game started!");
@@ -109,6 +119,9 @@ public class SkyWarsGame {
         gameLoop.next();
     }
 
+    /**
+     * Ends the game.
+     */
     public void end() {
         gameLoop.stop();
         state = GameState.ENDING;
@@ -169,6 +182,11 @@ public class SkyWarsGame {
         }, 20L * 30L);
     }
 
+    /**
+     * Sets up player name colors on the scoreboard. Players will see other players as red and themselves as green.
+     *
+     * @param player the {@link Player} to set up the colors for
+     */
     private void setupPlayerNameColors(Player player) {
         Scoreboard scoreboard = player.getScoreboard();
         Team green = scoreboard.registerNewTeam("green");
@@ -185,12 +203,18 @@ public class SkyWarsGame {
             .forEach(otherPlayer -> red.addEntry(otherPlayer.getName()));
     }
 
+    /**
+     * Checks the player count to start the countdown.
+     */
     private void checkPlayerCountForCountdown() {
         if (players.size() >= MIN_PLAYER_COUNT && (countdownTask == null)) {
             startCountdown();
         }
     }
 
+    /**
+     * Starts the countdown to start the game.
+     */
     private void startCountdown() {
         state = GameState.STARTING;
         plugin.getServer().getScheduler().runTaskLater(plugin, this::teleportPlayers, 10L);
@@ -219,6 +243,11 @@ public class SkyWarsGame {
         }.runTaskTimer(plugin, 10L, 20L);
     }
 
+    /**
+     * Sets a {@link SkyWarsPlayer} to a spectator.
+     *
+     * @param skyWarsPlayer the {@link SkyWarsPlayer} to set
+     */
     public void setSpectator(SkyWarsPlayer skyWarsPlayer) {
         spectators.add(skyWarsPlayer);
 
@@ -245,6 +274,12 @@ public class SkyWarsGame {
         });
     }
 
+    /**
+     * Adds a {@link SkyWarsPlayer} to the game. Returns false if the game is already running or if there are no islands left.
+     *
+     * @param player the {@link SkyWarsPlayer} to add
+     * @return true if the {@link SkyWarsPlayer} was added, false otherwise
+     */
     public boolean addPlayer(SkyWarsPlayer player) {
         log(Level.INFO, "Adding player " + player.getUuid());
 
@@ -268,8 +303,14 @@ public class SkyWarsGame {
         return true;
     }
 
+    /**
+     * Removes a {@link SkyWarsPlayer} from the game.
+     *
+     * @param player the {@link SkyWarsPlayer} to remove
+     */
     public void removePlayer(SkyWarsPlayer player) {
         players.remove(player);
+        spectators.remove(player);
 
         if (state == GameState.PRE_GAME) {
             checkPlayerCountForCountdown();
@@ -277,23 +318,14 @@ public class SkyWarsGame {
 
         Island island = getIsland(player);
 
-        if (island == null) {
-            return;
-        }
-
-        island.setAssignedPlayer(null);
-    }
-
-    public void removePlayerFromPlayersOrSpectators(Player player) {
-        if (getPlayer(player) != null) {
-            players.remove(getPlayer(player));
-        }
-
-        if (getSpectator(player) != null) {
-            spectators.remove(getSpectator(player));
+        if (island != null) {
+            island.setAssignedPlayer(null);
         }
     }
 
+    /**
+     * Teleports all players to their island spawn locations.
+     */
     public void teleportPlayers() {
         players.forEach(player -> {
             Island island = getIsland(player);
@@ -306,31 +338,67 @@ public class SkyWarsGame {
         });
     }
 
+    /**
+     * Gets a {@link SkyWarsPlayer} by their {@link Player} object.
+     *
+     * @param player the {@link Player} to get
+     * @return the {@link SkyWarsPlayer} with the {@link Player}. Can be null
+     */
     @Nullable
     public SkyWarsPlayer getPlayer(Player player) {
         return players.stream().filter(p -> p.getUuid().equals(player.getUniqueId())).findFirst().orElse(null);
     }
 
+    /**
+     * Gets a {@link SkyWarsPlayer} by their {@link UUID}.
+     *
+     * @param uuid the {@link UUID} to get
+     * @return the {@link SkyWarsPlayer} with the {@link UUID}. Can be null
+     */
     @Nullable
     public SkyWarsPlayer getPlayer(UUID uuid) {
         return players.stream().filter(p -> p.getUuid().equals(uuid)).findFirst().orElse(null);
     }
 
+    /**
+     * Gets a spectator by their {@link Player} object.
+     *
+     * @param player the {@link Player} to get
+     * @return the {@link SkyWarsPlayer} who is a spectator. Returns null if the {@link SkyWarsPlayer} is not a spectator
+     */
     @Nullable
     public SkyWarsPlayer getSpectator(Player player) {
         return spectators.stream().filter(p -> p.getUuid().equals(player.getUniqueId())).findFirst().orElse(null);
     }
 
+    /**
+     * Gets a {@link SkyWarsPlayer} who is a spectator.
+     *
+     * @param uuid the {@link UUID} of the {@link SkyWarsPlayer} to get
+     * @return the {@link SkyWarsPlayer} who is a spectator. Returns null if the {@link SkyWarsPlayer} is not a spectator
+     */
     @Nullable
     public SkyWarsPlayer getSpectator(UUID uuid) {
         return spectators.stream().filter(p -> p.getUuid().equals(uuid)).findFirst().orElse(null);
     }
 
+    /**
+     * Gets the {@link Island} of a {@link Player}. Can be null.
+     *
+     * @param player the {@link Player} to get the {@link Island} of
+     * @return the {@link Island} of the {@link Player}. Can be null
+     */
     @Nullable
     public Island getIsland(Player player) {
         return getIsland(getPlayer(player));
     }
 
+    /**
+     * Gets a {@link Player} in the game whether they are a player or a spectator.
+     *
+     * @param uuid the {@link UUID} of the {@link Player} to get
+     * @return the {@link Player} in the game. Can be null if the {@link Player} is not in the game
+     */
     @Nullable
     public Player getPlayerOrSpectator(UUID uuid) {
         SkyWarsPlayer player = getPlayer(uuid);
@@ -348,19 +416,45 @@ public class SkyWarsGame {
         return null;
     }
 
+    /**
+     * Gets a {@link Player} in the game whether they are a player or a spectator.
+     *
+     * @param player the {@link Player} to get
+     * @return the {@link Player} in the game. Can be null
+     */
     @Nullable
     public Player getPlayerOrSpectator(Player player) {
         return getPlayerOrSpectator(player.getUniqueId());
     }
 
+    /**
+     * Gets a {@link List} of the {@link Player players} in this game.
+     *
+     * @return the {@link List} of the {@link Player players} in this game
+     */
     public List<Player> getBukkitPlayers() {
         return players.stream().map(SkyWarsPlayer::getBukkitPlayer).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
+    /**
+     * Gets a {@link List} of the top 3 {@link SkyWarsPlayer players} based on kills.
+     *
+     * @return the {@link List} of the top 3 {@link SkyWarsPlayer players} based on kills
+     */
     private List<SkyWarsPlayer> getTopPlayers() {
-        return Stream.concat(players.stream(), spectators.stream()).collect(Collectors.toList()).stream().sorted(Comparator.comparingInt(SkyWarsPlayer::getKills).reversed()).limit(3).collect(Collectors.toList());
+        return Stream.concat(players.stream(), spectators.stream()).collect(Collectors.toList())
+            .stream()
+            .sorted(Comparator.comparingInt(SkyWarsPlayer::getKills).reversed())
+            .limit(3)
+            .collect(Collectors.toList());
     }
 
+    /**
+     * Parses the islands from a {@link JsonArray}.
+     *
+     * @param islandsArray the {@link JsonArray} to parse from
+     * @return the parsed {@link List} of {@link Island islands}
+     */
     private List<Island> parseIslands(JsonArray islandsArray) {
         List<Island> islands = new ArrayList<>();
 
@@ -382,11 +476,24 @@ public class SkyWarsGame {
         return islands;
     }
 
+    /**
+     * Gets the {@link Island} of a {@link SkyWarsPlayer}. Can be null.
+     *
+     * @param skyWarsPlayer the {@link SkyWarsPlayer} to get the {@link Island} of
+     * @return the {@link Island} of the {@link SkyWarsPlayer}. Can be null
+     */
     @Nullable
     public Island getIsland(SkyWarsPlayer skyWarsPlayer) {
         return islands.stream().filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(skyWarsPlayer)).findFirst().orElse(null);
     }
 
+    /**
+     * Parses a {@link Location} from a {@link JsonObject}.
+     *
+     * @param config the {@link JsonObject} to parse from
+     * @param field  the field to parse
+     * @return the parsed {@link Location}
+     */
     private Location parseLocation(JsonObject config, String field) {
         JsonObject locationsObject = config.getAsJsonObject("locations");
         JsonObject desiredLocation = locationsObject.getAsJsonObject(field);
@@ -404,62 +511,137 @@ public class SkyWarsGame {
         return location;
     }
 
+    /**
+     * Broadcasts a message to all players and spectators.
+     *
+     * @param message the message
+     */
     public void broadcast(String message) {
         Stream.concat(players.stream(), spectators.stream())
             .filter(player -> player.getBukkitPlayer() != null)
             .forEach(player -> player.getBukkitPlayer().sendMessage(message));
     }
 
+    /**
+     * Broadcasts a title to all players and spectators.
+     *
+     * @param title    the title
+     * @param subtitle the subtitle
+     * @param fadeIn   the fade in time in ticks
+     * @param stay     the stay time in ticks
+     * @param fadeOut  the fade out time in ticks
+     */
     public void broadcastTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
         Stream.concat(players.stream(), spectators.stream())
             .filter(player -> player.getBukkitPlayer() != null)
             .forEach(player -> player.getBukkitPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut));
     }
 
+    /**
+     * Gets the {@link SkyWarsPlugin} instance.
+     *
+     * @return the {@link SkyWarsPlugin} instance
+     */
     public SkyWarsPlugin getPlugin() {
         return plugin;
     }
 
+    /**
+     * Gets the pregame spawn {@link Location location}.
+     *
+     * @return the pregame spawn location
+     */
     public Location getPregameSpawn() {
         return pregameSpawn;
     }
 
+    /**
+     * Gets the {@link World} of this game.
+     *
+     * @return the {@link World} of this game
+     */
     public World getWorld() {
         return world;
     }
 
+    /**
+     * Gets the {@link GameLoop} for this game.
+     *
+     * @return the {@link GameLoop} for this game
+     */
     public GameLoop getGameLoop() {
         return gameLoop;
     }
 
+    /**
+     * Gets the {@link List} of {@link Island islands} in this game.
+     *
+     * @return the {@link List} of {@link Island islands}
+     */
     public List<Island> getIslands() {
         return islands;
     }
 
+    /**
+     * Gets the {@link Set} of {@link RefillableChest chests} in this game.
+     *
+     * @return the {@link Set} of {@link RefillableChest chests}
+     */
     public Set<RefillableChest> getRefillableChests() {
         return refillableChests;
     }
 
+    /**
+     * Checks if a {@link Location} is a refillable chest.
+     *
+     * @param location the {@link Location} to check
+     * @return true if the {@link Location} is a {@link RefillableChest}, false otherwise
+     */
     public boolean isRefillableChest(Location location) {
         return refillableChests.stream().anyMatch(refillableChest -> Utils.locationsMatch(refillableChest.getLocation(), location));
     }
 
+    /**
+     * Removes a {@link RefillableChest} from this game.
+     *
+     * @param location the {@link Location} of the {@link RefillableChest}
+     */
     public void removeRefillableChest(Location location) {
         refillableChests.removeIf(refillableChest -> Utils.locationsMatch(refillableChest.getLocation(), location));
     }
 
+    /**
+     * Gets the {@link GameState} of this game.
+     *
+     * @return the {@link GameState} of this game
+     */
     public GameState getState() {
         return state;
     }
 
+    /**
+     * Gets the {@link GameSettings} for this game.
+     *
+     * @return the {@link GameSettings} for this game
+     */
     public GameSettings getSettings() {
         return settings;
     }
 
+    /**
+     * Gets the {@link BukkitTask} for the countdown.
+     *
+     * @return the {@link BukkitTask} for the countdown
+     */
     public BukkitTask getCountdownTask() {
         return countdownTask;
     }
 
+    /**
+     * Sets the {@link BukkitTask} for the countdown and cancels the previous one if it exists.
+     *
+     * @param countdownTask the {@link BukkitTask} for the countdown
+     */
     public void setCountdownTask(BukkitTask countdownTask) {
         if (!this.countdownTask.isCancelled()) {
             this.countdownTask.cancel();
@@ -467,23 +649,49 @@ public class SkyWarsGame {
         this.countdownTask = countdownTask;
     }
 
+    /**
+     * Gets the {@link Queue} of {@link GameEvent events} for this game.
+     *
+     * @return the {@link Queue} of {@link GameEvent events}
+     */
     public Queue<GameEvent> getGameEvents() {
         return gameEvents;
     }
 
+    /**
+     * Gets the winner of this game. Can be null.
+     *
+     * @return the {@link SkyWarsPlayer player} who won. Can be null
+     */
     @Nullable
     public SkyWarsPlayer getWinner() {
         return winner;
     }
 
+    /**
+     * Sets the winner of this game. Can be null.
+     *
+     * @param winner the {@link SkyWarsPlayer player} who won. Can be null
+     */
     public void setWinner(@Nullable SkyWarsPlayer winner) {
         this.winner = winner;
     }
 
+    /**
+     * Gets the spectators in this game. Can be empty.
+     *
+     * @return a {@link List} of {@link SkyWarsPlayer players} who are spectating
+     */
     public Set<Player> getBukkitSpectators() {
         return spectators.stream().map(SkyWarsPlayer::getBukkitPlayer).filter(Objects::nonNull).collect(Collectors.toSet());
     }
 
+    /**
+     * Logs a message to the console prefixed with the world name.
+     *
+     * @param level   the {@link Level} of the message
+     * @param message the message to log
+     */
     public void log(Level level, String message) {
         plugin.getLogger().log(level, "[" + world.getName() + "] " + message);
     }
