@@ -18,26 +18,30 @@ public class GamesCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        sender.sendMessage(ChatColor.GOLD + "Games (" + plugin.getGames().size() + "):");
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(ChatColor.GOLD).append("Games (").append(plugin.getGames().size()).append("):").append("\n");
 
         plugin.getGames().forEach(skyWarsGame -> {
-            sender.sendMessage(ChatColor.RESET + skyWarsGame.getWorld().getName() + ChatColor.GRAY + " - " + skyWarsGame.getState());
+            stringBuilder.append(ChatColor.YELLOW).append("  ").append(skyWarsGame.getWorld().getName()).append(": ").append(ChatColor.RESET).append(skyWarsGame.getState()).append("\n");
 
             if (skyWarsGame.getGameLoop().getNextEvent() != null) {
-                sender.sendMessage(ChatColor.YELLOW + "  Next Event: " + ChatColor.RESET + "In " + skyWarsGame.getGameLoop().getTimeUntilNextEvent() + " (" + skyWarsGame.getGameLoop().getNextEvent().getDisplayName() + ")");
+                stringBuilder.append(ChatColor.YELLOW).append("  Next Event: ").append(ChatColor.RESET).append("In ").append(skyWarsGame.getGameLoop().getTimeUntilNextEvent())
+                    .append(" (").append(skyWarsGame.getGameLoop().getNextEvent().getDisplayName()).append(")");
             } else {
-                sender.sendMessage(ChatColor.YELLOW + "  Next Event: " + ChatColor.RESET + "None");
+                stringBuilder.append(ChatColor.YELLOW).append("  Next Event: ").append(ChatColor.RESET).append("None");
             }
 
-            sender.sendMessage(ChatColor.YELLOW + "  Players: " + ChatColor.RESET + skyWarsGame.getBukkitPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT);
-            sender.sendMessage(ChatColor.YELLOW + "  Spectators: " + ChatColor.RESET + skyWarsGame.getBukkitSpectators().size());
+            stringBuilder.append("\n").append(ChatColor.YELLOW).append("  Islands: ").append(ChatColor.RESET).append(skyWarsGame.getIslands().size()).append("\n")
+                .append(ChatColor.YELLOW).append("  Chests: ").append(ChatColor.RESET).append(skyWarsGame.getRefillableChests().size()).append("\n")
+                .append(ChatColor.YELLOW).append("  Players: ").append(ChatColor.RESET).append(skyWarsGame.getBukkitPlayers().size()).append("/").append(SkyWarsGame.MAX_PLAYER_COUNT).append("\n")
+                .append(ChatColor.YELLOW).append("  Spectators: ").append(ChatColor.RESET).append(skyWarsGame.getBukkitSpectators().size()).append("\n");
 
             if (skyWarsGame.getWinner() != null) {
-                sender.sendMessage(ChatColor.YELLOW + "  Winner: " + ChatColor.RESET + skyWarsGame.getWinner().getUuid());
+                stringBuilder.append(ChatColor.YELLOW).append("  Winner: ").append(ChatColor.RESET).append(skyWarsGame.getWinner().getUuid());
             }
-
         });
 
-        return false;
+        sender.sendMessage(stringBuilder.toString());
+        return true;
     }
 }

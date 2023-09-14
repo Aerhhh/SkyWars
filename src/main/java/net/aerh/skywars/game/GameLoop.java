@@ -3,6 +3,7 @@ package net.aerh.skywars.game;
 import net.aerh.skywars.game.event.GameEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -102,6 +103,7 @@ public class GameLoop {
         return String.format("%02d:%02d", minutes, seconds);
     }
 
+    @Nullable
     public GameEvent getNextEvent() {
         return gameEvents.peek();
     }

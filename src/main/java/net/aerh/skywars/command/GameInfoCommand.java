@@ -60,6 +60,6 @@ public class GameInfoCommand implements CommandExecutor {
             .append(ChatColor.YELLOW).append("  Chests: ").append(ChatColor.RESET).append(game.getRefillableChests().size()).append("\n");
 
         player.sendMessage(stringBuilder.toString());
-        return false;
+        return true;
     }
 }

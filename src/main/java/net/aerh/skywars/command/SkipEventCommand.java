@@ -43,6 +43,11 @@ public class SkipEventCommand implements CommandExecutor {
             return true;
         }
 
+        if (game.getGameLoop().getNextEvent() == null) {
+            player.sendMessage(ChatColor.RED + "There is no next event!");
+            return true;
+        }
+
         game.getGameLoop().next();
         player.sendMessage(ChatColor.GREEN + "You skipped the current event!");
         return true;
