@@ -46,9 +46,8 @@ public class RefillableChest {
             throw new IllegalStateException("Cannot refill chest at " + Utils.parseLocationToString(location) + " with empty loot pool!");
         }
 
-        Collections.shuffle(loot);
-
         BlockState blockState = location.getBlock().getState();
+
         if (!(blockState instanceof Chest)) {
             throw new IllegalStateException("Block at " + Utils.parseLocationToString(location) + " is not a chest!");
         }
@@ -62,6 +61,7 @@ public class RefillableChest {
                 randomSlot = ThreadLocalRandom.current().nextInt(chestInventory.getSize());
             }
 
+            Collections.shuffle(loot);
             ItemStack randomItem = loot.get(ThreadLocalRandom.current().nextInt(loot.size()));
             chestInventory.setItem(randomSlot, randomItem);
         }
