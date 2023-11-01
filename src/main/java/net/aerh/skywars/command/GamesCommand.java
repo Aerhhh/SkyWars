@@ -31,7 +31,8 @@ public class GamesCommand implements CommandExecutor {
                 stringBuilder.append(ChatColor.YELLOW).append("  Next Event: ").append(ChatColor.RESET).append("None");
             }
 
-            stringBuilder.append("\n").append(ChatColor.YELLOW).append("  Islands: ").append(ChatColor.RESET).append(skyWarsGame.getIslands().size()).append("\n")
+            stringBuilder.append("\n")
+                .append(ChatColor.YELLOW).append("  Islands: ").append(ChatColor.RESET).append(skyWarsGame.getIslands().size()).append("\n")
                 .append(ChatColor.YELLOW).append("  Chests: ").append(ChatColor.RESET).append(skyWarsGame.getRefillableChests().size()).append("\n")
                 .append(ChatColor.YELLOW).append("  Players: ").append(ChatColor.RESET).append(skyWarsGame.getBukkitPlayers().size()).append("/").append(SkyWarsGame.MAX_PLAYER_COUNT).append("\n")
                 .append(ChatColor.YELLOW).append("  Spectators: ").append(ChatColor.RESET).append(skyWarsGame.getBukkitSpectators().size()).append("\n");

@@ -2,6 +2,7 @@ package net.aerh.skywars.util;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.util.stream.Collectors;
@@ -28,8 +29,11 @@ public class Utils {
         return output;
     }
 
-    public static boolean locationsMatch(Location location1, Location location2) {
-        return location1.getWorld() == location2.getWorld() && location1.getBlockX() == location2.getBlockX() && location1.getBlockY() == location2.getBlockY() && location1.getBlockZ() == location2.getBlockZ();
+    public static boolean locationsMatch(@NotNull Location location1, @NotNull Location location2) {
+        return location1.getWorld().equals(location2.getWorld())
+            && location1.getBlockX() == location2.getBlockX()
+            && location1.getBlockY() == location2.getBlockY()
+            && location1.getBlockZ() == location2.getBlockZ();
     }
 
     private static String repeat(char character, int count) {
