@@ -31,7 +31,7 @@ public class SkipEventCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        SkyWarsGame game = plugin.findGame(player);
+        SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
             player.sendMessage(ChatColor.RED + "You are not in a game!");

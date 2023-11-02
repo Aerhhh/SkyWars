@@ -178,7 +178,7 @@ public class SkyWarsGame {
             }
 
             spectators.clear();
-            plugin.getGames().remove(this);
+            plugin.getGameManager().getGames().remove(this);
         }, 20L * 30L);
     }
 

@@ -19,9 +19,9 @@ public class GamesCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(ChatColor.GOLD).append("Games (").append(plugin.getGames().size()).append("):").append("\n");
+        stringBuilder.append(ChatColor.GOLD).append("Games (").append(plugin.getGameManager().getGames().size()).append("):").append("\n");
 
-        plugin.getGames().forEach(skyWarsGame -> {
+        plugin.getGameManager().getGames().forEach(skyWarsGame -> {
             stringBuilder.append(ChatColor.YELLOW).append("  ").append(skyWarsGame.getWorld().getName()).append(": ").append(ChatColor.RESET).append(skyWarsGame.getState()).append("\n");
 
             if (skyWarsGame.getGameLoop().getNextEvent() != null) {

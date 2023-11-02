@@ -29,9 +29,9 @@ public class PlayerSessionListener implements Listener {
 
     @EventHandler
     public void onLogin(AsyncPlayerPreLoginEvent event) {
-        SkyWarsGame game = plugin.findNextFreeGame();
+        SkyWarsGame game = plugin.getGameManager().findNextFreeGame();
 
-        if (plugin.getGames().isEmpty() || game == null) {
+        if (plugin.getGameManager().getGames().isEmpty() || game == null) {
             event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatColor.RED + "No games available!");
             return;
         }
@@ -57,7 +57,7 @@ public class PlayerSessionListener implements Listener {
         player.setHealth(20.0D);
         player.setSaturation(20.0F);
 
-        SkyWarsGame game = plugin.findGame(player);
+        SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
             player.kickPlayer(GENERIC_KICK_MESSAGE);
@@ -86,10 +86,13 @@ public class PlayerSessionListener implements Listener {
             player.teleport(game.getPregameSpawn());
         }
 
-        Bukkit.getOnlinePlayers().forEach(p -> p.hidePlayer(plugin, player));
+        Bukkit.getOnlinePlayers().forEach(p -> {
+            p.hidePlayer(plugin, player);
+            player.hidePlayer(plugin, p);
+        });
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            plugin.getGames().stream()
+            plugin.getGameManager().getGames().stream()
                 .filter(g -> g.equals(game))
                 .forEach(g -> {
                     g.getBukkitPlayers().forEach(p -> {
@@ -105,7 +108,7 @@ public class PlayerSessionListener implements Listener {
         event.setQuitMessage(null);
 
         Player player = event.getPlayer();
-        SkyWarsGame game = plugin.findGame(player);
+        SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
             return;

@@ -25,10 +25,10 @@ public class GameInfoCommand implements CommandExecutor {
         }
 
         Player player = (Player) commandSender;
-        SkyWarsGame game = plugin.findGame(player);
+        SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (args.length > 0) {
-            game = plugin.getGame(args[0]);
+            game = plugin.getGameManager().getGame(args[0]);
         }
 
         if (game == null) {

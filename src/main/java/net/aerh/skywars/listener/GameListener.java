@@ -48,7 +48,7 @@ public class GameListener implements Listener {
         }
 
         Player player = (Player) event.getEntity();
-        SkyWarsGame game = plugin.findGame(player);
+        SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null || game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING) {
             return;
@@ -89,7 +89,7 @@ public class GameListener implements Listener {
 
         Player player = (Player) event.getEntity();
         Player damager = (Player) event.getDamager();
-        SkyWarsGame game = plugin.findGame(player);
+        SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
             return;
@@ -116,7 +116,7 @@ public class GameListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
-        SkyWarsGame game = plugin.findGame(player);
+        SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
             return;
@@ -141,7 +141,7 @@ public class GameListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
-        SkyWarsGame game = plugin.findGame(player);
+        SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
             return;
@@ -164,7 +164,7 @@ public class GameListener implements Listener {
         }
 
         Player player = (Player) event.getEntity();
-        SkyWarsGame game = plugin.findGame(player);
+        SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
             return;
@@ -187,7 +187,7 @@ public class GameListener implements Listener {
         }
 
         Player player = (Player) event.getEntity();
-        SkyWarsGame game = plugin.findGame(player);
+        SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
             return;
@@ -206,7 +206,7 @@ public class GameListener implements Listener {
     @EventHandler
     public void onItemDrop(PlayerDropItemEvent event) {
         Player player = event.getPlayer();
-        SkyWarsGame game = plugin.findGame(player);
+        SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
             return;
@@ -229,7 +229,7 @@ public class GameListener implements Listener {
         }
 
         Player player = (Player) event.getEntity();
-        SkyWarsGame game = plugin.findGame(player);
+        SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
             return;
@@ -248,7 +248,7 @@ public class GameListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        SkyWarsGame game = plugin.findGame(player);
+        SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
             return;
@@ -271,7 +271,7 @@ public class GameListener implements Listener {
         }
 
         Player player = (Player) event.getEntered();
-        SkyWarsGame game = plugin.findGame(player);
+        SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
             return;
@@ -289,7 +289,7 @@ public class GameListener implements Listener {
         }
 
         Player player = (Player) event.getAttacker();
-        SkyWarsGame game = plugin.findGame(player);
+        SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
             return;
@@ -303,7 +303,7 @@ public class GameListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
-        SkyWarsGame game = plugin.findGame(player);
+        SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
             return;
