@@ -8,12 +8,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class GameManager {
 
@@ -43,20 +39,6 @@ public class GameManager {
                 Bukkit.getServer().shutdown();
             }
         }, 0L, 20L * 5L);
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            games.forEach(game -> {
-                try {
-                    try (Stream<Path> path = Files.walk(game.getWorld().getWorldFolder().toPath())) {
-                        path.sorted(Comparator.reverseOrder())
-                            .map(Path::toFile)
-                            .forEach(File::delete);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-        }));
     }
 
     public void addGame(SkyWarsGame game) {

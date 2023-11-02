@@ -62,6 +62,11 @@ public class MapLoader {
         plugin.getLogger().info("Creating world " + worldName + "...");
         World world = Bukkit.createWorld(new WorldCreator(worldName));
 
+        if (world == null) {
+            throw new IllegalStateException("Could not create world " + worldName);
+        }
+
+        world.setAutoSave(false);
         world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
         world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
 

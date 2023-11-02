@@ -136,7 +136,7 @@ public class SkyWarsGame {
 
         broadcast(ChatColor.RED + "Game ended!");
 
-        getPlayers().forEach(skyWarsPlayer -> {
+        Stream.concat(players.stream(), spectators.stream()).forEach(skyWarsPlayer -> {
             skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + "Game over!");
             skyWarsPlayer.getScoreboard().update();
         });

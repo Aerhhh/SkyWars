@@ -9,6 +9,11 @@ commands:
     aliases:
       - sg
       - startgame
+  end:
+    aliases:
+      - eg
+      - endgame
+      - stopgame
   games:
     aliases:
       - listgames
