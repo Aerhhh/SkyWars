@@ -41,6 +41,7 @@ public class MapLoader {
 
         File mapDir = mapDirs[ThreadLocalRandom.current().nextInt(mapDirs.length)];
         File configFile = new File(mapDir, "config.json");
+
         if (!configFile.exists()) {
             throw new IllegalStateException("No config.json found in map directory '" + mapDir.getName() + "' (" + mapDir.getAbsolutePath() + ")");
         }
@@ -55,7 +56,7 @@ public class MapLoader {
         JsonObject config;
         try (FileReader reader = new FileReader(configFile)) {
             config = GSON.fromJson(reader, JsonObject.class);
-            plugin.getLogger().info("Loaded config.json for map " + mapDir.getName());
+            plugin.getLogger().info("Loaded config.json for map " + config.get("name").getAsString());
         }
 
         plugin.getLogger().info("Creating world " + worldName + "...");

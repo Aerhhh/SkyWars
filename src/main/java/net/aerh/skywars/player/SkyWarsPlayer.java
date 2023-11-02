@@ -1,6 +1,7 @@
 package net.aerh.skywars.player;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.Nullable;
@@ -10,7 +11,7 @@ import java.util.UUID;
 public class SkyWarsPlayer {
 
     private final UUID uuid;
-    private Scoreboard scoreboard;
+    private PlayerScoreboard scoreboard;
     private int kills;
 
     /**
@@ -47,27 +48,32 @@ public class SkyWarsPlayer {
      */
     public void setKills(int kills) {
         this.kills = kills;
+
+        if (scoreboard != null) {
+            scoreboard.add(5, ChatColor.RESET + "Kills: " + ChatColor.GREEN + this.kills);
+            scoreboard.update();
+        }
     }
 
     /**
      * Adds a kill to the player.
      */
     public void addKill() {
-        kills++;
+        setKills(++kills);
     }
 
     /**
      * Removes a kill from the player.
      */
     public void removeKill() {
-        kills--;
+        setKills(--kills);
     }
 
     /**
      * Resets the amount of kills the player has.
      */
     public void resetKills() {
-        kills = 0;
+        setKills(0);
     }
 
     /**
@@ -85,7 +91,7 @@ public class SkyWarsPlayer {
      *
      * @return the {@link Scoreboard} of the player
      */
-    public Scoreboard getScoreboard() {
+    public PlayerScoreboard getScoreboard() {
         return scoreboard;
     }
 
@@ -94,12 +100,8 @@ public class SkyWarsPlayer {
      *
      * @param scoreboard the {@link Scoreboard} to set
      */
-    public void setScoreboard(Scoreboard scoreboard) {
+    public void setScoreboard(PlayerScoreboard scoreboard) {
         this.scoreboard = scoreboard;
-
-        if (getBukkitPlayer() != null) {
-            getBukkitPlayer().setScoreboard(this.scoreboard);
-        }
     }
 
     @Override

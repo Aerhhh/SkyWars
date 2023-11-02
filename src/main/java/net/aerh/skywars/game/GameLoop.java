@@ -1,6 +1,7 @@
 package net.aerh.skywars.game;
 
 import net.aerh.skywars.game.event.GameEvent;
+import org.bukkit.ChatColor;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
@@ -8,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.logging.Level;
+import java.util.stream.Stream;
 
 public class GameLoop {
 
@@ -88,6 +90,11 @@ public class GameLoop {
                 if (countdownTilNextEvent <= 0) {
                     cancel();
                 }
+
+                Stream.concat(game.getPlayers().stream(), game.getSpectators().stream()).forEach(skyWarsPlayer -> {
+                    skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + gameEvent.getDisplayName() + " " + getTimeUntilNextEvent());
+                    skyWarsPlayer.getScoreboard().update();
+                });
 
                 countdownTilNextEvent--;
             }

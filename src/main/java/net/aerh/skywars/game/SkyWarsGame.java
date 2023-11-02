@@ -12,6 +12,7 @@ import net.aerh.skywars.game.event.impl.ChestRefillEvent;
 import net.aerh.skywars.game.event.impl.DragonSpawnEvent;
 import net.aerh.skywars.game.event.impl.GameEndEvent;
 import net.aerh.skywars.game.island.Island;
+import net.aerh.skywars.player.PlayerScoreboard;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import net.aerh.skywars.util.CenteredMessage;
 import net.aerh.skywars.util.Utils;
@@ -48,6 +49,7 @@ public class SkyWarsGame {
     private List<Island> islands;
     private BukkitTask countdownTask;
     private SkyWarsPlayer winner;
+    private final String mapName;
 
     /**
      * Represents a game of SkyWars.
@@ -63,6 +65,7 @@ public class SkyWarsGame {
         this.spectators = new HashSet<>();
         this.gameEvents = new LinkedList<>();
         this.refillableChests = new HashSet<>();
+        this.mapName = config.get("name").getAsString();
         this.pregameSpawn = parseLocation(config, "pregame");
 
         gameEvents.add(new CageOpenEvent(this));
@@ -111,7 +114,12 @@ public class SkyWarsGame {
         broadcast("\n");
         broadcast(Utils.SEPARATOR);
 
-        getBukkitPlayers().forEach(player -> {
+        getPlayers().forEach(skyWarsPlayer -> {
+            log(Level.INFO, "Setting scoreboard for " + skyWarsPlayer.getUuid() + "!");
+
+            Player player = skyWarsPlayer.getBukkitPlayer();
+
+            setupScoreboard(player, skyWarsPlayer.getScoreboard());
             setupPlayerNameColors(player);
             player.setGameMode(GameMode.SURVIVAL);
         });
@@ -127,6 +135,11 @@ public class SkyWarsGame {
         state = GameState.ENDING;
 
         broadcast(ChatColor.RED + "Game ended!");
+
+        getPlayers().forEach(skyWarsPlayer -> {
+            skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + "Game over!");
+            skyWarsPlayer.getScoreboard().update();
+        });
 
         if (players.size() == 1) {
             winner = players.iterator().next();
@@ -180,6 +193,22 @@ public class SkyWarsGame {
             spectators.clear();
             plugin.getGameManager().getGames().remove(this);
         }, 20L * 30L);
+    }
+
+    private void setupScoreboard(Player player, PlayerScoreboard scoreboard) {
+        scoreboard.add(10, " ");
+        scoreboard.add(9, ChatColor.RESET + "Next Event:");
+        scoreboard.add(8, ChatColor.GRAY + "???");
+        scoreboard.add(7, "  ");
+        scoreboard.add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getPlayers().size());
+        scoreboard.add(5, ChatColor.RESET + "Kills: " + ChatColor.GREEN + "0");
+        scoreboard.add(4, "   ");
+        scoreboard.add(3, ChatColor.RESET + "Map: " + ChatColor.GREEN + mapName);
+        scoreboard.add(2, "    ");
+        scoreboard.add(1, ChatColor.YELLOW + "www.aerh.net");
+        scoreboard.update();
+
+        scoreboard.send(player);
     }
 
     /**
@@ -269,8 +298,15 @@ public class SkyWarsGame {
         player.getScoreboard().getTeam("gray").addEntry(player.getName());
         player.teleport(pregameSpawn);
 
-        Stream.concat(getBukkitPlayers().stream(), getBukkitSpectators().stream()).forEach(otherPlayer -> {
-            otherPlayer.hidePlayer(plugin, player);
+        Stream.concat(players.stream(), spectators.stream()).forEach(swPlayer -> {
+            Player bukkitPlayer = swPlayer.getBukkitPlayer();
+
+            if (bukkitPlayer != null) {
+                bukkitPlayer.hidePlayer(plugin, player);
+            }
+
+            swPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getPlayers().size());
+            swPlayer.getScoreboard().update();
         });
     }
 
@@ -300,6 +336,15 @@ public class SkyWarsGame {
         checkPlayerCountForCountdown();
         log(Level.INFO, "Added player " + player.getUuid() + " to island " + Utils.parseLocationToString(island.getSpawnLocation()) + "!");
 
+        if (state != GameState.STARTING) {
+            Stream.concat(players.stream(), spectators.stream())
+                .filter(skyWarsPlayer -> skyWarsPlayer.getScoreboard() != null)
+                .forEach(skyWarsPlayer -> {
+                    skyWarsPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getPlayers().size());
+                    skyWarsPlayer.getScoreboard().update();
+                });
+        }
+
         return true;
     }
 
@@ -320,6 +365,13 @@ public class SkyWarsGame {
 
         if (island != null) {
             island.setAssignedPlayer(null);
+        }
+
+        if (state != GameState.STARTING) {
+            Stream.concat(players.stream(), spectators.stream()).forEach(skyWarsPlayer -> {
+                skyWarsPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getPlayers().size());
+                skyWarsPlayer.getScoreboard().update();
+            });
         }
     }
 
@@ -425,6 +477,24 @@ public class SkyWarsGame {
     @Nullable
     public Player getPlayerOrSpectator(Player player) {
         return getPlayerOrSpectator(player.getUniqueId());
+    }
+
+    /**
+     * Gets a {@link List} of the {@link SkyWarsPlayer players} in this game.
+     *
+     * @return the {@link List} of the {@link SkyWarsPlayer players} in this game
+     */
+    public Set<SkyWarsPlayer> getPlayers() {
+        return players;
+    }
+
+    /**
+     * Gets a {@link List} of the {@link SkyWarsPlayer spectators} in this game.
+     *
+     * @return the {@link List} of the {@link SkyWarsPlayer spectators} in this game
+     */
+    public Set<SkyWarsPlayer> getSpectators() {
+        return spectators;
     }
 
     /**

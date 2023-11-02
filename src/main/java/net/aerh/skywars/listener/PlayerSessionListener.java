@@ -3,6 +3,7 @@ package net.aerh.skywars.listener;
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.GameState;
 import net.aerh.skywars.game.SkyWarsGame;
+import net.aerh.skywars.player.PlayerScoreboard;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -78,8 +79,6 @@ public class PlayerSessionListener implements Listener {
             return;
         }
 
-        skyWarsPlayer.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
-
         if (game.getState() == GameState.STARTING) {
             player.teleport(game.getIsland(skyWarsPlayer).getSpawnLocation().clone().add(0.5, 0, 0.5));
         } else {
@@ -101,6 +100,8 @@ public class PlayerSessionListener implements Listener {
                     });
                 });
         }, 1L);
+
+        skyWarsPlayer.setScoreboard(new PlayerScoreboard(ChatColor.YELLOW + ChatColor.BOLD.toString() + "SkyWars"));
     }
 
     @EventHandler
