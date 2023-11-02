@@ -8,15 +8,13 @@ import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -154,6 +152,24 @@ public class GameListener implements Listener {
 
         if (!game.getSettings().canPlaceBlocks()) {
             event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onEntityTarget(EntityTargetEvent event) {
+        if (event.getEntity() instanceof EnderDragon && event.getTarget() instanceof Player) {
+            EnderDragon dragon = (EnderDragon) event.getEntity();
+            Player target = (Player) event.getTarget();
+            SkyWarsGame game = plugin.getGameManager().findGame(target);
+
+            if (game == null) {
+                return;
+            }
+
+            if (game.getBukkitSpectators().contains(target)) {
+                event.setCancelled(true);
+                dragon.setTarget(null);
+            }
         }
     }
 
