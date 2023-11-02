@@ -57,6 +57,8 @@ public class MapLoader {
         try (FileReader reader = new FileReader(configFile)) {
             config = GSON.fromJson(reader, JsonObject.class);
             plugin.getLogger().info("Loaded config.json for map " + config.get("name").getAsString());
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not read config.json", e);
         }
 
         plugin.getLogger().info("Creating world " + worldName + "...");
