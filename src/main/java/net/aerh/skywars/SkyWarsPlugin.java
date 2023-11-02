@@ -49,7 +49,6 @@ public final class SkyWarsPlugin extends JavaPlugin {
                         .forEach(file -> {
                             try {
                                 Files.delete(file.toPath());
-                                getLogger().info("Deleted file " + file.getName());
                             } catch (IOException e) {
                                 getLogger().warning("Could not delete file " + file.getName() + ": " + e.getMessage());
                             }
