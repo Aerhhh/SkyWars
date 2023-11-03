@@ -41,6 +41,7 @@ public class CageOpenEvent extends GameEvent {
             settings.allowItemDrops(true);
             settings.allowBlockBreaking(true);
             settings.allowBlockPlacing(true);
+            settings.setInteractable(true);
         }, 20L);
 
         game.broadcast(ChatColor.YELLOW + "Cages opened! " + ChatColor.RED + "FIGHT!");

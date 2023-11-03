@@ -45,6 +45,7 @@ public class SkyWarsGame {
     private final Set<SkyWarsPlayer> spectators;
     private final Queue<GameEvent> gameEvents;
     private final Set<RefillableChest> refillableChests;
+    private final Map<String, Integer> killLeaderboard = new HashMap<>();
     private GameState state = GameState.PRE_GAME;
     private List<Island> islands;
     private BukkitTask countdownTask;
@@ -67,6 +68,8 @@ public class SkyWarsGame {
         this.refillableChests = new HashSet<>();
         this.mapName = config.get("name").getAsString();
         this.pregameSpawn = parseLocation(config, "pregame");
+
+        settings.setInteractable(false);
 
         gameEvents.add(new CageOpenEvent(this));
         gameEvents.add(new ChestRefillEvent(this));
@@ -122,6 +125,7 @@ public class SkyWarsGame {
             setupScoreboard(player, skyWarsPlayer.getScoreboard());
             setupPlayerNameColors(player);
             player.setGameMode(GameMode.SURVIVAL);
+            killLeaderboard.putIfAbsent(player.getName(), 0);
         });
 
         gameLoop.next();
@@ -148,7 +152,7 @@ public class SkyWarsGame {
         broadcast(Utils.SEPARATOR);
         broadcast("\n");
 
-        if (winner != null) {
+        if (winner != null && winner.getBukkitPlayer() != null) {
             broadcast("\n");
             broadcast(CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "Winner: " + ChatColor.GOLD + winner.getBukkitPlayer().getName()));
         } else {
@@ -157,14 +161,14 @@ public class SkyWarsGame {
         }
 
         broadcast("\n");
+        broadcast(CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "Top Players"));
 
-        List<SkyWarsPlayer> topPlayers = getTopPlayers();
-
-        if (!topPlayers.isEmpty()) {
-            broadcast(CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "Top Kills:"));
-            for (SkyWarsPlayer topPlayer : topPlayers) {
-                broadcast(CenteredMessage.generate(ChatColor.GOLD + topPlayer.getBukkitPlayer().getName() + ChatColor.RESET + " - " + topPlayer.getKills() + " kill" + (topPlayer.getKills() == 1 ? "" : "s")));
-            }
+        if (!getTopPlayers().isEmpty()) {
+            getTopPlayers().forEach((s, integer) -> {
+                broadcast(CenteredMessage.generate(ChatColor.GOLD + s + ChatColor.RESET + ": " + ChatColor.YELLOW + integer + " kill" + (integer == 1 ? "" : "s")));
+            });
+        } else {
+            broadcast(CenteredMessage.generate(ChatColor.RED + "Nobody!"));
         }
 
         broadcast("\n");
@@ -278,6 +282,7 @@ public class SkyWarsGame {
      * @param skyWarsPlayer the {@link SkyWarsPlayer} to set
      */
     public void setSpectator(SkyWarsPlayer skyWarsPlayer) {
+        players.remove(skyWarsPlayer);
         spectators.add(skyWarsPlayer);
 
         Player player = skyWarsPlayer.getBukkitPlayer();
@@ -319,7 +324,10 @@ public class SkyWarsGame {
     public boolean addPlayer(SkyWarsPlayer player) {
         log(Level.INFO, "Adding player " + player.getUuid());
 
-        Island island = islands.stream().filter(i -> i.getAssignedPlayer() == null).findFirst().orElse(null);
+        Island island = islands.stream()
+            .filter(i -> i.getAssignedPlayer() == null)
+            .findFirst()
+            .orElse(null);
 
         if (island == null) {
             return false;
@@ -511,12 +519,11 @@ public class SkyWarsGame {
      *
      * @return the {@link List} of the top 3 {@link SkyWarsPlayer players} based on kills
      */
-    private List<SkyWarsPlayer> getTopPlayers() {
-        return Stream.concat(players.stream(), spectators.stream()).collect(Collectors.toList())
-            .stream()
-            .sorted(Comparator.comparingInt(SkyWarsPlayer::getKills).reversed())
+    private Map<String, Integer> getTopPlayers() {
+        return killLeaderboard.entrySet().stream()
+            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
             .limit(3)
-            .collect(Collectors.toList());
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> oldValue, LinkedHashMap::new));
     }
 
     /**
@@ -745,6 +752,15 @@ public class SkyWarsGame {
      */
     public void setWinner(@Nullable SkyWarsPlayer winner) {
         this.winner = winner;
+    }
+
+    /**
+     * Gets the kill leaderboard for this game.
+     *
+     * @return the kill leaderboard for this game
+     */
+    public Map<String, Integer> getKillLeaderboard() {
+        return killLeaderboard;
     }
 
     /**

@@ -1,14 +1,18 @@
 package net.aerh.skywars.game;
 
 import net.aerh.skywars.game.event.GameEvent;
+import net.aerh.skywars.game.event.impl.ChestRefillEvent;
+import net.aerh.skywars.util.Hologram;
 import org.bukkit.ChatColor;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class GameLoop {
@@ -61,7 +65,7 @@ public class GameLoop {
             return;
         }
 
-        GameEvent gameEvent = gameEvents.poll();
+        GameEvent gameEvent = gameEvents.peek();
 
         if (gameEvent == null) {
             game.log(Level.INFO, "No more events left!");
@@ -91,8 +95,10 @@ public class GameLoop {
                     cancel();
                 }
 
+                String timeUntilNextEvent = getTimeUntilNextEvent();
+
                 Stream.concat(game.getPlayers().stream(), game.getSpectators().stream()).forEach(skyWarsPlayer -> {
-                    skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + gameEvent.getDisplayName() + " " + getTimeUntilNextEvent());
+                    skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + gameEvent.getDisplayName() + " " + timeUntilNextEvent);
                     skyWarsPlayer.getScoreboard().update();
                 });
 
@@ -117,6 +123,7 @@ public class GameLoop {
         countdownTilNextEvent = 0;
         game.log(Level.INFO, "Executing event: " + gameEvent.getDisplayName() + " (" + gameEvent.getClass().getSimpleName() + ")" + " - " + gameEvents.size() + " events left");
         gameEvent.execute();
+        gameEvents.remove();
         next();
     }
 
@@ -149,5 +156,9 @@ public class GameLoop {
      */
     public Queue<GameEvent> getGameEvents() {
         return gameEvents;
+    }
+
+    public List<String> getGameEventNames() {
+        return gameEvents.stream().map(gameEvent -> gameEvent.getClass().getSimpleName()).collect(Collectors.toList());
     }
 }

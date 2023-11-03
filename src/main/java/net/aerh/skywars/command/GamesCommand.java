@@ -22,7 +22,7 @@ public class GamesCommand implements CommandExecutor {
         stringBuilder.append(ChatColor.GOLD).append("Games (").append(plugin.getGameManager().getGames().size()).append("):").append("\n");
 
         plugin.getGameManager().getGames().forEach(skyWarsGame -> {
-            stringBuilder.append(ChatColor.YELLOW).append("  ").append(skyWarsGame.getWorld().getName()).append(": ").append(ChatColor.RESET).append(skyWarsGame.getState()).append("\n");
+            stringBuilder.append(ChatColor.YELLOW).append(skyWarsGame.getWorld().getName()).append(": ").append(ChatColor.RESET).append(skyWarsGame.getState()).append("\n");
 
             if (skyWarsGame.getGameLoop().getNextEvent() != null) {
                 stringBuilder.append(ChatColor.YELLOW).append("  Next Event: ").append(ChatColor.RESET).append("In ").append(skyWarsGame.getGameLoop().getTimeUntilNextEvent())
