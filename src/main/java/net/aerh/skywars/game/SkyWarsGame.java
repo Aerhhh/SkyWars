@@ -282,7 +282,6 @@ public class SkyWarsGame {
      * @param skyWarsPlayer the {@link SkyWarsPlayer} to set
      */
     public void setSpectator(SkyWarsPlayer skyWarsPlayer) {
-        players.remove(skyWarsPlayer);
         spectators.add(skyWarsPlayer);
 
         Player player = skyWarsPlayer.getBukkitPlayer();

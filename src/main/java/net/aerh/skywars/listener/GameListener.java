@@ -65,8 +65,8 @@ public class GameListener implements Listener {
         player.sendTitle(ChatColor.RED + ChatColor.BOLD.toString() + "YOU DIED!", ChatColor.GRAY + "Better luck next time!", 0, 20 * 5, 20);
 
         SkyWarsPlayer skyWarsPlayer = game.getPlayer(player);
-        game.removePlayer(skyWarsPlayer);
         game.setSpectator(skyWarsPlayer);
+        game.getPlayers().remove(skyWarsPlayer);
 
         UUID uuid = lastDamager.getIfPresent(player.getUniqueId());
         SkyWarsPlayer killer = game.getPlayer(uuid);
@@ -74,6 +74,7 @@ public class GameListener implements Listener {
         if (killer != null && killer.getBukkitPlayer() != null) {
             game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " was killed by " + ChatColor.GOLD + killer.getBukkitPlayer().getName());
             killer.addKill();
+            game.getKillLeaderboard().put(killer.getBukkitPlayer().getName(), killer.getKills());
         } else {
             game.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " died!");
         }
