@@ -8,6 +8,8 @@ import net.aerh.skywars.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Arrays;
+
 public final class SkyWarsPlugin extends JavaPlugin {
 
     private static final int DESIRED_GAME_COUNT = 5;
@@ -16,6 +18,10 @@ public final class SkyWarsPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        Arrays.stream(Bukkit.getWorldContainer().listFiles((dir, name) -> name.startsWith("game-"))).forEach(file -> {
+            Utils.deleteFolder(file.toPath());
+        });
+
         gameManager = new GameManager(this);
 
         Bukkit.getScheduler().runTask(this, () -> {
@@ -31,14 +37,6 @@ public final class SkyWarsPlugin extends JavaPlugin {
         getCommand("games").setExecutor(new GamesCommand(this));
         getCommand("gameinfo").setExecutor(new GameInfoCommand(this));
         getCommand("skipevent").setExecutor(new SkipEventCommand(this));
-    }
-
-    @Override
-    public void onDisable() {
-            gameManager.getGames().forEach(skyWarsGame -> {
-                Bukkit.unloadWorld(skyWarsGame.getWorld(), false);
-                Utils.deleteFolder(skyWarsGame.getWorld().getWorldFolder().toPath());
-            });
     }
 
     public GameManager getGameManager() {
