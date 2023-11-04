@@ -4,6 +4,7 @@ import org.bukkit.ChatColor;
 
 /**
  * @author SirSpoodles
+ * @see <a href="https://www.spigotmc.org/threads/free-code-sending-perfectly-centered-chat-message.95872/">SpigotMC Forum Post</a>
  */
 public class CenteredMessage {
 

@@ -199,6 +199,11 @@ public class SkyWarsGame {
         }, 20L * 30L);
     }
 
+    /**
+     * Set up the scoreboard for a {@link Player}.
+     * @param player the {@link Player} to set up the scoreboard for
+     * @param scoreboard the {@link PlayerScoreboard} to set up
+     */
     private void setupScoreboard(Player player, PlayerScoreboard scoreboard) {
         scoreboard.add(10, " ");
         scoreboard.add(9, ChatColor.RESET + "Next Event:");

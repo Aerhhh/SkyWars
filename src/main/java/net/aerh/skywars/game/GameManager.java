@@ -16,11 +16,21 @@ public class GameManager {
     private final SkyWarsPlugin plugin;
     private final List<SkyWarsGame> games;
 
+    /**
+     * Creates a new game manager.
+     *
+     * @param plugin the plugin
+     */
     public GameManager(SkyWarsPlugin plugin) {
         this.plugin = plugin;
         this.games = new ArrayList<>();
     }
 
+    /**
+     * Creates the specified amount of games.
+     *
+     * @param amount the amount of games to create
+     */
     public void createGames(int amount) {
         try {
             for (int i = 0; i < amount; i++) {
@@ -32,7 +42,10 @@ public class GameManager {
         }
     }
 
-    public void registerCleanupTasks() {
+    /**
+     * Registers the cleanup tasks.
+     */
+    public void registerCleanupTask() {
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             if (games.isEmpty()) {
                 plugin.getLogger().info("All games ended, shutting down server!");
@@ -41,14 +54,30 @@ public class GameManager {
         }, 0L, 20L * 5L);
     }
 
+    /**
+     * Adds a game to the game manager.
+     *
+     * @param game the {@link SkyWarsGame} to add
+     */
     public void addGame(SkyWarsGame game) {
         games.add(game);
     }
 
+    /**
+     * Removes a game from the game manager.
+     *
+     * @param game the {@link SkyWarsGame} to remove
+     */
     public void removeGame(SkyWarsGame game) {
         games.remove(game);
     }
 
+    /**
+     * Gets a game by its world name.
+     *
+     * @param worldName the world name
+     * @return the {@link SkyWarsGame} or null if not found
+     */
     @Nullable
     public SkyWarsGame getGame(String worldName) {
         return games.stream()
@@ -57,6 +86,11 @@ public class GameManager {
             .orElse(null);
     }
 
+    /**
+     * Finds the next free {@link SkyWarsGame} in the list.
+     *
+     * @return the next free {@link SkyWarsGame} or null if not found
+     */
     @Nullable
     public SkyWarsGame findNextFreeGame() {
         return games.stream()
@@ -66,6 +100,12 @@ public class GameManager {
             .orElse(null);
     }
 
+    /**
+     * Finds a game by a {@link Player} object.
+     *
+     * @param player the {@link Player} to find the game of
+     * @return the {@link SkyWarsGame} or null if not found
+     */
     @Nullable
     public SkyWarsGame findGame(Player player) {
         return games.stream()
@@ -74,6 +114,11 @@ public class GameManager {
             .orElse(null);
     }
 
+    /**
+     * Gets all games.
+     *
+     * @return a {@link List} of all games
+     */
     public List<SkyWarsGame> getGames() {
         return games;
     }

@@ -102,10 +102,20 @@ public class RefillableChest {
         return type;
     }
 
+    /**
+     * Gets the {@link Inventory} of this chest.
+     *
+     * @return the {@link Inventory} of this chest
+     */
     public Inventory getInventory() {
         return ((Chest) location.getBlock().getState()).getBlockInventory();
     }
 
+    /**
+     * Adds an {@link ItemStack item} to a random slot in the chest.
+     *
+     * @param itemStack the {@link ItemStack} to add
+     */
     public void addItemToRandomSlot(ItemStack itemStack) {
         Inventory inventory = getInventory();
         int randomSlot = ThreadLocalRandom.current().nextInt(inventory.getSize());
@@ -126,10 +136,20 @@ public class RefillableChest {
         return timesRefilled;
     }
 
+    /**
+     * Gets the {@link Hologram} that displays the refill timer.
+     *
+     * @return the {@link Hologram} that displays the refill timer
+     */
     public Hologram getTimerHologram() {
         return timerHologram;
     }
 
+    /**
+     * Sets the {@link Hologram} that displays the refill timer.
+     *
+     * @param timerHologram the {@link Hologram} that displays the refill timer
+     */
     public void setTimerHologram(Hologram timerHologram) {
         this.timerHologram = timerHologram;
     }

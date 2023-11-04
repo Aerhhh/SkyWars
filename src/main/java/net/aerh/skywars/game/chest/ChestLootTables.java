@@ -59,6 +59,12 @@ public class ChestLootTables {
     private ChestLootTables() {
     }
 
+    /**
+     * Returns the {@link LootTable} for the given {@link ChestType}.
+     *
+     * @param chestType the {@link ChestType} to get the {@link LootTable} for
+     * @return the {@link LootTable} for the given {@link ChestType}
+     */
     public static LootTable<ItemStack> getLootForChestType(@NotNull ChestType chestType) {
         if (chestType == ChestType.MIDDLE) {
             return MIDDLE_CHEST_LOOT;

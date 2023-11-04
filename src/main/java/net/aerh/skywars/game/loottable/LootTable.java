@@ -11,14 +11,28 @@ public class LootTable<T> {
 
     private final List<Item> table;
 
+    /**
+     * Represents a loot table.
+     */
     public LootTable() {
         table = new ArrayList<>();
     }
 
+    /**
+     * Adds an item to the {@link LootTable}.
+     *
+     * @param item   the item
+     * @param weight the weight of the item
+     */
     public void addItemWithWeight(T item, int weight) {
         table.add(new Item(item, weight));
     }
 
+    /**
+     * Gets a random item from the {@link LootTable}.
+     *
+     * @return a random item from the {@link LootTable}
+     */
     public Item getRandomItem() {
         int totalWeight = table.stream().mapToInt(Item::getWeight).sum();
 
@@ -28,7 +42,7 @@ public class LootTable<T> {
 
         Item guaranteedItem = table.stream()
             .filter(item -> item.getWeight() == GUARANTEED_WEIGHT)
-            .findFirst()
+            .findAny()
             .orElse(null);
 
         if (guaranteedItem != null) {
@@ -52,6 +66,11 @@ public class LootTable<T> {
     }
 
 
+    /**
+     * Checks if the {@link LootTable} is empty.
+     *
+     * @return {@code true} if the {@link LootTable} is empty, otherwise {@code false}
+     */
     public boolean isEmpty() {
         return table.isEmpty();
     }
@@ -60,15 +79,31 @@ public class LootTable<T> {
         private final T object;
         private final int weight;
 
+        /**
+         * Represents an item in a {@link LootTable}.
+         *
+         * @param object the object
+         * @param weight the weight
+         */
         public Item(T object, int weight) {
             this.object = object;
             this.weight = weight;
         }
 
+        /**
+         * Gets the object of this {@link Item}.
+         *
+         * @return the object
+         */
         public T getObject() {
             return object;
         }
 
+        /**
+         * Gets the weight of this {@link Item}.
+         *
+         * @return the weight
+         */
         public int getWeight() {
             return weight;
         }

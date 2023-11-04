@@ -10,11 +10,20 @@ public class Hologram {
     private Location location;
     private String text;
 
+    /**
+     * Represents a hologram.
+     *
+     * @param location the location of the hologram
+     * @param text     the text of the hologram
+     */
     public Hologram(Location location, String text) {
         this.location = location;
         this.text = text;
     }
 
+    /**
+     * Spawns the hologram.
+     */
     public void spawn() {
         armorStand = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
         armorStand.setGravity(false);
@@ -26,15 +35,29 @@ public class Hologram {
         armorStand.setMarker(true);
     }
 
+    /**
+     * Updates the text of the hologram.
+     *
+     * @param newText the new text of the hologram
+     */
     public void updateText(String newText) {
         text = newText;
         armorStand.setCustomName(text);
     }
 
+    /**
+     * Teleports the hologram to a new location.
+     *
+     * @param newLocation the new location of the hologram
+     */
     public void teleport(Location newLocation) {
+        location = newLocation;
         armorStand.teleport(newLocation);
     }
 
+    /**
+     * Removes the hologram.
+     */
     public void remove() {
         armorStand.remove();
     }

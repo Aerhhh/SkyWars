@@ -26,7 +26,7 @@ public final class SkyWarsPlugin extends JavaPlugin {
 
         Bukkit.getScheduler().runTask(this, () -> {
             gameManager.createGames(DESIRED_GAME_COUNT);
-            gameManager.registerCleanupTasks();
+            gameManager.registerCleanupTask();
         });
 
         getServer().getPluginManager().registerEvents(new PlayerSessionListener(this), this);

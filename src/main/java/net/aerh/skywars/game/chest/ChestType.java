@@ -10,6 +10,11 @@ public enum ChestType {
         this.maxRefillItems = maxRefillItems;
     }
 
+    /**
+     * Gets the maximum amount of items that can be refilled in the chest.
+     *
+     * @return the maximum amount of items that can be refilled in the chest
+     */
     public int getMaxRefillItems() {
         return maxRefillItems;
     }

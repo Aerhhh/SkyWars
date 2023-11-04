@@ -176,6 +176,11 @@ public class GameLoop {
         return gameEvents;
     }
 
+    /**
+     * Gets the names of the {@link GameEvent}s in the queue as a {@link List} of strings.
+     *
+     * @return the names of the {@link GameEvent}s in the queue as a {@link List} of strings
+     */
     public List<String> getGameEventNames() {
         return gameEvents.stream().map(gameEvent -> gameEvent.getClass().getSimpleName()).collect(Collectors.toList());
     }
