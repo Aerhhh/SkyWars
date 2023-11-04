@@ -1,7 +1,6 @@
 package net.aerh.skywars.game.event.impl;
 
 import net.aerh.skywars.game.SkyWarsGame;
-import net.aerh.skywars.game.chest.ChestLootTables;
 import net.aerh.skywars.game.event.GameEvent;
 import net.aerh.skywars.util.Utils;
 import org.bukkit.ChatColor;
@@ -9,10 +8,13 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class ChestRefillEvent extends GameEvent {
+
+    private static final int[] ENDER_PEARL_AMOUNTS = {2, 4, 8};
 
     public ChestRefillEvent(SkyWarsGame game) {
         super(game, "Chest Refill", 5L, TimeUnit.MINUTES);
@@ -21,9 +23,9 @@ public class ChestRefillEvent extends GameEvent {
     @Override
     public void execute() {
         game.getRefillableChests().forEach(refillableChest -> {
-            // Guarantee ender pearls on the second refill
-            if (refillableChest.getTimesRefilled() + 1 == 3) {
-                ChestLootTables.getLootForChestType(refillableChest.getType()).add(new ItemStack(Material.ENDER_PEARL, 2));
+            if (refillableChest.getTimesRefilled() == 2 && ThreadLocalRandom.current().nextBoolean()) {
+                int amount = ENDER_PEARL_AMOUNTS[ThreadLocalRandom.current().nextInt(ENDER_PEARL_AMOUNTS.length)];
+                refillableChest.addItemToRandomSlot(new ItemStack(Material.ENDER_PEARL, amount));
             }
 
             refillableChest.refillChest();

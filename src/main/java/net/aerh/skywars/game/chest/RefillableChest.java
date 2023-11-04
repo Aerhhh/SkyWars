@@ -1,5 +1,7 @@
 package net.aerh.skywars.game.chest;
 
+import net.aerh.skywars.game.loottable.LootTable;
+import net.aerh.skywars.util.Hologram;
 import net.aerh.skywars.util.Utils;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -10,16 +12,15 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class RefillableChest {
 
     private final Location location;
-    private final List<ItemStack> loot;
+    private final LootTable<ItemStack> loot;
     private final ChestType type;
     private int timesRefilled;
+    private Hologram timerHologram;
 
     /**
      * Represents a chest that can be refilled with loot.
@@ -76,8 +77,7 @@ public class RefillableChest {
                 randomSlot = ThreadLocalRandom.current().nextInt(chestInventory.getSize());
             }
 
-            Collections.shuffle(loot);
-            ItemStack randomItem = loot.get(ThreadLocalRandom.current().nextInt(loot.size()));
+            ItemStack randomItem = loot.getRandomItem().getObject();
             chestInventory.setItem(randomSlot, randomItem);
         }
 
@@ -102,6 +102,21 @@ public class RefillableChest {
         return type;
     }
 
+    public Inventory getInventory() {
+        return ((Chest) location.getBlock().getState()).getBlockInventory();
+    }
+
+    public void addItemToRandomSlot(ItemStack itemStack) {
+        Inventory inventory = getInventory();
+        int randomSlot = ThreadLocalRandom.current().nextInt(inventory.getSize());
+
+        while (inventory.getItem(randomSlot) != null) {
+            randomSlot = ThreadLocalRandom.current().nextInt(inventory.getSize());
+        }
+
+        inventory.setItem(randomSlot, itemStack);
+    }
+
     /**
      * Gets the amount of times this chest has been refilled.
      *
@@ -109,5 +124,13 @@ public class RefillableChest {
      */
     public int getTimesRefilled() {
         return timesRefilled;
+    }
+
+    public Hologram getTimerHologram() {
+        return timerHologram;
+    }
+
+    public void setTimerHologram(Hologram timerHologram) {
+        this.timerHologram = timerHologram;
     }
 }

@@ -102,6 +102,24 @@ public class GameLoop {
                     skyWarsPlayer.getScoreboard().update();
                 });
 
+                if (gameEvent instanceof ChestRefillEvent) {
+                    game.getRefillableChests().forEach(refillableChest -> {
+                        if (refillableChest.getTimerHologram() == null) {
+                            refillableChest.setTimerHologram(new Hologram(refillableChest.getLocation().clone().add(0.5, 1, 0.5), ChatColor.GREEN + timeUntilNextEvent));
+                            refillableChest.getTimerHologram().spawn();
+                        }
+
+                        refillableChest.getTimerHologram().updateText(ChatColor.GREEN + timeUntilNextEvent);
+                    });
+                } else {
+                    game.getRefillableChests().stream()
+                        .filter(refillableChest -> refillableChest.getTimerHologram() != null)
+                        .forEach(refillableChest -> {
+                            refillableChest.getTimerHologram().remove();
+                            refillableChest.setTimerHologram(null);
+                        });
+                }
+
                 countdownTilNextEvent--;
             }
         }.runTaskTimer(game.getPlugin(), 0, 20L);
