@@ -10,6 +10,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DecimalFormat;
 import java.util.EnumSet;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -22,6 +23,12 @@ public class Utils {
         throw new UnsupportedOperationException("Cannot instantiate utility class.");
     }
 
+    /**
+     * Parse a {@link Location} and return a string.
+     *
+     * @param location the {@link Location} to parse
+     * @return the parsed {@link Location} string
+     */
     public static String parseLocationToString(Location location) {
         String output = "";
 
@@ -34,17 +41,39 @@ public class Utils {
         return output;
     }
 
+    /**
+     * Check if two locations match.
+     *
+     * @param location1 the first location
+     * @param location2 the second location
+     * @return {@code true} if the locations match, otherwise {@code false}
+     */
     public static boolean locationsMatch(@NotNull Location location1, @NotNull Location location2) {
-        return location1.getWorld().equals(location2.getWorld())
+        Objects.requireNonNull(location1, "location1 cannot be null!");
+        Objects.requireNonNull(location2, "location2 cannot be null!");
+
+        return Objects.equals(location1.getWorld(), location2.getWorld())
             && location1.getBlockX() == location2.getBlockX()
             && location1.getBlockY() == location2.getBlockY()
             && location1.getBlockZ() == location2.getBlockZ();
     }
 
+    /**
+     * Repeat a character a given amount of times.
+     *
+     * @param character the character to repeat
+     * @param count     the amount of times to repeat the character
+     * @return the result string
+     */
     private static String repeat(char character, int count) {
         return IntStream.range(0, count).mapToObj(i -> String.valueOf(character)).collect(Collectors.joining());
     }
 
+    /**
+     * Delete a given folder and all its contents.
+     *
+     * @param directoryPath the {@link Path} to the directory
+     */
     public static void deleteFolder(Path directoryPath) {
         try {
             Files.walkFileTree(directoryPath, EnumSet.noneOf(FileVisitOption.class), Integer.MAX_VALUE, new SimpleFileVisitor<Path>() {

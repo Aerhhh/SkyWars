@@ -57,6 +57,7 @@ public class ChestLootTables {
     }
 
     private ChestLootTables() {
+        throw new UnsupportedOperationException("Cannot instantiate utility class.");
     }
 
     /**

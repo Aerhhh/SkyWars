@@ -11,6 +11,7 @@ public class CenteredMessage {
     private static final int CENTER_PX = 154;
 
     private CenteredMessage() {
+        throw new UnsupportedOperationException("Cannot instantiate utility class.");
     }
 
     public static String generate(String message) {
