@@ -9,11 +9,19 @@ This plugin was created for Spigot 1.20.1.
 For the plugin to work, you must have at least one world folder in `plugins/SkyWars/map-templates` that includes
 a `config.json` file. Maps are randomly chosen from this folder when the plugin starts.
 
-If the `config.json` file from the chosen map cannot be read by the plugin, the server will shut down as it is required
+If the `config.json` file from the randomly chosen map cannot be read by the plugin, the server will shut down as it is required
 to run.
 
-Right now, chests are handled through in-game signs with `[chest]` on the first line and either `ISLAND` or `MIDDLE` on
-the second line. The plugin will automatically fill the chest with items.
+Islands are defined in the configuration file as a JSON object containing the x, y, and z coordinates of the island. 
+
+Chests can be defined in the configuration file as a JSON object containing the x, y, and z coordinates of the chest, the rotation
+of the chest, and the type of chest. The rotation of the chest can be one of `NORTH`, `EAST`, `SOUTH`, or `WEST`. The type of chest
+should be either `ISLAND` or `MIDDLE`. 
+
+Alternatively, chests can also be defined on the map by using signs marked with `[chest]` on the first line. The second line 
+should contain the type of chest.
+
+See the below map configuration for an example.
 
 ## Example Map Config
 
@@ -57,7 +65,7 @@ the second line. The plugin will automatically fill the chest with items.
             "y": 24,
             "z": -17,
             "rotation": "WEST",
-            "type": "ISLAND"
+            "type": "MIDDLE"
         }
     ]
     
@@ -65,11 +73,10 @@ the second line. The plugin will automatically fill the chest with items.
 ```
 
 # Commands
-
-| Command      | Aliases                        | Description                                                                                    |
-|--------------|--------------------------------|------------------------------------------------------------------------------------------------|
-| `/gameinfo`  | `/gi`                          | Get information on a single game. If no world is specified it defaults to the world you are in |
-| `/games`     | `/listgames`                   | Show basic information for all active games on the server                                      |
-| `/start`     | `/sg`, `/startgame`            | Forcefully start the game you are in                                                           |
-| `/end`       | `/eg`, `/endgame`, `/stopgame` | Forcefully end the game you are in                                                             |
-| `/skipevent` | N/A                            | Skip the current event in your game                                                            |
+| Command      | Permission                | Aliases                        | Description                                                                                    |
+|--------------|---------------------------|--------------------------------|------------------------------------------------------------------------------------------------|
+| `/gameinfo`  | skywars.command.gameinfo  | `/gi`                          | Get information on a single game. If no world is specified it defaults to the world you are in |
+| `/games`     | skywars.command.games     | `/listgames`                   | Show basic information for all active games on the server                                      |
+| `/start`     | skywars.command.start     | `/sg`, `/startgame`            | Forcefully start the game you are in                                                           |
+| `/end`       | skywars.command.end       | `/eg`, `/endgame`, `/stopgame` | Forcefully end the game you are in                                                             |
+| `/skipevent` | skywars.command.skipevent | N/A                            | Skip the current event in your game                                                            |
