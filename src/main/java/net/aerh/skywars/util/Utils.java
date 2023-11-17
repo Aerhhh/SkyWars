@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -93,6 +94,26 @@ public class Utils {
                 });
         } catch (IOException exception) {
             Bukkit.getLogger().warning("Could not delete directory " + directoryPath + ": " + exception.getMessage());
+        }
+    }
+
+    /**
+     * Copies a directory to another directory.
+     *
+     * @param source the source directory
+     * @param target the target directory
+     * @throws IOException If the directory could not be copied
+     */
+    public static void copyDirectory(File source, File target) throws IOException {
+        try (Stream<Path> paths = Files.walk(source.toPath())) {
+            paths.forEach(sourcePath -> {
+                Path targetPath = target.toPath().resolve(source.toPath().relativize(sourcePath));
+                try {
+                    Files.copy(sourcePath, targetPath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
         }
     }
 
