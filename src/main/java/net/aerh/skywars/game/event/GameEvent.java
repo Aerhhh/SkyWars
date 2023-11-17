@@ -6,8 +6,8 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class GameEvent {
 
-    private final String displayName;
     protected final SkyWarsGame game;
+    private final String displayName;
     private final long delay;
 
     /**

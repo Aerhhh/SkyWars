@@ -2,6 +2,7 @@ package net.aerh.skywars.listener;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Scheduler;
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.GameState;
 import net.aerh.skywars.game.SkyWarsGame;
@@ -31,6 +32,7 @@ public class GameListener implements Listener {
 
     private final Cache<UUID, UUID> lastDamager = Caffeine.newBuilder()
         .expireAfterWrite(10, TimeUnit.SECONDS)
+        .scheduler(Scheduler.systemScheduler())
         .build();
 
     private final SkyWarsPlugin plugin;

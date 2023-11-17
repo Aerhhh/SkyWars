@@ -1,7 +1,6 @@
 package net.aerh.skywars.game;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.chest.ChestType;
@@ -18,6 +17,7 @@ import net.aerh.skywars.util.CenteredMessage;
 import net.aerh.skywars.util.Utils;
 import net.aerh.skywars.util.WorldSignParser;
 import org.bukkit.*;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -46,8 +46,8 @@ public class SkyWarsGame {
     private final Queue<GameEvent> gameEvents = new LinkedList<>();
     private final Set<RefillableChest> refillableChests = new HashSet<>();
     private final String mapName;
+    private final List<Island> islands = new ArrayList<>();
     private GameState state = GameState.PRE_GAME;
-    private List<Island> islands = new ArrayList<>();
     private BukkitTask countdownTask;
     private SkyWarsPlayer winner;
 
@@ -62,7 +62,7 @@ public class SkyWarsGame {
         this.plugin = plugin;
         this.world = world;
         this.mapName = config.get("name").getAsString();
-        this.pregameSpawn = parseConfigLocation(config, "pregame");
+        this.pregameSpawn = Utils.parseConfigLocationObject(config, this.world, "pregame");
 
         settings.setInteractable(false);
 
@@ -72,14 +72,21 @@ public class SkyWarsGame {
         gameEvents.add(new DragonSpawnEvent(this));
         gameEvents.add(new GameEndEvent(this));
 
-        this.gameLoop = new GameLoop(this, gameEvents);
+        this.gameLoop = new GameLoop(this);
 
         try {
-            this.islands = parseIslands(config.get("islands").getAsJsonArray());
+            parseIslands(config);
         } catch (IllegalStateException exception) {
             log(Level.SEVERE, "Failed to parse islands!");
             exception.printStackTrace();
             Bukkit.getServer().shutdown();
+        }
+
+        try {
+            parseChests(config);
+        } catch (IllegalStateException exception) {
+            log(Level.SEVERE, "Failed to parse chests!");
+            exception.printStackTrace();
         }
 
         // I made this because the map I'm using to test already has chest signs so it'll be quicker to just use them
@@ -112,15 +119,19 @@ public class SkyWarsGame {
         broadcast("\n");
         broadcast(Utils.SEPARATOR);
 
-        getOnlinePlayers().forEach(skyWarsPlayer -> {
-            log(Level.INFO, "Setting scoreboard for " + skyWarsPlayer.getUuid() + "!");
+        getOnlinePlayers().stream()
+            .filter(Objects::nonNull)
+            .forEach(skyWarsPlayer -> {
+                Player player = skyWarsPlayer.getBukkitPlayer();
 
-            Player player = skyWarsPlayer.getBukkitPlayer();
+                if (player == null) {
+                    log(Level.SEVERE, "Failed to set scoreboard for " + skyWarsPlayer.getUuid() + "!");
+                    return;
+                }
 
-            setupScoreboard(player, skyWarsPlayer.getScoreboard());
-            setupPlayerNameColors(player);
-            player.setGameMode(GameMode.SURVIVAL);
-        });
+                setupScoreboard(player, skyWarsPlayer.getScoreboard());
+                player.setGameMode(GameMode.SURVIVAL);
+            });
 
         gameLoop.next();
     }
@@ -213,8 +224,9 @@ public class SkyWarsGame {
         scoreboard.add(2, "    ");
         scoreboard.add(1, ChatColor.YELLOW + "www.aerh.net");
         scoreboard.update();
-
         scoreboard.send(player);
+
+        setupPlayerNameColors(player);
     }
 
     /**
@@ -378,7 +390,6 @@ public class SkyWarsGame {
         }
 
         if (state != GameState.STARTING) {
-
             getOnlinePlayers().forEach(skyWarsPlayer -> {
                 skyWarsPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getAlivePlayers().size());
                 skyWarsPlayer.getScoreboard().update();
@@ -424,17 +435,6 @@ public class SkyWarsGame {
     }
 
     /**
-     * Gets a spectator by their {@link Player} object.
-     *
-     * @param player the {@link Player} to get
-     * @return the {@link SkyWarsPlayer} who is a spectator. Returns null if the {@link SkyWarsPlayer} is not a spectator
-     */
-    @Nullable
-    public SkyWarsPlayer getSpectator(Player player) {
-        return spectators.stream().filter(p -> p.getUuid().equals(player.getUniqueId())).findFirst().orElse(null);
-    }
-
-    /**
      * Gets a {@link SkyWarsPlayer} who is a spectator.
      *
      * @param uuid the {@link UUID} of the {@link SkyWarsPlayer} to get
@@ -445,73 +445,15 @@ public class SkyWarsGame {
         return spectators.stream().filter(p -> p.getUuid().equals(uuid)).findFirst().orElse(null);
     }
 
-    /**
-     * Gets the {@link Island} of a {@link Player}. Can be null.
-     *
-     * @param player the {@link Player} to get the {@link Island} of
-     * @return the {@link Island} of the {@link Player}. Can be null
-     */
-    @Nullable
-    public Island getIsland(Player player) {
-        return getIsland(getPlayer(player));
-    }
-
-    /**
-     * Gets a {@link Player} in the game whether they are a player or a spectator.
-     *
-     * @param uuid the {@link UUID} of the {@link Player} to get
-     * @return the {@link Player} in the game. Can be null if the {@link Player} is not in the game
-     */
-    @Nullable
-    public Player getPlayerOrSpectator(UUID uuid) {
-        SkyWarsPlayer player = getPlayer(uuid);
-
-        if (player != null) {
-            return player.getBukkitPlayer();
-        }
-
-        SkyWarsPlayer spectator = getSpectator(uuid);
-
-        if (spectator != null) {
-            return spectator.getBukkitPlayer();
-        }
-
-        return null;
-    }
-
-    /**
-     * Gets a {@link Player} in the game whether they are a player or a spectator.
-     *
-     * @param player the {@link Player} to get
-     * @return the {@link Player} in the game. Can be null
-     */
-    @Nullable
-    public Player getPlayerOrSpectator(Player player) {
-        return getPlayerOrSpectator(player.getUniqueId());
-    }
-
-    /**
-     * Gets a {@link List} of the {@link SkyWarsPlayer players} in this game.
-     *
-     * @return the {@link List} of the {@link SkyWarsPlayer players} in this game
-     */
-    public Set<SkyWarsPlayer> getPlayers() {
-        return players;
-    }
-
     public Set<SkyWarsPlayer> getOnlinePlayers() {
         return Stream.concat(players.stream(), spectators.stream()).collect(Collectors.toSet());
     }
 
     /**
-     * Gets a {@link List} of the {@link SkyWarsPlayer spectators} in this game.
+     * Gets a {@link List} of all alive {@link SkyWarsPlayer players} in this game.
      *
-     * @return the {@link List} of the {@link SkyWarsPlayer spectators} in this game
+     * @return the {@link List} of the alive {@link SkyWarsPlayer players} in this game
      */
-    public Set<SkyWarsPlayer> getSpectators() {
-        return spectators;
-    }
-
     public Set<SkyWarsPlayer> getAlivePlayers() {
         return players.stream().filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer() != null && !spectators.contains(skyWarsPlayer)).collect(Collectors.toSet());
     }
@@ -543,33 +485,38 @@ public class SkyWarsGame {
     /**
      * Parses the islands from a {@link JsonArray}.
      *
-     * @param islandsArray the {@link JsonArray} to parse from
-     * @return the parsed {@link List} of {@link Island islands}
+     * @param config the {@link JsonObject} to parse from
      */
-    private List<Island> parseIslands(JsonArray islandsArray) {
-        List<Island> islands = new ArrayList<>();
-
-        for (JsonElement islandElement : islandsArray) {
-            JsonObject island = islandElement.getAsJsonObject();
-
-            if (!island.has("x") || !island.has("y") || !island.has("z")) {
-                throw new IllegalStateException("Island is missing coordinates! " + island);
-            }
-
-            long x = island.get("x").getAsLong();
-            long y = island.get("y").getAsLong();
-            long z = island.get("z").getAsLong();
-
+    private void parseIslands(JsonObject config) {
+        Utils.parseConfigLocationArray(config, "islands").forEach(jsonObject -> {
+            double x = jsonObject.get("x").getAsDouble();
+            double y = jsonObject.get("y").getAsDouble();
+            double z = jsonObject.get("z").getAsDouble();
             Location location = new Location(world, x, y, z);
-
             islands.add(new Island(location));
-        }
+        });
+    }
 
-        if (islands.isEmpty()) {
-            throw new IllegalStateException("No islands found!");
-        }
+    /**
+     * Parses the chests from a {@link JsonObject}.
+     *
+     * @param config the {@link JsonObject} to parse from
+     */
+    private void parseChests(JsonObject config) {
+        log(Level.INFO, "Parsing chest locations from map config...");
 
-        return islands;
+        Utils.parseConfigLocationArray(config, "chests").forEach(chest -> {
+            double x = chest.get("x").getAsDouble();
+            double y = chest.get("y").getAsDouble();
+            double z = chest.get("z").getAsDouble();
+            BlockFace rotation = BlockFace.valueOf(chest.get("rotation").getAsString().toUpperCase());
+            ChestType chestType = ChestType.valueOf(chest.get("type").getAsString().toUpperCase());
+
+            RefillableChest refillableChest = new RefillableChest(new Location(world, x, y, z), chestType);
+            refillableChests.add(refillableChest);
+            refillableChest.spawn(true, rotation);
+            log(Level.INFO, "Registered refillable chest: " + chest);
+        });
     }
 
     /**
@@ -581,30 +528,6 @@ public class SkyWarsGame {
     @Nullable
     public Island getIsland(SkyWarsPlayer skyWarsPlayer) {
         return islands.stream().filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(skyWarsPlayer)).findFirst().orElse(null);
-    }
-
-    /**
-     * Parses a {@link Location} from a {@link JsonObject}.
-     *
-     * @param config the {@link JsonObject} to parse from
-     * @param field  the field to parse
-     * @return the parsed {@link Location}
-     */
-    private Location parseConfigLocation(JsonObject config, String field) {
-        JsonObject locationsObject = config.getAsJsonObject("locations");
-        JsonObject desiredLocation = locationsObject.getAsJsonObject(field);
-
-        Location location = new Location(world, desiredLocation.get("x").getAsDouble(), desiredLocation.get("y").getAsDouble(), desiredLocation.get("z").getAsDouble());
-
-        if (desiredLocation.has("yaw")) {
-            location.setYaw(desiredLocation.get("yaw").getAsFloat());
-        }
-
-        if (desiredLocation.has("pitch")) {
-            location.setPitch(desiredLocation.get("pitch").getAsFloat());
-        }
-
-        return location;
     }
 
     /**
@@ -688,16 +611,6 @@ public class SkyWarsGame {
     }
 
     /**
-     * Checks if a {@link Location} is a refillable chest.
-     *
-     * @param location the {@link Location} to check
-     * @return true if the {@link Location} is a {@link RefillableChest}, false otherwise
-     */
-    public boolean isRefillableChest(Location location) {
-        return refillableChests.stream().anyMatch(refillableChest -> Utils.locationsMatch(refillableChest.getLocation(), location));
-    }
-
-    /**
      * Removes a {@link RefillableChest} from this game.
      *
      * @param location the {@link Location} of the {@link RefillableChest}
@@ -772,21 +685,15 @@ public class SkyWarsGame {
     }
 
     /**
-     * Sets the winner of this game. Can be null.
-     *
-     * @param winner the {@link SkyWarsPlayer player} who won. Can be null
-     */
-    public void setWinner(@Nullable SkyWarsPlayer winner) {
-        this.winner = winner;
-    }
-
-    /**
      * Gets the spectators in this game. Can be empty.
      *
      * @return a {@link List} of {@link SkyWarsPlayer players} who are spectating
      */
     public Set<Player> getBukkitSpectators() {
-        return spectators.stream().map(SkyWarsPlayer::getBukkitPlayer).filter(Objects::nonNull).collect(Collectors.toSet());
+        return spectators.stream()
+            .map(SkyWarsPlayer::getBukkitPlayer)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
     }
 
     /**

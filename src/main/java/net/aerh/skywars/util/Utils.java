@@ -1,15 +1,20 @@
 package net.aerh.skywars.util;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -89,5 +94,50 @@ public class Utils {
         } catch (IOException exception) {
             Bukkit.getLogger().warning("Could not delete directory " + directoryPath + ": " + exception.getMessage());
         }
+    }
+
+    /**
+     * Parses a {@link Location} from a {@link JsonObject}.
+     *
+     * @param config the {@link JsonObject} to parse from
+     * @param field  the field to parse
+     * @return the parsed {@link Location}
+     */
+    public static Location parseConfigLocationObject(JsonObject config, World world, String field) {
+        JsonObject locationsObject = config.getAsJsonObject("locations");
+        JsonObject desiredLocation = locationsObject.getAsJsonObject(field);
+
+        if (!desiredLocation.has("x") || !desiredLocation.has("y") || !desiredLocation.has("z")) {
+            throw new IllegalStateException("Location is missing coordinates! " + desiredLocation);
+        }
+
+        Location location = new Location(world, desiredLocation.get("x").getAsDouble(), desiredLocation.get("y").getAsDouble(), desiredLocation.get("z").getAsDouble());
+
+        if (desiredLocation.has("yaw")) {
+            location.setYaw(desiredLocation.get("yaw").getAsFloat());
+        }
+
+        if (desiredLocation.has("pitch")) {
+            location.setPitch(desiredLocation.get("pitch").getAsFloat());
+        }
+
+        return location;
+    }
+
+    public static List<JsonObject> parseConfigLocationArray(JsonObject config, String field) {
+        JsonObject locationsObject = config.getAsJsonObject("locations");
+        List<JsonObject> locations = new ArrayList<>();
+
+        for (JsonElement locationElement : locationsObject.getAsJsonArray(field)) {
+            JsonObject locationObject = locationElement.getAsJsonObject();
+
+            if (!locationObject.has("x") || !locationObject.has("y") || !locationObject.has("z")) {
+                throw new IllegalStateException("Location is missing coordinates! " + locationObject);
+            }
+
+            locations.add(locationObject);
+        }
+
+        return locations;
     }
 }

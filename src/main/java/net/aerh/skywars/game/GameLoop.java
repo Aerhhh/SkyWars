@@ -9,16 +9,13 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class GameLoop {
 
     private final SkyWarsGame game;
-    private final Queue<GameEvent> gameEvents;
     private BukkitTask eventTask;
     private BukkitTask gameEndTask;
     private int countdownTilNextEvent;
@@ -26,12 +23,10 @@ public class GameLoop {
     /**
      * Represents the game loop of a {@link SkyWarsGame}.
      *
-     * @param game       the {@link SkyWarsGame} to create the game loop for
-     * @param gameEvents the {@link Queue} of {@link GameEvent}s to execute
+     * @param game the {@link SkyWarsGame} to create the game loop for
      */
-    public GameLoop(SkyWarsGame game, Queue<GameEvent> gameEvents) {
+    public GameLoop(SkyWarsGame game) {
         this.game = game;
-        this.gameEvents = new LinkedList<>(gameEvents);
     }
 
     /**
@@ -65,7 +60,7 @@ public class GameLoop {
             return;
         }
 
-        GameEvent gameEvent = gameEvents.peek();
+        GameEvent gameEvent = game.getGameEvents().peek();
 
         if (gameEvent == null) {
             game.log(Level.INFO, "No more events left!");
@@ -73,7 +68,7 @@ public class GameLoop {
             return;
         }
 
-        game.log(Level.INFO, "Next event: " + gameEvent.getDisplayName() + " in " + gameEvent.getDelay() + " ticks (" + gameEvents.size() + " events left)");
+        game.log(Level.INFO, "Next event: " + gameEvent.getDisplayName() + " in " + gameEvent.getDelay() + " ticks (" + game.getGameEvents().size() + " events left)");
         countdownTilNextEvent = (int) gameEvent.getDelay() / 20;
 
         if (gameEvent.getDelay() <= 0) {
@@ -136,9 +131,9 @@ public class GameLoop {
      */
     public void executeEvent(GameEvent gameEvent) {
         countdownTilNextEvent = 0;
-        game.log(Level.INFO, "Executing event: " + gameEvent.getDisplayName() + " (" + gameEvent.getClass().getSimpleName() + ")" + " - " + gameEvents.size() + " events left");
+        game.log(Level.INFO, "Executing event: " + gameEvent.getDisplayName() + " (" + gameEvent.getClass().getSimpleName() + ")" + " - " + game.getGameEvents().size() + " events left");
         gameEvent.execute();
-        gameEvents.remove();
+        game.getGameEvents().remove();
         next();
     }
 
@@ -161,16 +156,7 @@ public class GameLoop {
      */
     @Nullable
     public GameEvent getNextEvent() {
-        return gameEvents.peek();
-    }
-
-    /**
-     * Gets the {@link Queue} of {@link GameEvent}s.
-     *
-     * @return the {@link Queue} of {@link GameEvent}s
-     */
-    public Queue<GameEvent> getGameEvents() {
-        return gameEvents;
+        return game.getGameEvents().peek();
     }
 
     /**
@@ -179,6 +165,6 @@ public class GameLoop {
      * @return the names of the {@link GameEvent}s in the queue as a {@link List} of strings
      */
     public List<String> getGameEventNames() {
-        return gameEvents.stream().map(gameEvent -> gameEvent.getClass().getSimpleName()).collect(Collectors.toList());
+        return game.getGameEvents().stream().map(gameEvent -> gameEvent.getClass().getSimpleName()).collect(Collectors.toList());
     }
 }

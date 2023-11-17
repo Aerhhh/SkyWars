@@ -60,7 +60,6 @@ public class WorldSignParser {
 
                 if (parsedSign != null) {
                     signs.add(parsedSign);
-                    plugin.getLogger().info("Found sign: " + parsedSign.getCommand() + " with options: " + parsedSign.getOptions() + " at " + Utils.parseLocationToString(sign.getLocation()));
 
                     if (removeFromWorld) {
                         world.getBlockAt(sign.getLocation()).setType(Material.AIR);
@@ -97,15 +96,6 @@ public class WorldSignParser {
         }
 
         return null;
-    }
-
-    /**
-     * Gets all parsed signs.
-     *
-     * @return All parsed signs. Can be empty.
-     */
-    public List<ParsedSign> getParsedSigns() {
-        return signs;
     }
 
     /**

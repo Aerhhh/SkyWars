@@ -47,7 +47,7 @@ public class GameInfoCommand implements CommandExecutor {
             .append(ChatColor.YELLOW).append("  Players: ").append(ChatColor.RESET).append(game.getBukkitPlayers().size()).append("/").append(SkyWarsGame.MAX_PLAYER_COUNT).append("\n")
             .append(ChatColor.YELLOW).append("  Spectators: ").append(ChatColor.RESET).append(game.getBukkitSpectators().size()).append("\n")
             .append(ChatColor.YELLOW).append("  Events: ").append(ChatColor.RESET).append(game.getGameLoop().getGameEventNames().toString()).append("\n")
-            .append(ChatColor.YELLOW).append("  Events Remaining: ").append(ChatColor.RESET).append(game.getGameLoop().getGameEvents().size()).append("\n");
+            .append(ChatColor.YELLOW).append("  Events Remaining: ").append(ChatColor.RESET).append(game.getGameEvents().size()).append("\n");
 
         if (game.getGameLoop().getNextEvent() != null) {
             stringBuilder.append(ChatColor.YELLOW).append("  Next Event: ").append(ChatColor.RESET).append(game.getGameLoop().getNextEvent().getDisplayName()).append(" in ")
