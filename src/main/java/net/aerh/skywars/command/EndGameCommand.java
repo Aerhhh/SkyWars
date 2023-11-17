@@ -25,11 +25,6 @@ public class EndGameCommand implements CommandExecutor {
             return true;
         }
 
-        if (!sender.isOp()) {
-            sender.sendMessage(ChatColor.RED + "You do not have permission to execute this command!");
-            return true;
-        }
-
         Player player = (Player) sender;
         SkyWarsGame game = plugin.getGameManager().findGame(player);
 

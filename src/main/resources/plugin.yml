@@ -3,21 +3,45 @@ version: '${project.version}'
 main: net.aerh.skywars.SkyWarsPlugin
 api-version: '1.20'
 load: STARTUP
-authors: [Aerh]
+authors: [ Aerh ]
 commands:
-  start:
-    aliases:
-      - sg
-      - startgame
-  end:
-    aliases:
-      - eg
-      - endgame
-      - stopgame
-  games:
-    aliases:
-      - listgames
-  gameinfo:
-      aliases:
-      - gi
-  skipevent:
+    start:
+        aliases:
+            - sg
+            - startgame
+        permission: skywars.command.start
+    end:
+        aliases:
+            - eg
+            - endgame
+            - stopgame
+        permission: skywars.command.end
+    games:
+        aliases:
+            - listgames
+        permission: skywars.command.games
+    gameinfo:
+        aliases:
+            - gi
+        permission: skywars.command.gameinfo
+    skipevent:
+        aliases:
+            - se
+        permission: skywars.command.skipevent
+
+permissions:
+    skywars.command.start:
+        description: Allows the player to start a game
+        default: op
+    skywars.command.end:
+        description: Allows the player to end a game
+        default: op
+    skywars.command.games:
+        description: Allows the player to list all games
+        default: op
+    skywars.command.gameinfo:
+        description: Allows the player to get information about a game
+        default: op
+    skywars.command.skipevent:
+        description: Allows the player to skip an event
+        default: op
