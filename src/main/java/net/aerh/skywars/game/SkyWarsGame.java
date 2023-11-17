@@ -66,12 +66,7 @@ public class SkyWarsGame {
 
         settings.setInteractable(false);
 
-        gameEvents.add(new CageOpenEvent(this));
-        gameEvents.add(new ChestRefillEvent(this));
-        gameEvents.add(new ChestRefillEvent(this));
-        gameEvents.add(new DragonSpawnEvent(this));
-        gameEvents.add(new GameEndEvent(this));
-
+        addGameEvents(new CageOpenEvent(this), new ChestRefillEvent(this), new ChestRefillEvent(this), new DragonSpawnEvent(this), new GameEndEvent(this));
         this.gameLoop = new GameLoop(this);
 
         try {
@@ -93,12 +88,11 @@ public class SkyWarsGame {
         WorldSignParser signParser = new WorldSignParser(plugin, world, true);
 
         signParser.getParsedSigns("chest").forEach(sign -> {
-            Location location = sign.getLocation();
             ChestType chestType = Utils.parseEnum(ChestType.class, sign.getOptions().get(0)).orElse(ChestType.ISLAND);
-            RefillableChest refillableChest = new RefillableChest(location, chestType);
+            RefillableChest refillableChest = new RefillableChest(sign.getLocation(), chestType);
             refillableChests.add(refillableChest);
             refillableChest.spawn(true, sign.getRotation());
-            log(Level.INFO, "Registered refillable " + chestType + " chest at " + location);
+            log(Level.INFO, "Registered refillable " + chestType + " chest at " + sign.getLocation());
         });
     }
 
@@ -509,7 +503,6 @@ public class SkyWarsGame {
             double x = chest.get("x").getAsDouble();
             double y = chest.get("y").getAsDouble();
             double z = chest.get("z").getAsDouble();
-
             Optional<BlockFace> rotation = Utils.parseEnum(BlockFace.class, chest.get("rotation").getAsString());
             Optional<ChestType> chestType = Utils.parseEnum(ChestType.class, chest.get("type").getAsString());
 
@@ -709,5 +702,9 @@ public class SkyWarsGame {
      */
     public void log(Level level, String message) {
         plugin.getLogger().log(level, "[" + world.getName() + "] " + message);
+    }
+
+    private void addGameEvents(GameEvent... events) {
+        gameEvents.addAll(Arrays.asList(events));
     }
 }
