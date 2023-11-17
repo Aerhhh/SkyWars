@@ -45,7 +45,6 @@ public class SkyWarsGame {
     private final Set<SkyWarsPlayer> spectators;
     private final Queue<GameEvent> gameEvents;
     private final Set<RefillableChest> refillableChests;
-    private final Map<String, Integer> killLeaderboard = new HashMap<>();
     private GameState state = GameState.PRE_GAME;
     private List<Island> islands;
     private BukkitTask countdownTask;
@@ -67,7 +66,7 @@ public class SkyWarsGame {
         this.gameEvents = new LinkedList<>();
         this.refillableChests = new HashSet<>();
         this.mapName = config.get("name").getAsString();
-        this.pregameSpawn = parseLocation(config, "pregame");
+        this.pregameSpawn = parseConfigLocation(config, "pregame");
 
         settings.setInteractable(false);
 
@@ -117,7 +116,7 @@ public class SkyWarsGame {
         broadcast("\n");
         broadcast(Utils.SEPARATOR);
 
-        getPlayers().forEach(skyWarsPlayer -> {
+        getOnlinePlayers().forEach(skyWarsPlayer -> {
             log(Level.INFO, "Setting scoreboard for " + skyWarsPlayer.getUuid() + "!");
 
             Player player = skyWarsPlayer.getBukkitPlayer();
@@ -125,7 +124,6 @@ public class SkyWarsGame {
             setupScoreboard(player, skyWarsPlayer.getScoreboard());
             setupPlayerNameColors(player);
             player.setGameMode(GameMode.SURVIVAL);
-            killLeaderboard.putIfAbsent(player.getName(), 0);
         });
 
         gameLoop.next();
@@ -145,16 +143,16 @@ public class SkyWarsGame {
             skyWarsPlayer.getScoreboard().update();
         });
 
-        if (players.size() == 1) {
-            winner = players.iterator().next();
+        if (getAlivePlayers().size() == 1) {
+            winner = getAlivePlayers().iterator().next();
         }
 
         broadcast(Utils.SEPARATOR);
         broadcast("\n");
 
-        if (winner != null && winner.getBukkitPlayer() != null) {
+        if (winner != null) {
             broadcast("\n");
-            broadcast(CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "Winner: " + ChatColor.GOLD + winner.getBukkitPlayer().getName()));
+            broadcast(CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "Winner: " + ChatColor.GOLD + winner.getDisplayName()));
         } else {
             broadcast("\n");
             broadcast(CenteredMessage.generate(ChatColor.RED + "Nobody won the game!"));
@@ -164,8 +162,8 @@ public class SkyWarsGame {
         broadcast(CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "Top Players"));
 
         if (!getTopPlayers().isEmpty()) {
-            getTopPlayers().forEach((s, integer) -> {
-                broadcast(CenteredMessage.generate(ChatColor.GOLD + s + ChatColor.RESET + ": " + ChatColor.YELLOW + integer + " kill" + (integer == 1 ? "" : "s")));
+            getTopPlayers().forEach(skyWarsPlayer -> {
+                broadcast(CenteredMessage.generate(ChatColor.GOLD + skyWarsPlayer.getDisplayName() + ChatColor.RESET + ": " + ChatColor.YELLOW + skyWarsPlayer.getKills() + " kill" + (skyWarsPlayer.getKills() == 1 ? "" : "s")));
             });
         } else {
             broadcast(CenteredMessage.generate(ChatColor.RED + "Nobody!"));
@@ -179,7 +177,9 @@ public class SkyWarsGame {
                 continue;
             }
 
-            setSpectator(skyWarsPlayer);
+            if (skyWarsPlayer.getBukkitPlayer() != null) {
+                setSpectator(skyWarsPlayer);
+            }
         }
 
         players.clear();
@@ -201,7 +201,8 @@ public class SkyWarsGame {
 
     /**
      * Set up the scoreboard for a {@link Player}.
-     * @param player the {@link Player} to set up the scoreboard for
+     *
+     * @param player     the {@link Player} to set up the scoreboard for
      * @param scoreboard the {@link PlayerScoreboard} to set up
      */
     private void setupScoreboard(Player player, PlayerScoreboard scoreboard) {
@@ -209,7 +210,7 @@ public class SkyWarsGame {
         scoreboard.add(9, ChatColor.RESET + "Next Event:");
         scoreboard.add(8, ChatColor.GRAY + "???");
         scoreboard.add(7, "  ");
-        scoreboard.add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getPlayers().size());
+        scoreboard.add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getOnlinePlayers().size());
         scoreboard.add(5, ChatColor.RESET + "Kills: " + ChatColor.GREEN + "0");
         scoreboard.add(4, "   ");
         scoreboard.add(3, ChatColor.RESET + "Map: " + ChatColor.GREEN + mapName);
@@ -232,10 +233,12 @@ public class SkyWarsGame {
         Team red = scoreboard.registerNewTeam("red");
 
         green.setColor(ChatColor.GREEN);
+        green.setAllowFriendlyFire(false);
         red.setColor(ChatColor.RED);
         gray.setColor(ChatColor.GRAY);
 
         green.addEntry(player.getName());
+
         getBukkitPlayers().stream()
             .filter(otherPlayer -> !otherPlayer.getUniqueId().equals(player.getUniqueId()))
             .forEach(otherPlayer -> red.addEntry(otherPlayer.getName()));
@@ -314,7 +317,7 @@ public class SkyWarsGame {
                 bukkitPlayer.hidePlayer(plugin, player);
             }
 
-            swPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getPlayers().size());
+            swPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getAlivePlayers().size());
             swPlayer.getScoreboard().update();
         });
     }
@@ -352,7 +355,7 @@ public class SkyWarsGame {
             Stream.concat(players.stream(), spectators.stream())
                 .filter(skyWarsPlayer -> skyWarsPlayer.getScoreboard() != null)
                 .forEach(skyWarsPlayer -> {
-                    skyWarsPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getPlayers().size());
+                    skyWarsPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getAlivePlayers().size());
                     skyWarsPlayer.getScoreboard().update();
                 });
         }
@@ -366,7 +369,6 @@ public class SkyWarsGame {
      * @param player the {@link SkyWarsPlayer} to remove
      */
     public void removePlayer(SkyWarsPlayer player) {
-        players.remove(player);
         spectators.remove(player);
 
         if (state == GameState.PRE_GAME) {
@@ -381,7 +383,7 @@ public class SkyWarsGame {
 
         if (state != GameState.STARTING) {
             Stream.concat(players.stream(), spectators.stream()).forEach(skyWarsPlayer -> {
-                skyWarsPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getPlayers().size());
+                skyWarsPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getAlivePlayers().size());
                 skyWarsPlayer.getScoreboard().update();
             });
         }
@@ -500,6 +502,10 @@ public class SkyWarsGame {
         return players;
     }
 
+    public Set<SkyWarsPlayer> getOnlinePlayers() {
+        return Stream.concat(players.stream(), spectators.stream()).collect(Collectors.toSet());
+    }
+
     /**
      * Gets a {@link List} of the {@link SkyWarsPlayer spectators} in this game.
      *
@@ -509,13 +515,20 @@ public class SkyWarsGame {
         return spectators;
     }
 
+    public Set<SkyWarsPlayer> getAlivePlayers() {
+        return players.stream().filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer() != null && !spectators.contains(skyWarsPlayer)).collect(Collectors.toSet());
+    }
+
     /**
      * Gets a {@link List} of the {@link Player players} in this game.
      *
      * @return the {@link List} of the {@link Player players} in this game
      */
     public List<Player> getBukkitPlayers() {
-        return players.stream().map(SkyWarsPlayer::getBukkitPlayer).filter(Objects::nonNull).collect(Collectors.toList());
+        return players.stream()
+            .map(SkyWarsPlayer::getBukkitPlayer)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     }
 
     /**
@@ -523,11 +536,12 @@ public class SkyWarsGame {
      *
      * @return the {@link List} of the top 3 {@link SkyWarsPlayer players} based on kills
      */
-    private Map<String, Integer> getTopPlayers() {
-        return killLeaderboard.entrySet().stream()
-            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+    private List<SkyWarsPlayer> getTopPlayers() {
+        // Sort players by kills
+        return getPlayers().stream()
+            .sorted(Comparator.comparingInt(SkyWarsPlayer::getKills).reversed())
             .limit(3)
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+            .collect(Collectors.toList());
     }
 
     /**
@@ -575,7 +589,7 @@ public class SkyWarsGame {
      * @param field  the field to parse
      * @return the parsed {@link Location}
      */
-    private Location parseLocation(JsonObject config, String field) {
+    private Location parseConfigLocation(JsonObject config, String field) {
         JsonObject locationsObject = config.getAsJsonObject("locations");
         JsonObject desiredLocation = locationsObject.getAsJsonObject(field);
 
@@ -756,15 +770,6 @@ public class SkyWarsGame {
      */
     public void setWinner(@Nullable SkyWarsPlayer winner) {
         this.winner = winner;
-    }
-
-    /**
-     * Gets the kill leaderboard for this game.
-     *
-     * @return the kill leaderboard for this game
-     */
-    public Map<String, Integer> getKillLeaderboard() {
-        return killLeaderboard;
     }
 
     /**

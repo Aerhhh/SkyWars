@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Queue;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class GameLoop {
 
@@ -84,7 +83,11 @@ public class GameLoop {
         gameEndTask = new BukkitRunnable() {
             @Override
             public void run() {
-                if (game.getBukkitPlayers().size() <= 1) {
+                System.out.println("Players left: " + game.getBukkitPlayers().size());
+                System.out.println("Alive players: " + game.getAlivePlayers().size());
+                System.out.println("Online players: " + game.getOnlinePlayers().size());
+
+                if (game.getAlivePlayers().size() <= 1) {
                     cancel();
                     game.end();
                     game.log(Level.INFO, "Game ended because there are no more players left!");
@@ -97,7 +100,7 @@ public class GameLoop {
 
                 String timeUntilNextEvent = getTimeUntilNextEvent();
 
-                Stream.concat(game.getPlayers().stream(), game.getSpectators().stream()).forEach(skyWarsPlayer -> {
+                game.getOnlinePlayers().forEach(skyWarsPlayer -> {
                     skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + gameEvent.getDisplayName() + " " + timeUntilNextEvent);
                     skyWarsPlayer.getScoreboard().update();
                 });

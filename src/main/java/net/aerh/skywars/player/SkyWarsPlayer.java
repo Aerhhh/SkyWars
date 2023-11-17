@@ -11,6 +11,7 @@ import java.util.UUID;
 public class SkyWarsPlayer {
 
     private final UUID uuid;
+    private final String displayName;
     private PlayerScoreboard scoreboard;
     private int kills;
 
@@ -19,8 +20,9 @@ public class SkyWarsPlayer {
      *
      * @param uuid the {@link UUID} of the player
      */
-    public SkyWarsPlayer(UUID uuid) {
+    public SkyWarsPlayer(UUID uuid, String displayName) {
         this.uuid = uuid;
+        this.displayName = displayName;
     }
 
     /**
@@ -30,6 +32,10 @@ public class SkyWarsPlayer {
      */
     public UUID getUuid() {
         return uuid;
+    }
+
+    public String getDisplayName() {
+        return displayName;
     }
 
     /**

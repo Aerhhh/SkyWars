@@ -37,7 +37,7 @@ public class PlayerSessionListener implements Listener {
             return;
         }
 
-        SkyWarsPlayer skyWarsPlayer = new SkyWarsPlayer(event.getUniqueId());
+        SkyWarsPlayer skyWarsPlayer = new SkyWarsPlayer(event.getUniqueId(), event.getName());
 
         if (!game.addPlayer(skyWarsPlayer)) {
             event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, GENERIC_KICK_MESSAGE);

@@ -22,12 +22,16 @@ public class PlayerScoreboard {
     private static final Map<String, OfflinePlayer> cache = new HashMap<>();
 
     private final Scoreboard scoreboard;
-    private String title;
     private final Map<String, Integer> scores;
-    private Objective obj;
     private final List<Team> teams;
     private final List<Integer> removed;
     private final Set<String> updated;
+    private final UUID invalidUserUUID = UUID.nameUUIDFromBytes("InvalidUsername".getBytes(Charsets.UTF_8));
+    private String title;
+    private Objective obj;
+    private Class<?> gameProfileClass;
+    private Constructor<?> gameProfileConstructor;
+    private Constructor<?> craftOfflinePlayerConstructor;
 
     public PlayerScoreboard(String title) {
         this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
@@ -60,7 +64,7 @@ public class PlayerScoreboard {
 
         scores.remove(toRemove);
 
-        if(b)
+        if (b)
             removed.add(score);
 
         return true;
@@ -107,7 +111,7 @@ public class PlayerScoreboard {
 
         team.setPrefix(prefix);
 
-        if(!team.hasPlayer(result))
+        if (!team.hasPlayer(result))
             team.addPlayer(result);
 
         if (text.length() > 16) {
@@ -165,11 +169,11 @@ public class PlayerScoreboard {
             Team t = scoreboard.getTeam(ChatColor.values()[text.getValue()].toString());
             Map.Entry<Team, OfflinePlayer> team;
 
-            if(!updated.contains(text.getKey())) {
+            if (!updated.contains(text.getKey())) {
                 continue;
             }
 
-            if(t != null) {
+            if (t != null) {
                 String color = ChatColor.values()[text.getValue()].toString();
 
                 if (!cache.containsKey(color)) {
@@ -197,7 +201,7 @@ public class PlayerScoreboard {
     public void setTitle(String title) {
         this.title = ChatColor.translateAlternateColorCodes('&', title);
 
-        if(obj != null)
+        if (obj != null)
             obj.setDisplayName(this.title);
     }
 
@@ -216,11 +220,6 @@ public class PlayerScoreboard {
         for (Player p : players)
             p.setScoreboard(scoreboard);
     }
-
-    private final UUID invalidUserUUID = UUID.nameUUIDFromBytes("InvalidUsername".getBytes(Charsets.UTF_8));
-    private Class<?> gameProfileClass;
-    private Constructor<?> gameProfileConstructor;
-    private Constructor<?> craftOfflinePlayerConstructor;
 
     @SuppressWarnings("deprecation")
     private OfflinePlayer getOfflinePlayerSkipLookup(String name) {
@@ -246,7 +245,7 @@ public class PlayerScoreboard {
             Object gameProfile = gameProfileConstructor.newInstance(invalidUserUUID, name);
             Object craftOfflinePlayer = craftOfflinePlayerConstructor.newInstance(Bukkit.getServer(), gameProfile);
             return (OfflinePlayer) craftOfflinePlayer;
-        } catch (Throwable t) { // Fallback if fail
+        } catch (Exception exception) { // Fallback if fail
             return Bukkit.getOfflinePlayer(name);
         }
     }
