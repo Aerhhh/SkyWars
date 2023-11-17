@@ -2,6 +2,7 @@ package net.aerh.skywars.game.island;
 
 import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Location;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class Island {
@@ -14,7 +15,7 @@ public class Island {
      *
      * @param spawnLocation the {@link Location} where the player will spawn
      */
-    public Island(Location spawnLocation) {
+    public Island(@NotNull Location spawnLocation) {
         this.spawnLocation = spawnLocation;
     }
 
@@ -32,6 +33,7 @@ public class Island {
      *
      * @return the spawn location
      */
+    @NotNull
     public Location getSpawnLocation() {
         return spawnLocation;
     }

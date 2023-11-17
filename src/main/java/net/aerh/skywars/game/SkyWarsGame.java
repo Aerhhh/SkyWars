@@ -41,15 +41,15 @@ public class SkyWarsGame {
     private final Location pregameSpawn;
     private final GameLoop gameLoop;
     private final GameSettings settings = new GameSettings();
-    private final Set<SkyWarsPlayer> players;
-    private final Set<SkyWarsPlayer> spectators;
-    private final Queue<GameEvent> gameEvents;
-    private final Set<RefillableChest> refillableChests;
+    private final Set<SkyWarsPlayer> players = new HashSet<>();
+    private final Set<SkyWarsPlayer> spectators = new HashSet<>();
+    private final Queue<GameEvent> gameEvents = new LinkedList<>();
+    private final Set<RefillableChest> refillableChests = new HashSet<>();
+    private final String mapName;
     private GameState state = GameState.PRE_GAME;
-    private List<Island> islands;
+    private List<Island> islands = new ArrayList<>();
     private BukkitTask countdownTask;
     private SkyWarsPlayer winner;
-    private final String mapName;
 
     /**
      * Represents a game of SkyWars.
@@ -61,10 +61,6 @@ public class SkyWarsGame {
     public SkyWarsGame(SkyWarsPlugin plugin, World world, JsonObject config) {
         this.plugin = plugin;
         this.world = world;
-        this.players = new HashSet<>();
-        this.spectators = new HashSet<>();
-        this.gameEvents = new LinkedList<>();
-        this.refillableChests = new HashSet<>();
         this.mapName = config.get("name").getAsString();
         this.pregameSpawn = parseConfigLocation(config, "pregame");
 
@@ -138,7 +134,7 @@ public class SkyWarsGame {
 
         broadcast(ChatColor.RED + "Game ended!");
 
-        Stream.concat(players.stream(), spectators.stream()).forEach(skyWarsPlayer -> {
+        getOnlinePlayers().forEach(skyWarsPlayer -> {
             skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + "Game over!");
             skyWarsPlayer.getScoreboard().update();
         });
@@ -310,7 +306,7 @@ public class SkyWarsGame {
         player.getScoreboard().getTeam("gray").addEntry(player.getName());
         player.teleport(pregameSpawn);
 
-        Stream.concat(players.stream(), spectators.stream()).forEach(swPlayer -> {
+        getOnlinePlayers().forEach(swPlayer -> {
             Player bukkitPlayer = swPlayer.getBukkitPlayer();
 
             if (bukkitPlayer != null) {
@@ -352,7 +348,7 @@ public class SkyWarsGame {
         log(Level.INFO, "Added player " + player.getUuid() + " to island " + Utils.parseLocationToString(island.getSpawnLocation()) + "!");
 
         if (state != GameState.STARTING) {
-            Stream.concat(players.stream(), spectators.stream())
+            getOnlinePlayers().stream()
                 .filter(skyWarsPlayer -> skyWarsPlayer.getScoreboard() != null)
                 .forEach(skyWarsPlayer -> {
                     skyWarsPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getAlivePlayers().size());
@@ -382,7 +378,8 @@ public class SkyWarsGame {
         }
 
         if (state != GameState.STARTING) {
-            Stream.concat(players.stream(), spectators.stream()).forEach(skyWarsPlayer -> {
+
+            getOnlinePlayers().forEach(skyWarsPlayer -> {
                 skyWarsPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getAlivePlayers().size());
                 skyWarsPlayer.getScoreboard().update();
             });
@@ -537,7 +534,7 @@ public class SkyWarsGame {
      * @return the {@link List} of the top 3 {@link SkyWarsPlayer players} based on kills
      */
     private List<SkyWarsPlayer> getTopPlayers() {
-        return getPlayers().stream()
+        return players.stream()
             .sorted(Comparator.comparingInt(SkyWarsPlayer::getKills).reversed())
             .limit(3)
             .collect(Collectors.toList());
@@ -554,6 +551,11 @@ public class SkyWarsGame {
 
         for (JsonElement islandElement : islandsArray) {
             JsonObject island = islandElement.getAsJsonObject();
+
+            if (!island.has("x") || !island.has("y") || !island.has("z")) {
+                throw new IllegalStateException("Island is missing coordinates! " + island);
+            }
+
             long x = island.get("x").getAsLong();
             long y = island.get("y").getAsLong();
             long z = island.get("z").getAsLong();
@@ -611,7 +613,7 @@ public class SkyWarsGame {
      * @param message the message
      */
     public void broadcast(String message) {
-        Stream.concat(players.stream(), spectators.stream())
+        getOnlinePlayers().stream()
             .filter(player -> player.getBukkitPlayer() != null)
             .forEach(player -> player.getBukkitPlayer().sendMessage(message));
     }
@@ -626,7 +628,7 @@ public class SkyWarsGame {
      * @param fadeOut  the fade out time in ticks
      */
     public void broadcastTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
-        Stream.concat(players.stream(), spectators.stream())
+        getOnlinePlayers().stream()
             .filter(player -> player.getBukkitPlayer() != null)
             .forEach(player -> player.getBukkitPlayer().sendTitle(title, subtitle, fadeIn, stay, fadeOut));
     }
