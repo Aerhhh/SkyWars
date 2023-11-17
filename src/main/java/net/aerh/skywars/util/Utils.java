@@ -13,10 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -160,5 +157,15 @@ public class Utils {
         }
 
         return locations;
+    }
+
+    public static <E extends Enum<E>> Optional<E> parseEnum(Class<E> enumType, String string) {
+        try {
+            return Optional.of(Enum.valueOf(enumType, string.toUpperCase()));
+        } catch (IllegalArgumentException exception) {
+            Bukkit.getLogger().severe("Failed to parse " + enumType.getSimpleName() + " " + string + "!");
+            Bukkit.getLogger().severe("Valid values are: " + Arrays.toString(enumType.getEnumConstants()));
+            return Optional.empty();
+        }
     }
 }

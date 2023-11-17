@@ -94,7 +94,7 @@ public class SkyWarsGame {
 
         signParser.getParsedSigns("chest").forEach(sign -> {
             Location location = sign.getLocation();
-            ChestType chestType = ChestType.valueOf(sign.getOptions().get(0).toUpperCase());
+            ChestType chestType = Utils.parseEnum(ChestType.class, sign.getOptions().get(0)).orElse(ChestType.ISLAND);
             RefillableChest refillableChest = new RefillableChest(location, chestType);
             refillableChests.add(refillableChest);
             refillableChest.spawn(true, sign.getRotation());
@@ -509,12 +509,17 @@ public class SkyWarsGame {
             double x = chest.get("x").getAsDouble();
             double y = chest.get("y").getAsDouble();
             double z = chest.get("z").getAsDouble();
-            BlockFace rotation = BlockFace.valueOf(chest.get("rotation").getAsString().toUpperCase());
-            ChestType chestType = ChestType.valueOf(chest.get("type").getAsString().toUpperCase());
 
-            RefillableChest refillableChest = new RefillableChest(new Location(world, x, y, z), chestType);
+            Optional<BlockFace> rotation = Utils.parseEnum(BlockFace.class, chest.get("rotation").getAsString());
+            Optional<ChestType> chestType = Utils.parseEnum(ChestType.class, chest.get("type").getAsString());
+
+            if (!rotation.isPresent() || !chestType.isPresent()) {
+                return;
+            }
+
+            RefillableChest refillableChest = new RefillableChest(new Location(world, x, y, z), chestType.get());
             refillableChests.add(refillableChest);
-            refillableChest.spawn(true, rotation);
+            refillableChest.spawn(true, rotation.get());
             log(Level.INFO, "Registered refillable chest: " + chest);
         });
     }
