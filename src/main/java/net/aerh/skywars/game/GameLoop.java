@@ -1,5 +1,6 @@
 package net.aerh.skywars.game;
 
+import net.aerh.skywars.game.chest.RefillableChest;
 import net.aerh.skywars.game.event.GameEvent;
 import net.aerh.skywars.game.event.impl.ChestRefillEvent;
 import net.aerh.skywars.util.Hologram;
@@ -113,10 +114,7 @@ public class GameLoop {
                 } else {
                     game.getRefillableChests().stream()
                         .filter(refillableChest -> refillableChest.getTimerHologram() != null)
-                        .forEach(refillableChest -> {
-                            refillableChest.getTimerHologram().remove();
-                            refillableChest.setTimerHologram(null);
-                        });
+                        .forEach(RefillableChest::removeTimerHologram);
                 }
 
                 countdownTilNextEvent--;

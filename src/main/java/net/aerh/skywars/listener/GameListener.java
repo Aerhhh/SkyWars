@@ -134,10 +134,7 @@ public class GameListener implements Listener {
         }
 
         Location location = event.getBlock().getLocation();
-
-        if (game.isRefillableChest(location)) {
-            game.removeRefillableChest(location);
-        }
+        game.removeRefillableChest(location);
     }
 
     @EventHandler(ignoreCancelled = true)

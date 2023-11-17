@@ -191,7 +191,7 @@ public class SkyWarsGame {
             }
 
             spectators.clear();
-            plugin.getGameManager().getGames().remove(this);
+            plugin.getGameManager().removeGame(this);
         }, 20L * 30L);
     }
 
@@ -703,7 +703,14 @@ public class SkyWarsGame {
      * @param location the {@link Location} of the {@link RefillableChest}
      */
     public void removeRefillableChest(Location location) {
-        refillableChests.removeIf(refillableChest -> Utils.locationsMatch(refillableChest.getLocation(), location));
+        RefillableChest refillableChest = refillableChests.stream().filter(chest -> Utils.locationsMatch(chest.getLocation(), location)).findFirst().orElse(null);
+
+        if (refillableChest == null) {
+            return;
+        }
+
+        refillableChest.removeTimerHologram();
+        refillableChests.remove(refillableChest);
     }
 
     /**

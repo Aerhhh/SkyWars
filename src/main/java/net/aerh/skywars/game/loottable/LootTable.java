@@ -50,7 +50,8 @@ public class LootTable<T> {
         }
 
         AtomicLong randomWeight = new AtomicLong(ThreadLocalRandom.current().nextInt(totalWeight));
-        Item selectedItem = table.stream()
+
+        return table.stream()
             .filter(item -> item.getWeight() != GUARANTEED_WEIGHT)
             .reduce((accumulator, currentItem) -> {
                 if (randomWeight.get() >= 0) {
@@ -61,8 +62,6 @@ public class LootTable<T> {
                 }
             })
             .orElse(null);
-
-        return selectedItem;
     }
 
 

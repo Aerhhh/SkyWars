@@ -6,13 +6,14 @@ import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
-import java.util.EnumSet;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class Utils {
 
@@ -52,10 +53,11 @@ public class Utils {
         Objects.requireNonNull(location1, "location1 cannot be null!");
         Objects.requireNonNull(location2, "location2 cannot be null!");
 
-        return Objects.equals(location1.getWorld(), location2.getWorld())
-            && location1.getBlockX() == location2.getBlockX()
-            && location1.getBlockY() == location2.getBlockY()
-            && location1.getBlockZ() == location2.getBlockZ();
+        if (!location1.isWorldLoaded() || !location2.isWorldLoaded()) {
+            throw new IllegalArgumentException("Both locations must be in a loaded world!");
+        }
+
+        return location1.equals(location2);
     }
 
     /**
@@ -75,25 +77,15 @@ public class Utils {
      * @param directoryPath the {@link Path} to the directory
      */
     public static void deleteFolder(Path directoryPath) {
-        try {
-            Files.walkFileTree(directoryPath, EnumSet.noneOf(FileVisitOption.class), Integer.MAX_VALUE, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    if (exc == null) {
-                        Files.delete(dir);
-                        return FileVisitResult.CONTINUE;
-                    } else {
-                        Bukkit.getLogger().warning("Could not delete directory " + dir + ": " + exc.getMessage());
-                        return FileVisitResult.TERMINATE;
+        try (Stream<Path> walk = Files.walk(directoryPath)) {
+            walk.sorted(Comparator.reverseOrder())
+                .forEach(path -> {
+                    try {
+                        Files.delete(path);
+                    } catch (IOException e) {
+                        Bukkit.getLogger().warning("Could not delete " + path + ": " + e.getMessage());
                     }
-                }
-            });
+                });
         } catch (IOException exception) {
             Bukkit.getLogger().warning("Could not delete directory " + directoryPath + ": " + exception.getMessage());
         }

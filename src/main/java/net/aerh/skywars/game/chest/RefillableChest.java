@@ -153,4 +153,14 @@ public class RefillableChest {
     public void setTimerHologram(Hologram timerHologram) {
         this.timerHologram = timerHologram;
     }
+
+    /**
+     * Removes the {@link Hologram} that displays the refill timer.
+     */
+    public void removeTimerHologram() {
+        if (timerHologram != null) {
+            timerHologram.remove();
+            timerHologram = null;
+        }
+    }
 }
