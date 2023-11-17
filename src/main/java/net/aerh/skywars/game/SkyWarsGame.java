@@ -537,7 +537,6 @@ public class SkyWarsGame {
      * @return the {@link List} of the top 3 {@link SkyWarsPlayer players} based on kills
      */
     private List<SkyWarsPlayer> getTopPlayers() {
-        // Sort players by kills
         return getPlayers().stream()
             .sorted(Comparator.comparingInt(SkyWarsPlayer::getKills).reversed())
             .limit(3)
