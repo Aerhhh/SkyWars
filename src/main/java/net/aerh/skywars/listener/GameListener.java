@@ -11,6 +11,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -87,12 +88,27 @@ public class GameListener implements Listener {
 
     @EventHandler
     public void onPlayerDamagePlayer(EntityDamageByEntityEvent event) {
-        if (!(event.getEntity() instanceof Player) || !(event.getDamager() instanceof Player)) {
+        if (!(event.getEntity() instanceof Player)) {
+            return;
+        }
+
+        Player damager;
+
+        if (event.getDamager() instanceof Projectile) {
+            Projectile projectile = (Projectile) event.getDamager();
+
+            if (!(projectile.getShooter() instanceof Player)) {
+                return;
+            }
+
+            damager = (Player) projectile.getShooter();
+        } else if (event.getDamager() instanceof Player) {
+            damager = (Player) event.getDamager();
+        } else {
             return;
         }
 
         Player player = (Player) event.getEntity();
-        Player damager = (Player) event.getDamager();
         SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
