@@ -1,6 +1,5 @@
 package net.aerh.skywars.player;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.bukkit.Bukkit;
@@ -10,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
 
 import java.lang.reflect.Constructor;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,7 +26,7 @@ public class PlayerScoreboard {
     private final List<Team> teams;
     private final List<Integer> removed;
     private final Set<String> updated;
-    private final UUID invalidUserUUID = UUID.nameUUIDFromBytes("InvalidUsername".getBytes(Charsets.UTF_8));
+    private final UUID invalidUserUUID = UUID.nameUUIDFromBytes("InvalidUsername".getBytes(StandardCharsets.UTF_8));
     private String title;
     private Objective obj;
     private Class<?> gameProfileClass;
