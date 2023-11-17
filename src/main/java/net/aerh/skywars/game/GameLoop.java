@@ -83,10 +83,6 @@ public class GameLoop {
         gameEndTask = new BukkitRunnable() {
             @Override
             public void run() {
-                System.out.println("Players left: " + game.getBukkitPlayers().size());
-                System.out.println("Alive players: " + game.getAlivePlayers().size());
-                System.out.println("Online players: " + game.getOnlinePlayers().size());
-
                 if (game.getAlivePlayers().size() <= 1) {
                     cancel();
                     game.end();
