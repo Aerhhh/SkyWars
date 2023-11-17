@@ -4,6 +4,7 @@ import net.aerh.skywars.game.chest.RefillableChest;
 import net.aerh.skywars.game.event.GameEvent;
 import net.aerh.skywars.game.event.impl.ChestRefillEvent;
 import net.aerh.skywars.util.Hologram;
+import net.aerh.skywars.util.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -18,7 +19,7 @@ public class GameLoop {
     private final SkyWarsGame game;
     private BukkitTask eventTask;
     private BukkitTask gameEndTask;
-    private int countdownTilNextEvent;
+    private int secondsToNextEvent;
 
     /**
      * Represents the game loop of a {@link SkyWarsGame}.
@@ -69,7 +70,7 @@ public class GameLoop {
         }
 
         game.log(Level.INFO, "Next event: " + gameEvent.getDisplayName() + " in " + gameEvent.getDelay() + " ticks (" + game.getGameEvents().size() + " events left)");
-        countdownTilNextEvent = (int) gameEvent.getDelay() / 20;
+        secondsToNextEvent = (int) gameEvent.getDelay() / 20;
 
         if (gameEvent.getDelay() <= 0) {
             executeEvent(gameEvent);
@@ -86,11 +87,11 @@ public class GameLoop {
                     return;
                 }
 
-                if (countdownTilNextEvent <= 0) {
+                if (secondsToNextEvent <= 0) {
                     cancel();
                 }
 
-                String timeUntilNextEvent = getTimeUntilNextEvent();
+                String timeUntilNextEvent = Utils.formatTime(secondsToNextEvent);
 
                 game.getOnlinePlayers().forEach(skyWarsPlayer -> {
                     skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + gameEvent.getDisplayName() + " " + timeUntilNextEvent);
@@ -112,7 +113,7 @@ public class GameLoop {
                         .forEach(RefillableChest::removeTimerHologram);
                 }
 
-                countdownTilNextEvent--;
+                secondsToNextEvent--;
             }
         }.runTaskTimer(game.getPlugin(), 0, 20L);
 
@@ -130,23 +131,11 @@ public class GameLoop {
      * @param gameEvent the {@link GameEvent} to execute
      */
     public void executeEvent(GameEvent gameEvent) {
-        countdownTilNextEvent = 0;
+        secondsToNextEvent = 0;
         game.log(Level.INFO, "Executing event: " + gameEvent.getDisplayName() + " (" + gameEvent.getClass().getSimpleName() + ")" + " - " + game.getGameEvents().size() + " events left");
         gameEvent.execute();
         game.getGameEvents().remove();
         next();
-    }
-
-    /**
-     * Gets the time until the next event.
-     *
-     * @return the time until the next event formatted as a string (mm:ss)
-     */
-    public String getTimeUntilNextEvent() {
-        int minutes = countdownTilNextEvent / 60;
-        int seconds = countdownTilNextEvent % 60;
-
-        return String.format("%02d:%02d", minutes, seconds);
     }
 
     /**
@@ -166,5 +155,9 @@ public class GameLoop {
      */
     public List<String> getGameEventNames() {
         return game.getGameEvents().stream().map(gameEvent -> gameEvent.getClass().getSimpleName()).collect(Collectors.toList());
+    }
+
+    public int getSecondsToNextEvent() {
+        return secondsToNextEvent;
     }
 }

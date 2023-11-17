@@ -2,6 +2,7 @@ package net.aerh.skywars.command;
 
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.SkyWarsGame;
+import net.aerh.skywars.util.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -27,7 +28,7 @@ public class GamesCommand implements CommandExecutor {
 
 
             if (skyWarsGame.getGameLoop().getNextEvent() != null) {
-                stringBuilder.append("In ").append(skyWarsGame.getGameLoop().getTimeUntilNextEvent())
+                stringBuilder.append("In ").append(Utils.formatTime(skyWarsGame.getGameLoop().getSecondsToNextEvent()))
                     .append(" (").append(skyWarsGame.getGameLoop().getNextEvent().getDisplayName()).append(")");
             } else {
                 stringBuilder.append("None");

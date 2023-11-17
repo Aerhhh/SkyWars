@@ -159,6 +159,14 @@ public class Utils {
         return locations;
     }
 
+    /**
+     * Parses an {@link Enum} from a string.
+     *
+     * @param enumType the {@link Enum} type
+     * @param string   the string to parse
+     * @param <E>      the {@link Enum} type
+     * @return the parsed {@link Enum}
+     */
     public static <E extends Enum<E>> Optional<E> parseEnum(Class<E> enumType, String string) {
         try {
             return Optional.of(Enum.valueOf(enumType, string.toUpperCase()));
@@ -167,5 +175,18 @@ public class Utils {
             Bukkit.getLogger().severe("Valid values are: " + Arrays.toString(enumType.getEnumConstants()));
             return Optional.empty();
         }
+    }
+
+    /**
+     * Formats a time in seconds to a string (mm:ss).
+     *
+     * @param remainingSeconds the time in seconds
+     * @return the formatted time
+     */
+    public static String formatTime(int remainingSeconds) {
+        int minutes = remainingSeconds / 60;
+        int seconds = remainingSeconds % 60;
+
+        return String.format("%02d:%02d", minutes, seconds);
     }
 }
