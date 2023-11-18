@@ -9,6 +9,7 @@ import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -49,11 +50,10 @@ public class GameListener implements Listener {
 
     @EventHandler
     public void onEntityDamage(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player)) {
+        if (!(event.getEntity() instanceof Player player)) {
             return;
         }
 
-        Player player = (Player) event.getEntity();
         SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null || game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING) {
@@ -151,6 +151,20 @@ public class GameListener implements Listener {
 
         Location location = event.getBlock().getLocation();
         game.removeRefillableChest(location);
+    }
+
+    @EventHandler
+    public void onBlockExplode(EntityExplodeEvent event) {
+        SkyWarsGame game = plugin.getGameManager().findGame(event.getEntity().getWorld());
+
+        if (game == null) {
+            return;
+        }
+
+        event.blockList().stream()
+            .map(Block::getLocation)
+            .filter(location -> game.getRefillableChests().stream().anyMatch(refillableChest -> refillableChest.getLocation().equals(location)))
+            .forEach(game::removeRefillableChest);
     }
 
     @EventHandler(ignoreCancelled = true)

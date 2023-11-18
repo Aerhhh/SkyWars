@@ -1,9 +1,6 @@
 package net.aerh.skywars.game;
 
-import net.aerh.skywars.game.chest.RefillableChest;
 import net.aerh.skywars.game.event.GameEvent;
-import net.aerh.skywars.game.event.impl.ChestRefillEvent;
-import net.aerh.skywars.util.Hologram;
 import net.aerh.skywars.util.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -17,6 +14,7 @@ import java.util.stream.Collectors;
 public class GameLoop {
 
     private final SkyWarsGame game;
+    private GameEvent currentEvent;
     private BukkitTask eventTask;
     private BukkitTask gameEndTask;
     private int secondsToNextEvent;
@@ -34,9 +32,9 @@ public class GameLoop {
      * Stops the game loop.
      */
     public void stop() {
-        if (eventTask != null) {
-            eventTask.cancel();
-            eventTask = null;
+        if (currentEvent != null) {
+            currentEvent.onEnd();
+            currentEvent = null;
         }
 
         cancelTasks();
@@ -52,7 +50,7 @@ public class GameLoop {
             return;
         }
 
-        GameEvent gameEvent = game.getGameEvents().peek();
+        GameEvent gameEvent = game.getGameEvents().poll();
 
         if (gameEvent == null) {
             game.log(Level.INFO, "No more events left!");
@@ -60,11 +58,14 @@ public class GameLoop {
             return;
         }
 
+        currentEvent = gameEvent;
+
         game.log(Level.INFO, "Next event: " + gameEvent.getDisplayName() + " in " + gameEvent.getDelay() + " ticks (" + game.getGameEvents().size() + " events left)");
         secondsToNextEvent = (int) gameEvent.getDelay() / 20;
 
-        if (gameEvent.getDelay() <= 0) {
-            executeEvent(gameEvent);
+        if (gameEvent.getDelay() <= 0 || skipped) {
+            currentEvent.onEnd();
+            startEvent(gameEvent);
             return;
         }
 
@@ -89,20 +90,7 @@ public class GameLoop {
                     skyWarsPlayer.getScoreboard().update();
                 });
 
-                if (gameEvent instanceof ChestRefillEvent) {
-                    game.getRefillableChests().forEach(refillableChest -> {
-                        if (refillableChest.getTimerHologram() == null) {
-                            refillableChest.setTimerHologram(new Hologram(refillableChest.getLocation().clone().add(0.5, 1, 0.5), ChatColor.GREEN + timeUntilNextEvent));
-                            refillableChest.getTimerHologram().spawn();
-                        }
-
-                        refillableChest.getTimerHologram().updateText(ChatColor.GREEN + timeUntilNextEvent);
-                    });
-                } else {
-                    game.getRefillableChests().stream()
-                        .filter(refillableChest -> refillableChest.getTimerHologram() != null)
-                        .forEach(RefillableChest::removeTimerHologram);
-                }
+                gameEvent.tick();
 
                 secondsToNextEvent--;
             }
@@ -111,7 +99,7 @@ public class GameLoop {
         eventTask = new BukkitRunnable() {
             @Override
             public void run() {
-                executeEvent(gameEvent);
+                startEvent(gameEvent);
             }
         }.runTaskLater(game.getPlugin(), gameEvent.getDelay());
     }
@@ -121,8 +109,13 @@ public class GameLoop {
      *
      * @param gameEvent the {@link GameEvent} to execute
      */
-    public void executeEvent(GameEvent gameEvent) {
-        secondsToNextEvent = 0;
+    public void startEvent(GameEvent gameEvent) {
+        if (currentEvent != null && !currentEvent.equals(gameEvent)) {
+            currentEvent.onEnd();
+        }
+
+        currentEvent = gameEvent;
+        currentEvent.onStart();
         game.log(Level.INFO, "Executing event: " + gameEvent.getDisplayName() + " (" + gameEvent.getClass().getSimpleName() + ")" + " - " + game.getGameEvents().size() + " events left");
 
         next(false);

@@ -12,7 +12,17 @@ public class GameEndEvent extends GameEvent {
     }
 
     @Override
-    public void execute() {
+    public void onStart() {
         game.end();
+    }
+
+    @Override
+    public void onEnd() {
+        // Not needed
+    }
+
+    @Override
+    public void tick() {
+        // Not needed
     }
 }

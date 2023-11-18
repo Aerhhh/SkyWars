@@ -3,6 +3,7 @@ package net.aerh.skywars.game;
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.map.MapLoader;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -110,6 +111,14 @@ public class GameManager {
     public SkyWarsGame findGame(Player player) {
         return games.stream()
             .filter(game -> game.getBukkitSpectators().contains(player) || game.getPlayer(player) != null)
+            .findFirst()
+            .orElse(null);
+    }
+
+    @Nullable
+    public SkyWarsGame findGame(World world) {
+        return games.stream()
+            .filter(game -> game.getWorld().equals(world))
             .findFirst()
             .orElse(null);
     }

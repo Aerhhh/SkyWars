@@ -18,7 +18,7 @@ public class DragonSpawnEvent extends GameEvent {
     }
 
     @Override
-    public void execute() {
+    public void onStart() {
         for (int i = 0; i < MAX_DRAGONS; i++) {
             Island randomIsland = game.getIslands().get(ThreadLocalRandom.current().nextInt(game.getIslands().size()));
             EnderDragon dragon = game.getWorld().spawn(randomIsland.getSpawnLocation().add(0, 10, 0), EnderDragon.class);
@@ -29,5 +29,15 @@ public class DragonSpawnEvent extends GameEvent {
         }
 
         game.getBukkitPlayers().forEach(bukkitPlayer -> bukkitPlayer.playSound(bukkitPlayer.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0F, 1.0F));
+    }
+
+    @Override
+    public void onEnd() {
+        // Not needed
+    }
+
+    @Override
+    public void tick() {
+        // Not needed
     }
 }

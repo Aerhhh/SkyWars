@@ -70,6 +70,10 @@ public class RefillableChest {
 
         Inventory chestInventory = ((Chest) blockState).getBlockInventory();
 
+        if (chestInventory.firstEmpty() == -1) {
+            return;
+        }
+
         for (int i = 0; i < type.getMaxRefillItems(); i++) {
             int randomSlot = ThreadLocalRandom.current().nextInt(chestInventory.getSize());
 

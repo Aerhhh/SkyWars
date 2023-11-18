@@ -127,7 +127,7 @@ public class SkyWarsGame {
                 player.setGameMode(GameMode.SURVIVAL);
             });
 
-        gameLoop.next();
+        gameLoop.next(false);
     }
 
     /**
@@ -136,8 +136,6 @@ public class SkyWarsGame {
     public void end() {
         gameLoop.stop();
         state = GameState.ENDING;
-
-        broadcast(ChatColor.RED + "Game ended!");
 
         getOnlinePlayers().forEach(skyWarsPlayer -> {
             skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + "Game over!");
@@ -149,13 +147,13 @@ public class SkyWarsGame {
         }
 
         broadcast(Utils.SEPARATOR);
+        broadcast(CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "SkyWars"));
+        broadcast(CenteredMessage.generate(ChatColor.RED + "GAME OVER!"));
         broadcast("\n");
 
         if (winner != null) {
-            broadcast("\n");
             broadcast(CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "Winner: " + ChatColor.GOLD + winner.getDisplayName()));
         } else {
-            broadcast("\n");
             broadcast(CenteredMessage.generate(ChatColor.RED + "Nobody won the game!"));
         }
 

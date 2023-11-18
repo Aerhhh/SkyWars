@@ -11,19 +11,15 @@ import java.util.logging.Level;
 
 public class CageOpenEvent extends GameEvent {
 
+    private final GameSettings settings = game.getSettings();
+
     public CageOpenEvent(SkyWarsGame game) {
         super(game, "Game Start", 0L);
     }
 
     @Override
-    public void execute() {
+    public void onStart() {
         game.log(Level.INFO, "Opening cages!");
-
-        GameSettings settings = game.getSettings();
-        settings.setHunger(false);
-        settings.allowItemDrops(false);
-        settings.allowBlockBreaking(false);
-        settings.allowBlockPlacing(false);
 
         for (Island island : game.getIslands()) {
             for (int x = -2; x <= 2; x++) {
@@ -35,15 +31,24 @@ public class CageOpenEvent extends GameEvent {
             }
         }
 
+        game.broadcast(ChatColor.YELLOW + "Cages opened! " + ChatColor.RED + "FIGHT!");
+    }
+
+    @Override
+    public void onEnd() {
         game.getPlugin().getServer().getScheduler().runTaskLater(game.getPlugin(), () -> {
             settings.allowDamage(true);
             settings.setHunger(true);
             settings.allowItemDrops(true);
+            settings.allowItemPickup(true);
             settings.allowBlockBreaking(true);
             settings.allowBlockPlacing(true);
             settings.setInteractable(true);
         }, 20L);
+    }
 
-        game.broadcast(ChatColor.YELLOW + "Cages opened! " + ChatColor.RED + "FIGHT!");
+    @Override
+    public void tick() {
+        // Not needed
     }
 }

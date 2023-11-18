@@ -2,12 +2,12 @@ package net.aerh.skywars.game;
 
 public class GameSettings {
 
-    private boolean blockBreak = true;
-    private boolean blockPlace = true;
-    private boolean hunger = true;
+    private boolean blockBreak = false;
+    private boolean blockPlace = false;
+    private boolean hunger = false;
     private boolean damage = false;
-    private boolean dropItem = true;
-    private boolean pickupItem = true;
+    private boolean dropItem = false;
+    private boolean pickupItem = false;
     private boolean interact = true;
     private boolean chat = true;
 
