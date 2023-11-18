@@ -20,12 +20,11 @@ public class GameInfoCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
-        if (!(commandSender instanceof Player)) {
+        if (!(commandSender instanceof Player player)) {
             commandSender.sendMessage("Only players can execute this command!");
             return true;
         }
 
-        Player player = (Player) commandSender;
         SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (args.length > 0) {
@@ -43,22 +42,25 @@ public class GameInfoCommand implements CommandExecutor {
 
         StringBuilder stringBuilder = new StringBuilder();
 
-        stringBuilder.append(ChatColor.GOLD + "Game Info (").append(game.getWorld().getName()).append("):").append("\n")
+        stringBuilder.append(ChatColor.GOLD).append("Game Info (").append(game.getWorld().getName()).append("):").append("\n")
             .append(ChatColor.YELLOW).append("  State: ").append(ChatColor.RESET).append(game.getState()).append("\n")
             .append(ChatColor.YELLOW).append("  Players: ").append(ChatColor.RESET).append(game.getBukkitPlayers().size()).append("/").append(SkyWarsGame.MAX_PLAYER_COUNT).append("\n")
             .append(ChatColor.YELLOW).append("  Spectators: ").append(ChatColor.RESET).append(game.getBukkitSpectators().size()).append("\n")
             .append(ChatColor.YELLOW).append("  Events: ").append(ChatColor.RESET).append(game.getGameLoop().getGameEventNames().toString()).append("\n")
             .append(ChatColor.YELLOW).append("  Events Remaining: ").append(ChatColor.RESET).append(game.getGameEvents().size()).append("\n");
 
-        if (game.getGameLoop().getNextEvent() != null) {
-            stringBuilder.append(ChatColor.YELLOW).append("  Next Event: ").append(ChatColor.RESET).append(game.getGameLoop().getNextEvent().getDisplayName()).append(" in ")
-                .append(Utils.formatTime(game.getGameLoop().getSecondsToNextEvent())).append(ChatColor.GRAY).append(" (").append(game.getGameLoop().getNextEvent().getClass().getSimpleName()).append(")").append("\n");
-        } else {
-            stringBuilder.append(ChatColor.YELLOW).append("  Next Event: ").append(ChatColor.RESET).append("None").append("\n");
-        }
+        SkyWarsGame finalGame = game;
+        game.getGameLoop().getCurrentEvent().ifPresentOrElse(gameEvent -> {
+            stringBuilder.append(ChatColor.YELLOW).append("  Next Event: ").append(ChatColor.RESET).append(gameEvent.getDisplayName()).append(" in ")
+                .append(Utils.formatTime(finalGame.getGameLoop().getSecondsToNextEvent())).append(ChatColor.GRAY).append(" (").append(gameEvent.getClass().getSimpleName()).append(")").append("\n");
+        }, () -> stringBuilder.append(ChatColor.YELLOW).append("  Next Event: ").append(ChatColor.RESET).append("None").append("\n"));
 
-        stringBuilder.append(ChatColor.YELLOW).append("  Winner: ").append(ChatColor.RESET).append(game.getWinner() != null ? game.getWinner().getUuid() : "None").append("\n")
-            .append(ChatColor.YELLOW).append("  Islands: ").append(ChatColor.RESET).append(game.getIslands().size()).append("\n")
+        game.getWinner().ifPresentOrElse(skyWarsPlayer -> stringBuilder.append(ChatColor.YELLOW).append("  Winner: ").append(ChatColor.RESET).append(skyWarsPlayer.getUuid()).append("\n"),
+            () -> stringBuilder.append(ChatColor.YELLOW).append("  Winner: ").append(ChatColor.RESET).append("None").append("\n")
+        );
+
+
+        stringBuilder.append(ChatColor.YELLOW).append("  Islands: ").append(ChatColor.RESET).append(game.getIslands().size()).append("\n")
             .append(ChatColor.YELLOW).append("  Chests: ").append(ChatColor.RESET).append(game.getRefillableChests().size()).append("\n");
 
         player.sendMessage(stringBuilder.toString());

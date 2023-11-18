@@ -20,12 +20,11 @@ public class SkipEventCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players can execute this command!");
             return true;
         }
 
-        Player player = (Player) sender;
         SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
@@ -38,13 +37,7 @@ public class SkipEventCommand implements CommandExecutor {
             return true;
         }
 
-        if (game.getGameLoop().getNextEvent() == null) {
-            player.sendMessage(ChatColor.RED + "There is no next event!");
-            return true;
-        }
-
-        game.getGameLoop().next();
-        player.sendMessage(ChatColor.GREEN + "You skipped the current event!");
+        game.getGameLoop().getNextEvent().ifPresentOrElse(gameEvent -> game.getGameLoop().next(true), () -> player.sendMessage(ChatColor.RED + "There is no next event!"));
         return true;
     }
 }

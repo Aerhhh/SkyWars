@@ -51,11 +51,10 @@ public class WorldSignParser {
 
         for (Chunk chunk : world.getLoadedChunks()) {
             for (BlockState tileEntity : chunk.getTileEntities()) {
-                if (!(tileEntity instanceof Sign)) {
+                if (!(tileEntity instanceof Sign sign)) {
                     continue;
                 }
 
-                Sign sign = (Sign) tileEntity;
                 ParsedSign parsedSign = parse(sign);
 
                 if (parsedSign != null) {

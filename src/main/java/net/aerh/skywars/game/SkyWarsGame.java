@@ -173,23 +173,16 @@ public class SkyWarsGame {
         broadcast("\n");
         broadcast(Utils.SEPARATOR);
 
-        for (SkyWarsPlayer skyWarsPlayer : players) {
-            if (winner != null && winner.getUuid().equals(skyWarsPlayer.getUuid())) {
-                continue;
-            }
-
-            if (skyWarsPlayer.getBukkitPlayer() != null) {
-                setSpectator(skyWarsPlayer);
-            }
-        }
+        players.stream()
+            .filter(skyWarsPlayer -> winner == null || !winner.getUuid().equals(skyWarsPlayer.getUuid()))
+            .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer() != null)
+            .forEach(this::setSpectator);
 
         players.clear();
         islands.clear();
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            for (Player spectator : getBukkitSpectators()) {
-                spectator.kickPlayer(ChatColor.RED + "Game ended!");
-            }
+            getBukkitSpectators().forEach(spectator -> spectator.kickPlayer(ChatColor.RED + "Game ended!"));
 
             if (winner != null && winner.getBukkitPlayer() != null) {
                 winner.getBukkitPlayer().kickPlayer(ChatColor.GREEN + "You won!");
@@ -461,7 +454,7 @@ public class SkyWarsGame {
         return players.stream()
             .map(SkyWarsPlayer::getBukkitPlayer)
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     /**
@@ -473,7 +466,7 @@ public class SkyWarsGame {
         return players.stream()
             .sorted(Comparator.comparingInt(SkyWarsPlayer::getKills).reversed())
             .limit(3)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     /**
@@ -506,7 +499,7 @@ public class SkyWarsGame {
             Optional<BlockFace> rotation = Utils.parseEnum(BlockFace.class, chest.get("rotation").getAsString());
             Optional<ChestType> chestType = Utils.parseEnum(ChestType.class, chest.get("type").getAsString());
 
-            if (!rotation.isPresent() || !chestType.isPresent()) {
+            if (rotation.isEmpty() || chestType.isEmpty()) {
                 return;
             }
 
@@ -677,9 +670,8 @@ public class SkyWarsGame {
      *
      * @return the {@link SkyWarsPlayer player} who won. Can be null
      */
-    @Nullable
-    public SkyWarsPlayer getWinner() {
-        return winner;
+    public Optional<SkyWarsPlayer> getWinner() {
+        return Optional.ofNullable(winner);
     }
 
     /**

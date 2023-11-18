@@ -94,16 +94,14 @@ public class GameListener implements Listener {
 
         Player damager;
 
-        if (event.getDamager() instanceof Projectile) {
-            Projectile projectile = (Projectile) event.getDamager();
-
+        if (event.getDamager() instanceof Projectile projectile) {
             if (!(projectile.getShooter() instanceof Player)) {
                 return;
             }
 
             damager = (Player) projectile.getShooter();
-        } else if (event.getDamager() instanceof Player) {
-            damager = (Player) event.getDamager();
+        } else if (event.getDamager() instanceof Player player) {
+            damager = player;
         } else {
             return;
         }
@@ -176,9 +174,7 @@ public class GameListener implements Listener {
 
     @EventHandler
     public void onEntityTarget(EntityTargetEvent event) {
-        if (event.getEntity() instanceof EnderDragon && event.getTarget() instanceof Player) {
-            EnderDragon dragon = (EnderDragon) event.getEntity();
-            Player target = (Player) event.getTarget();
+        if (event.getEntity() instanceof EnderDragon enderDragon && event.getTarget() instanceof Player target) {
             SkyWarsGame game = plugin.getGameManager().findGame(target);
 
             if (game == null) {
@@ -187,18 +183,17 @@ public class GameListener implements Listener {
 
             if (game.getBukkitSpectators().contains(target)) {
                 event.setCancelled(true);
-                dragon.setTarget(null);
+                enderDragon.setTarget(null);
             }
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onDamage(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player)) {
+        if (!(event.getEntity() instanceof Player player)) {
             return;
         }
 
-        Player player = (Player) event.getEntity();
         SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
@@ -217,11 +212,10 @@ public class GameListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerHunger(FoodLevelChangeEvent event) {
-        if (!(event.getEntity() instanceof Player)) {
+        if (!(event.getEntity() instanceof Player player)) {
             return;
         }
 
-        Player player = (Player) event.getEntity();
         SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
@@ -259,11 +253,10 @@ public class GameListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onItemPickup(EntityPickupItemEvent event) {
-        if (!(event.getEntity() instanceof Player)) {
+        if (!(event.getEntity() instanceof Player player)) {
             return;
         }
 
-        Player player = (Player) event.getEntity();
         SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
@@ -301,11 +294,10 @@ public class GameListener implements Listener {
 
     @EventHandler
     public void onVehicleEnter(VehicleEnterEvent event) {
-        if (!(event.getEntered() instanceof Player)) {
+        if (!(event.getEntered() instanceof Player player)) {
             return;
         }
 
-        Player player = (Player) event.getEntered();
         SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {
@@ -319,11 +311,10 @@ public class GameListener implements Listener {
 
     @EventHandler
     public void onVehicleExit(VehicleDamageEvent event) {
-        if (!(event.getAttacker() instanceof Player)) {
+        if (!(event.getAttacker() instanceof Player player)) {
             return;
         }
 
-        Player player = (Player) event.getAttacker();
         SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {

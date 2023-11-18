@@ -20,17 +20,11 @@ public class StartGameCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players can execute this command!");
             return true;
         }
 
-        if (!sender.isOp()) {
-            sender.sendMessage(ChatColor.RED + "You do not have permission to execute this command!");
-            return true;
-        }
-
-        Player player = (Player) sender;
         SkyWarsGame game = plugin.getGameManager().findGame(player);
 
         if (game == null) {

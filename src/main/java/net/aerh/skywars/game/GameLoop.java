@@ -8,9 +8,9 @@ import net.aerh.skywars.util.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -39,23 +39,14 @@ public class GameLoop {
             eventTask = null;
         }
 
-        if (gameEndTask != null) {
-            gameEndTask.cancel();
-            gameEndTask = null;
-        }
+        cancelTasks();
     }
 
     /**
      * Starts the game loop.
      */
-    public void next() {
-        if (eventTask != null) {
-            eventTask.cancel();
-        }
-
-        if (gameEndTask != null) {
-            gameEndTask.cancel();
-        }
+    public void next(boolean skipped) {
+        cancelTasks();
 
         if (game.getState() == GameState.ENDING) {
             return;
@@ -133,9 +124,13 @@ public class GameLoop {
     public void executeEvent(GameEvent gameEvent) {
         secondsToNextEvent = 0;
         game.log(Level.INFO, "Executing event: " + gameEvent.getDisplayName() + " (" + gameEvent.getClass().getSimpleName() + ")" + " - " + game.getGameEvents().size() + " events left");
-        gameEvent.execute();
-        game.getGameEvents().remove();
-        next();
+
+        next(false);
+    }
+
+    private void cancelTasks() {
+        Optional.ofNullable(eventTask).ifPresent(BukkitTask::cancel);
+        Optional.ofNullable(gameEndTask).ifPresent(BukkitTask::cancel);
     }
 
     /**
@@ -143,9 +138,8 @@ public class GameLoop {
      *
      * @return the next {@link GameEvent} in the queue or null if there are no more events left
      */
-    @Nullable
-    public GameEvent getNextEvent() {
-        return game.getGameEvents().peek();
+    public Optional<GameEvent> getNextEvent() {
+        return Optional.ofNullable(game.getGameEvents().peek());
     }
 
     /**
@@ -157,7 +151,21 @@ public class GameLoop {
         return game.getGameEvents().stream().map(gameEvent -> gameEvent.getClass().getSimpleName()).collect(Collectors.toList());
     }
 
+    /**
+     * Gets the amount of seconds until the next {@link GameEvent}.
+     *
+     * @return the amount of seconds until the next {@link GameEvent}
+     */
     public int getSecondsToNextEvent() {
         return secondsToNextEvent;
+    }
+
+    /**
+     * Gets the current {@link GameEvent}.
+     *
+     * @return the current {@link GameEvent}
+     */
+    public Optional<GameEvent> getCurrentEvent() {
+        return Optional.ofNullable(currentEvent);
     }
 }
