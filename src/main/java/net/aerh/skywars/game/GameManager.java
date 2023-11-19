@@ -93,7 +93,7 @@ public class GameManager {
     public Optional<SkyWarsGame> findNextFreeGame() {
         return games.stream()
             .filter(game -> game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING)
-            .filter(game -> game.getOnlinePlayers().size() < SkyWarsGame.MAX_PLAYER_COUNT)
+            .filter(game -> game.getOnlinePlayers().size() < game.getMaxPlayers())
             .findFirst();
     }
 

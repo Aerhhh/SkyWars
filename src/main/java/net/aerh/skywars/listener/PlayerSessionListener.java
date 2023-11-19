@@ -2,7 +2,6 @@ package net.aerh.skywars.listener;
 
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.GameState;
-import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.player.PlayerScoreboard;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Bukkit;
@@ -59,7 +58,8 @@ public class PlayerSessionListener implements Listener {
             player.setGameMode(GameMode.ADVENTURE);
 
             if (skyWarsGame.getState() == GameState.PRE_GAME || skyWarsGame.getState() == GameState.STARTING) {
-                skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " joined! " + ChatColor.GRAY + "(" + skyWarsGame.getBukkitPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT + ")");
+                skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " joined! "
+                    + ChatColor.GRAY + "(" + skyWarsGame.getBukkitPlayers().size() + "/" + skyWarsGame.getMaxPlayers() + ")");
             }
 
             skyWarsGame.getPlayer(player).ifPresentOrElse(skyWarsPlayer -> {
@@ -101,7 +101,8 @@ public class PlayerSessionListener implements Listener {
                 skyWarsGame.log(Level.INFO, "Player " + player.getName() + " left the game!");
 
                 if (skyWarsGame.getState() == GameState.PRE_GAME || skyWarsGame.getState() == GameState.STARTING) {
-                    skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left! " + ChatColor.GRAY + "(" + skyWarsGame.getBukkitPlayers().size() + "/" + SkyWarsGame.MAX_PLAYER_COUNT + ")");
+                    skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left! "
+                        + ChatColor.GRAY + "(" + skyWarsGame.getBukkitPlayers().size() + "/" + skyWarsGame.getMaxPlayers() + ")");
                 } else {
                     skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left!");
                 }

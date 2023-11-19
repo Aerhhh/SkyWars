@@ -589,6 +589,10 @@ public class SkyWarsGame {
         return islands;
     }
 
+    public int getMaxPlayers() {
+        return islands.size();
+    }
+
     /**
      * Gets the {@link Set} of {@link RefillableChest chests} in this game.
      *

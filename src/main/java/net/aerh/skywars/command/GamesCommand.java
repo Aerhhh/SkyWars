@@ -1,7 +1,6 @@
 package net.aerh.skywars.command;
 
 import net.aerh.skywars.SkyWarsPlugin;
-import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.util.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -34,7 +33,8 @@ public class GamesCommand implements CommandExecutor {
             stringBuilder.append("\n")
                 .append(ChatColor.YELLOW).append("  Islands: ").append(ChatColor.RESET).append(skyWarsGame.getIslands().size()).append("\n")
                 .append(ChatColor.YELLOW).append("  Chests: ").append(ChatColor.RESET).append(skyWarsGame.getRefillableChests().size()).append("\n")
-                .append(ChatColor.YELLOW).append("  Players: ").append(ChatColor.RESET).append(skyWarsGame.getBukkitPlayers().size()).append("/").append(SkyWarsGame.MAX_PLAYER_COUNT).append("\n")
+                .append(ChatColor.YELLOW).append("  Players: ").append(ChatColor.RESET).append(skyWarsGame.getBukkitPlayers().size()).append("/")
+                .append(skyWarsGame.getMaxPlayers()).append("\n")
                 .append(ChatColor.YELLOW).append("  Spectators: ").append(ChatColor.RESET).append(skyWarsGame.getBukkitSpectators().size()).append("\n")
                 .append(ChatColor.YELLOW).append("  Winner: ").append(ChatColor.RESET);
 
