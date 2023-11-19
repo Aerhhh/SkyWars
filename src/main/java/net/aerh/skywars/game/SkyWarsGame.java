@@ -31,9 +31,8 @@ import java.util.stream.Stream;
 
 public class SkyWarsGame {
 
-    // TODO could be configured per map
     public static final int MIN_PLAYER_COUNT = 2;
-    public static final int MAX_PLAYER_COUNT = 12;
+    private static final BlockFace[] VALID_CHEST_ROTATIONS = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
 
     private final SkyWarsPlugin plugin;
     private final World world;
@@ -70,7 +69,7 @@ public class SkyWarsGame {
 
         try {
             parseIslands(config);
-        } catch (IllegalStateException exception) {
+        } catch (IllegalArgumentException exception) {
             log(Level.SEVERE, "Failed to parse islands!");
             exception.printStackTrace();
             Bukkit.getServer().shutdown();
@@ -78,7 +77,7 @@ public class SkyWarsGame {
 
         try {
             parseChests(config);
-        } catch (IllegalStateException exception) {
+        } catch (IllegalArgumentException exception) {
             log(Level.SEVERE, "Failed to parse chests!");
             exception.printStackTrace();
         }
@@ -91,7 +90,7 @@ public class SkyWarsGame {
             RefillableChest refillableChest = new RefillableChest(sign.getLocation(), chestType);
             refillableChests.add(refillableChest);
             refillableChest.spawn(true, sign.getRotation());
-            log(Level.INFO, "Registered refillable " + chestType + " chest at " + sign.getLocation());
+            log(Level.INFO, "Registered refillable " + chestType + " chest at " + Utils.parseLocationToString(sign.getLocation()));
         });
     }
 
@@ -288,7 +287,7 @@ public class SkyWarsGame {
         Player player = skyWarsPlayer.getBukkitPlayer();
 
         if (player == null) {
-            log(Level.SEVERE, "Failed to set " + skyWarsPlayer.getUuid() + " to spectator mode!");
+            log(Level.SEVERE, "Failed to set " + skyWarsPlayer.getUuid() + " to spectator mode as they could not be found!");
             return;
         }
 
@@ -471,12 +470,17 @@ public class SkyWarsGame {
      * @param config the {@link JsonObject} to parse from
      */
     private void parseIslands(JsonObject config) {
-        Utils.parseConfigLocationArray(config, "islands").forEach(jsonObject -> {
-            double x = jsonObject.get("x").getAsDouble();
-            double y = jsonObject.get("y").getAsDouble();
-            double z = jsonObject.get("z").getAsDouble();
-            Location location = new Location(world, x, y, z);
-            islands.add(new Island(location));
+        Utils.parseConfigLocationArray(config, "islands").forEach(island -> {
+            try {
+                double x = island.get("x").getAsDouble();
+                double y = island.get("y").getAsDouble();
+                double z = island.get("z").getAsDouble();
+                Location location = new Location(world, x, y, z);
+                islands.add(new Island(location));
+                log(Level.INFO, "Registered island: " + island);
+            } catch (NumberFormatException exception) {
+                throw new IllegalArgumentException("Failed to parse island: " + island);
+            }
         });
     }
 
@@ -489,20 +493,28 @@ public class SkyWarsGame {
         log(Level.INFO, "Parsing chest locations from map config...");
 
         Utils.parseConfigLocationArray(config, "chests").forEach(chest -> {
-            double x = chest.get("x").getAsDouble();
-            double y = chest.get("y").getAsDouble();
-            double z = chest.get("z").getAsDouble();
-            Optional<BlockFace> rotation = Utils.parseEnum(BlockFace.class, chest.get("rotation").getAsString());
-            Optional<ChestType> chestType = Utils.parseEnum(ChestType.class, chest.get("type").getAsString());
+            try {
+                double x = chest.get("x").getAsDouble();
+                double y = chest.get("y").getAsDouble();
+                double z = chest.get("z").getAsDouble();
+                Optional<BlockFace> rotation = Utils.parseEnum(BlockFace.class, chest.get("rotation").getAsString());
+                Optional<ChestType> chestType = Utils.parseEnum(ChestType.class, chest.get("type").getAsString());
 
-            if (rotation.isEmpty() || chestType.isEmpty()) {
-                return;
+                if (rotation.isEmpty() || chestType.isEmpty()) {
+                    return;
+                }
+
+                if (Arrays.stream(VALID_CHEST_ROTATIONS).noneMatch(face -> face.equals(rotation.get()))) {
+                    throw new IllegalArgumentException("Invalid chest rotation: " + rotation.get() + " for chest: " + chest);
+                }
+
+                RefillableChest refillableChest = new RefillableChest(new Location(world, x, y, z), chestType.get());
+                refillableChests.add(refillableChest);
+                refillableChest.spawn(true, rotation.get());
+                log(Level.INFO, "Registered refillable chest: " + chest);
+            } catch (NumberFormatException exception) {
+                throw new IllegalArgumentException("Failed to parse chest: " + chest);
             }
-
-            RefillableChest refillableChest = new RefillableChest(new Location(world, x, y, z), chestType.get());
-            refillableChests.add(refillableChest);
-            refillableChest.spawn(true, rotation.get());
-            log(Level.INFO, "Registered refillable chest: " + chest);
         });
     }
 
