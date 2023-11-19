@@ -2,7 +2,6 @@ package net.aerh.skywars.command;
 
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.GameState;
-import net.aerh.skywars.game.SkyWarsGame;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -25,24 +24,20 @@ public class StartGameCommand implements CommandExecutor {
             return true;
         }
 
-        SkyWarsGame game = plugin.getGameManager().findGame(player);
+        plugin.getGameManager().findGame(player).ifPresentOrElse(skyWarsGame -> {
+            if (skyWarsGame.getState() != GameState.PRE_GAME && skyWarsGame.getState() != GameState.STARTING) {
+                player.sendMessage(ChatColor.RED + "You can only start the game in the pre-game state!");
+                return;
+            }
 
-        if (game == null) {
-            player.sendMessage(ChatColor.RED + "You are not in a game!");
-            return true;
-        }
+            if (skyWarsGame.getCountdownTask() != null) {
+                skyWarsGame.setCountdownTask(null);
+            }
 
-        if (game.getState() != GameState.PRE_GAME && game.getState() != GameState.STARTING) {
-            player.sendMessage(ChatColor.RED + "You can only start the game in the pre-game state!");
-            return true;
-        }
+            skyWarsGame.start();
+            player.sendMessage(ChatColor.GREEN + "You started the game!");
+        }, () -> player.sendMessage(ChatColor.RED + "You are not in a game!"));
 
-        if (game.getCountdownTask() != null) {
-            game.setCountdownTask(null);
-        }
-
-        game.start();
-        player.sendMessage(ChatColor.GREEN + "You started the game!");
         return true;
     }
 }

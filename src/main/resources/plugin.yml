@@ -20,10 +20,6 @@ commands:
         aliases:
             - listgames
         permission: skywars.command.games
-    gameinfo:
-        aliases:
-            - gi
-        permission: skywars.command.gameinfo
     skipevent:
         aliases:
             - se
@@ -38,9 +34,6 @@ permissions:
         default: op
     skywars.command.games:
         description: Allows the player to list all games
-        default: op
-    skywars.command.gameinfo:
-        description: Allows the player to get information about a game
         default: op
     skywars.command.skipevent:
         description: Allows the player to skip an event

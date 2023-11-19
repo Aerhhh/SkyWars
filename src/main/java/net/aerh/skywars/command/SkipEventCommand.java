@@ -2,7 +2,6 @@ package net.aerh.skywars.command;
 
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.GameState;
-import net.aerh.skywars.game.SkyWarsGame;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -25,19 +24,17 @@ public class SkipEventCommand implements CommandExecutor {
             return true;
         }
 
-        SkyWarsGame game = plugin.getGameManager().findGame(player);
+        plugin.getGameManager().findGame(player).ifPresentOrElse(skyWarsGame -> {
+            if (skyWarsGame.getState() != GameState.IN_GAME) {
+                player.sendMessage(ChatColor.RED + "You can only skip events when the game is running!");
+                return;
+            }
 
-        if (game == null) {
-            player.sendMessage(ChatColor.RED + "You are not in a game!");
-            return true;
-        }
+            skyWarsGame.getGameLoop().getNextEvent().ifPresentOrElse(gameEvent -> skyWarsGame.getGameLoop().next(true),
+                () -> player.sendMessage(ChatColor.RED + "There is no next event!")
+            );
+        }, () -> player.sendMessage(ChatColor.RED + "You are not in a game!"));
 
-        if (game.getState() != GameState.IN_GAME) {
-            player.sendMessage(ChatColor.RED + "You can only skip events when the game is running!");
-            return true;
-        }
-
-        game.getGameLoop().getNextEvent().ifPresentOrElse(gameEvent -> game.getGameLoop().next(true), () -> player.sendMessage(ChatColor.RED + "There is no next event!"));
         return true;
     }
 }

@@ -18,9 +18,7 @@ public final class SkyWarsPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        Arrays.stream(Bukkit.getWorldContainer().listFiles((dir, name) -> name.startsWith("game-"))).forEach(file -> {
-            Utils.deleteFolder(file.toPath());
-        });
+        Arrays.stream(Bukkit.getWorldContainer().listFiles((dir, name) -> name.startsWith("game-"))).forEach(file -> Utils.deleteFolder(file.toPath()));
 
         gameManager = new GameManager(this);
 
@@ -35,7 +33,6 @@ public final class SkyWarsPlugin extends JavaPlugin {
         getCommand("start").setExecutor(new StartGameCommand(this));
         getCommand("end").setExecutor(new EndGameCommand(this));
         getCommand("games").setExecutor(new GamesCommand(this));
-        getCommand("gameinfo").setExecutor(new GameInfoCommand(this));
         getCommand("skipevent").setExecutor(new SkipEventCommand(this));
     }
 

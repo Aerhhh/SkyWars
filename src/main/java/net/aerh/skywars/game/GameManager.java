@@ -5,12 +5,12 @@ import net.aerh.skywars.map.MapLoader;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class GameManager {
 
@@ -79,12 +79,10 @@ public class GameManager {
      * @param worldName the world name
      * @return the {@link SkyWarsGame} or null if not found
      */
-    @Nullable
-    public SkyWarsGame getGame(String worldName) {
+    public Optional<SkyWarsGame> getGame(String worldName) {
         return games.stream()
             .filter(game -> game.getWorld().getName().equals(worldName))
-            .findFirst()
-            .orElse(null);
+            .findFirst();
     }
 
     /**
@@ -92,13 +90,11 @@ public class GameManager {
      *
      * @return the next free {@link SkyWarsGame} or null if not found
      */
-    @Nullable
-    public SkyWarsGame findNextFreeGame() {
+    public Optional<SkyWarsGame> findNextFreeGame() {
         return games.stream()
             .filter(game -> game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING)
             .filter(game -> game.getBukkitPlayers().size() < SkyWarsGame.MAX_PLAYER_COUNT)
-            .findFirst()
-            .orElse(null);
+            .findFirst();
     }
 
     /**
@@ -107,20 +103,14 @@ public class GameManager {
      * @param player the {@link Player} to find the game of
      * @return the {@link SkyWarsGame} or null if not found
      */
-    @Nullable
-    public SkyWarsGame findGame(Player player) {
-        return games.stream()
-            .filter(game -> game.getBukkitSpectators().contains(player) || game.getPlayer(player) != null)
-            .findFirst()
-            .orElse(null);
+    public Optional<SkyWarsGame> findGame(Player player) {
+        return games.stream().filter(game -> game.getBukkitPlayers().contains(player)).findFirst();
     }
 
-    @Nullable
-    public SkyWarsGame findGame(World world) {
+    public Optional<SkyWarsGame> findGame(World world) {
         return games.stream()
             .filter(game -> game.getWorld().equals(world))
-            .findFirst()
-            .orElse(null);
+            .findFirst();
     }
 
     /**

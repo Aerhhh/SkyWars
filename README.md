@@ -75,7 +75,6 @@ See the below map configuration for an example.
 # Commands
 | Command      | Permission                | Aliases                        | Description                                                                                    |
 |--------------|---------------------------|--------------------------------|------------------------------------------------------------------------------------------------|
-| `/gameinfo`  | skywars.command.gameinfo  | `/gi`                          | Get information on a single game. If no world is specified it defaults to the world you are in |
 | `/games`     | skywars.command.games     | `/listgames`                   | Show basic information for all active games on the server                                      |
 | `/start`     | skywars.command.start     | `/sg`, `/startgame`            | Forcefully start the game you are in                                                           |
 | `/end`       | skywars.command.end       | `/eg`, `/endgame`, `/stopgame` | Forcefully end the game you are in                                                             |
