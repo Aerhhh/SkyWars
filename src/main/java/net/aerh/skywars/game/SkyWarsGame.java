@@ -23,7 +23,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -176,9 +175,6 @@ public class SkyWarsGame {
             .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer() != null)
             .forEach(this::setSpectator);
 
-        players.clear();
-        islands.clear();
-
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             getBukkitSpectators().forEach(spectator -> spectator.kickPlayer(ChatColor.RED + "Game ended!"));
 
@@ -187,6 +183,10 @@ public class SkyWarsGame {
             }
 
             spectators.clear();
+            players.clear();
+            islands.clear();
+            refillableChests.clear();
+            gameEvents.clear();
             plugin.getGameManager().removeGame(this);
         }, 20L * 30L);
     }
@@ -368,11 +368,7 @@ public class SkyWarsGame {
             checkPlayerCountForCountdown();
         }
 
-        Island island = getIsland(player);
-
-        if (island != null) {
-            island.setAssignedPlayer(null);
-        }
+        getIsland(player).ifPresent(island1 -> island1.setAssignedPlayer(null));
 
         if (state != GameState.STARTING) {
             getOnlinePlayers().forEach(skyWarsPlayer -> {
@@ -386,15 +382,12 @@ public class SkyWarsGame {
      * Teleports all players to their island spawn locations.
      */
     public void teleportPlayers() {
-        players.forEach(player -> {
-            Island island = getIsland(player);
-
-            if (island == null || player.getBukkitPlayer() == null) {
-                return;
-            }
-
-            player.getBukkitPlayer().teleport(island.getSpawnLocation().clone().add(0.5, 0, 0.5));
-        });
+        players.stream()
+            .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer() != null)
+            .forEach(player -> {
+                getIsland(player).ifPresentOrElse(i -> player.getBukkitPlayer().teleport(i.getSpawnLocation().clone().add(0.5, 0, 0.5)),
+                    () -> setSpectator(player));
+            });
     }
 
     /**
@@ -403,9 +396,10 @@ public class SkyWarsGame {
      * @param player the {@link Player} to get
      * @return the {@link SkyWarsPlayer} with the {@link Player}. Can be null
      */
-    @Nullable
-    public SkyWarsPlayer getPlayer(Player player) {
-        return players.stream().filter(p -> p.getUuid().equals(player.getUniqueId())).findFirst().orElse(null);
+    public Optional<SkyWarsPlayer> getPlayer(Player player) {
+        return players.stream()
+            .filter(p -> p.getUuid().equals(player.getUniqueId()))
+            .findFirst();
     }
 
     /**
@@ -414,9 +408,10 @@ public class SkyWarsGame {
      * @param uuid the {@link UUID} to get
      * @return the {@link SkyWarsPlayer} with the {@link UUID}. Can be null
      */
-    @Nullable
-    public SkyWarsPlayer getPlayer(UUID uuid) {
-        return players.stream().filter(p -> p.getUuid().equals(uuid)).findFirst().orElse(null);
+    public Optional<SkyWarsPlayer> getPlayer(UUID uuid) {
+        return players.stream()
+            .filter(p -> p.getUuid().equals(uuid))
+            .findFirst();
     }
 
     /**
@@ -425,9 +420,10 @@ public class SkyWarsGame {
      * @param uuid the {@link UUID} of the {@link SkyWarsPlayer} to get
      * @return the {@link SkyWarsPlayer} who is a spectator. Returns null if the {@link SkyWarsPlayer} is not a spectator
      */
-    @Nullable
-    public SkyWarsPlayer getSpectator(UUID uuid) {
-        return spectators.stream().filter(p -> p.getUuid().equals(uuid)).findFirst().orElse(null);
+    public Optional<SkyWarsPlayer> getSpectator(UUID uuid) {
+        return spectators.stream()
+            .filter(p -> p.getUuid().equals(uuid))
+            .findFirst();
     }
 
     public Set<SkyWarsPlayer> getOnlinePlayers() {
@@ -514,9 +510,8 @@ public class SkyWarsGame {
      * @param skyWarsPlayer the {@link SkyWarsPlayer} to get the {@link Island} of
      * @return the {@link Island} of the {@link SkyWarsPlayer}. Can be null
      */
-    @Nullable
-    public Island getIsland(SkyWarsPlayer skyWarsPlayer) {
-        return islands.stream().filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(skyWarsPlayer)).findFirst().orElse(null);
+    public Optional<Island> getIsland(SkyWarsPlayer skyWarsPlayer) {
+        return islands.stream().filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(skyWarsPlayer)).findFirst();
     }
 
     /**

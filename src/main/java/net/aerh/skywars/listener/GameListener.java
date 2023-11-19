@@ -5,7 +5,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Scheduler;
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.GameState;
-import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EnderDragon;
@@ -69,18 +68,14 @@ public class GameListener implements Listener {
             event.setCancelled(true);
             player.sendTitle(ChatColor.RED + ChatColor.BOLD.toString() + "YOU DIED!", ChatColor.GRAY + "Better luck next time!", 0, 20 * 5, 20);
 
-            SkyWarsPlayer skyWarsPlayer = skyWarsGame.getPlayer(player);
-            skyWarsGame.setSpectator(skyWarsPlayer);
 
             UUID uuid = lastDamager.getIfPresent(player.getUniqueId());
-            SkyWarsPlayer killer = skyWarsGame.getPlayer(uuid);
 
-            if (killer != null) {
+            skyWarsGame.getPlayer(player).ifPresent(skyWarsGame::setSpectator);
+            skyWarsGame.getPlayer(uuid).ifPresentOrElse(killer -> {
                 skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " was killed by " + ChatColor.GOLD + killer.getDisplayName());
                 killer.addKill();
-            } else {
-                skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " died!");
-            }
+            }, () -> skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " died!"));
         });
     }
 
