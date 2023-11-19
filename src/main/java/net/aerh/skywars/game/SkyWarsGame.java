@@ -426,7 +426,8 @@ public class SkyWarsGame {
     }
 
     public Set<SkyWarsPlayer> getOnlinePlayers() {
-        return Stream.concat(players.stream(), spectators.stream()).collect(Collectors.toSet());
+        return Stream.concat(players.stream(), spectators.stream())
+            .collect(Collectors.toSet());
     }
 
     /**
@@ -435,7 +436,9 @@ public class SkyWarsGame {
      * @return the {@link List} of the alive {@link SkyWarsPlayer players} in this game
      */
     public Set<SkyWarsPlayer> getAlivePlayers() {
-        return players.stream().filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer() != null && !spectators.contains(skyWarsPlayer)).collect(Collectors.toSet());
+        return players.stream()
+            .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer() != null && !spectators.contains(skyWarsPlayer))
+            .collect(Collectors.toSet());
     }
 
     /**
@@ -510,7 +513,9 @@ public class SkyWarsGame {
      * @return the {@link Island} of the {@link SkyWarsPlayer}. Can be null
      */
     public Optional<Island> getIsland(SkyWarsPlayer skyWarsPlayer) {
-        return islands.stream().filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(skyWarsPlayer)).findFirst();
+        return islands.stream()
+            .filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(skyWarsPlayer))
+            .findFirst();
     }
 
     /**
@@ -599,14 +604,12 @@ public class SkyWarsGame {
      * @param location the {@link Location} of the {@link RefillableChest}
      */
     public void removeRefillableChest(Location location) {
-        RefillableChest refillableChest = refillableChests.stream().filter(chest -> Utils.locationsMatch(chest.getLocation(), location)).findFirst().orElse(null);
-
-        if (refillableChest == null) {
-            return;
-        }
-
-        refillableChest.removeTimerHologram();
-        refillableChests.remove(refillableChest);
+        refillableChests.stream()
+            .filter(chest -> Utils.locationsMatch(chest.getLocation(), location))
+            .findFirst().ifPresent(refillableChest -> {
+                refillableChest.removeTimerHologram();
+                refillableChests.remove(refillableChest);
+            });
     }
 
     /**
