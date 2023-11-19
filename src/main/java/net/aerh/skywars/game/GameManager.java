@@ -35,7 +35,7 @@ public class GameManager {
     public void createGames(int amount) {
         try {
             for (int i = 0; i < amount; i++) {
-                games.add(MapLoader.loadRandomMap(plugin, plugin.getDataFolder().getAbsolutePath() + File.separator + "map-templates", "game-" + (i + 1)));
+                addGame(MapLoader.loadRandomMap(plugin, plugin.getDataFolder().getAbsolutePath() + File.separator + "map-templates", "game-" + (i + 1)));
             }
         } catch (IOException | IllegalStateException exception) {
             exception.printStackTrace();
@@ -71,18 +71,6 @@ public class GameManager {
      */
     public void removeGame(SkyWarsGame game) {
         games.remove(game);
-    }
-
-    /**
-     * Gets a game by its world name.
-     *
-     * @param worldName the world name
-     * @return the {@link SkyWarsGame} or null if not found
-     */
-    public Optional<SkyWarsGame> getGame(String worldName) {
-        return games.stream()
-            .filter(game -> game.getWorld().getName().equals(worldName))
-            .findFirst();
     }
 
     /**

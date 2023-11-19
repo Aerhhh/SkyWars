@@ -6,10 +6,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 public class GameLoop {
 
@@ -133,15 +131,6 @@ public class GameLoop {
      */
     public Optional<GameEvent> getNextEvent() {
         return Optional.ofNullable(game.getGameEvents().peek());
-    }
-
-    /**
-     * Gets the names of the {@link GameEvent}s in the queue as a {@link List} of strings.
-     *
-     * @return the names of the {@link GameEvent}s in the queue as a {@link List} of strings
-     */
-    public List<String> getGameEventNames() {
-        return game.getGameEvents().stream().map(gameEvent -> gameEvent.getClass().getSimpleName()).collect(Collectors.toList());
     }
 
     /**

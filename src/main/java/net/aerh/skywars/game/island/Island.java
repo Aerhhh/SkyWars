@@ -29,6 +29,13 @@ public class Island {
     }
 
     /**
+     * Unassigns the {@link SkyWarsPlayer} from this island.
+     */
+    public void removePlayer() {
+        this.assignedPlayer = null;
+    }
+
+    /**
      * Gets the spawn location of this island.
      *
      * @return the spawn location
@@ -46,14 +53,5 @@ public class Island {
     @Nullable
     public SkyWarsPlayer getAssignedPlayer() {
         return assignedPlayer;
-    }
-
-    /**
-     * Sets the player assigned to this island.
-     *
-     * @param assignedPlayer the {@link SkyWarsPlayer player} to assign to this island
-     */
-    public void setAssignedPlayer(@Nullable SkyWarsPlayer assignedPlayer) {
-        this.assignedPlayer = assignedPlayer;
     }
 }

@@ -366,7 +366,7 @@ public class SkyWarsGame {
             checkPlayerCountForCountdown();
         }
 
-        getIsland(player).ifPresent(island1 -> island1.setAssignedPlayer(null));
+        getIsland(player).ifPresent(Island::removePlayer);
 
         if (state != GameState.STARTING) {
             getOnlinePlayers().forEach(skyWarsPlayer -> {
