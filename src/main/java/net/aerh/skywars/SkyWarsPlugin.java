@@ -1,6 +1,9 @@
 package net.aerh.skywars;
 
-import net.aerh.skywars.command.*;
+import net.aerh.skywars.command.EndGameCommand;
+import net.aerh.skywars.command.GamesCommand;
+import net.aerh.skywars.command.SkipEventCommand;
+import net.aerh.skywars.command.StartGameCommand;
 import net.aerh.skywars.game.GameManager;
 import net.aerh.skywars.listener.GameListener;
 import net.aerh.skywars.listener.PlayerSessionListener;
