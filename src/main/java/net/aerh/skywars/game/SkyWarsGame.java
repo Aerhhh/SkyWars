@@ -324,23 +324,24 @@ public class SkyWarsGame {
     public boolean addPlayer(SkyWarsPlayer player) {
         log(Level.INFO, "Adding player " + player.getUuid());
 
+        Optional<Island> island = islands.stream()
+            .filter(i -> i.getAssignedPlayer() == null)
+            .findFirst();
+
+        if (island.isEmpty()) {
+            return false;
+        }
+
         if (state == GameState.IN_GAME || state == GameState.ENDING) {
             log(Level.INFO, "Player " + player.getUuid() + " tried to join but the game is already running!");
             return false;
         }
 
-        boolean success = false;
-        Optional<Island> island = getIsland(player);
+        players.add(player);
+        island.get().assignPlayer(player);
 
-        if (island.isPresent()) {
-            success = true;
-            island.get().assignPlayer(player);
-            players.add(player);
-            checkPlayerCountForCountdown();
-            log(Level.INFO, "Added player " + player.getUuid() + " to island " + Utils.parseLocationToString(island.get().getSpawnLocation()) + "!");
-        } else {
-            log(Level.INFO, "Player " + player.getUuid() + " tried to join but there are no islands left!");
-        }
+        checkPlayerCountForCountdown();
+        log(Level.INFO, "Added player " + player.getUuid() + " to island " + Utils.parseLocationToString(island.get().getSpawnLocation()) + "!");
 
         if (state != GameState.STARTING) {
             getOnlinePlayers().stream()
@@ -351,7 +352,7 @@ public class SkyWarsGame {
                 });
         }
 
-        return success;
+        return true;
     }
 
     /**
@@ -366,7 +367,7 @@ public class SkyWarsGame {
             checkPlayerCountForCountdown();
         }
 
-        getIsland(player).ifPresent(island -> island.setAssignedPlayer(null));
+        getIsland(player).ifPresent(island1 -> island1.setAssignedPlayer(null));
 
         if (state != GameState.STARTING) {
             getOnlinePlayers().forEach(skyWarsPlayer -> {
@@ -509,9 +510,7 @@ public class SkyWarsGame {
      * @return the {@link Island} of the {@link SkyWarsPlayer}. Can be null
      */
     public Optional<Island> getIsland(SkyWarsPlayer skyWarsPlayer) {
-        return islands.stream()
-            .filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(skyWarsPlayer))
-            .findFirst();
+        return islands.stream().filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(skyWarsPlayer)).findFirst();
     }
 
     /**
