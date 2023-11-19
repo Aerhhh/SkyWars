@@ -16,6 +16,7 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.Objects;
 import java.util.logging.Level;
 
 public class PlayerSessionListener implements Listener {
@@ -78,13 +79,12 @@ public class PlayerSessionListener implements Listener {
             });
 
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                plugin.getGameManager().getGames().stream()
-                    .filter(g -> g.equals(skyWarsGame))
-                    .forEach(g -> {
-                        g.getBukkitPlayers().forEach(p -> {
-                            p.showPlayer(plugin, player);
-                            player.showPlayer(plugin, p);
-                        });
+                skyWarsGame.getOnlinePlayers().stream()
+                    .map(SkyWarsPlayer::getBukkitPlayer)
+                    .filter(Objects::nonNull)
+                    .forEach(p -> {
+                        p.showPlayer(plugin, player);
+                        player.showPlayer(plugin, p);
                     });
             }, 1L);
         }, () -> player.kickPlayer(GENERIC_KICK_MESSAGE));
