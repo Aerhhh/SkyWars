@@ -23,6 +23,9 @@ should contain the type of chest. The rotation of the chest will follow the rota
 
 See the below map configuration for an example.
 
+When the plugin starts and chooses a map, it will generate a pre-defined number of worlds that act as independent games. Each world or
+"game" will be closed off from each other, including chat, stats, players, etc.
+
 ## Example Map Config
 
 ```json
