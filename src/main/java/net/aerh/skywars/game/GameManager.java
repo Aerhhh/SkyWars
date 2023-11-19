@@ -104,7 +104,9 @@ public class GameManager {
      * @return the {@link SkyWarsGame} or null if not found
      */
     public Optional<SkyWarsGame> findGame(Player player) {
-        return games.stream().filter(game -> game.getBukkitPlayers().contains(player)).findFirst();
+        return games.stream()
+            .filter(game -> game.getBukkitPlayers().contains(player))
+            .findFirst();
     }
 
     public Optional<SkyWarsGame> findGame(World world) {
