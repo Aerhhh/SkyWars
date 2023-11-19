@@ -81,21 +81,19 @@ public class GameListener implements Listener {
 
     @EventHandler
     public void onPlayerDamagePlayer(EntityDamageByEntityEvent event) {
-        if (!(event.getEntity() instanceof Player)) {
+        if (!(event.getEntity() instanceof Player player)) {
             return;
         }
 
         Player damager;
 
-        if (event.getDamager() instanceof Projectile projectile && projectile.getShooter() instanceof Player player) {
-            damager = player;
-        } else if (event.getDamager() instanceof Player player) {
-            damager = player;
+        if (event.getDamager() instanceof Projectile projectile && projectile.getShooter() instanceof Player shooter) {
+            damager = shooter;
+        } else if (event.getDamager() instanceof Player damagerPlayer) {
+            damager = damagerPlayer;
         } else {
             return;
         }
-
-        Player player = (Player) event.getEntity();
 
         plugin.getGameManager().findGame(player).ifPresent(skyWarsGame -> {
             if (skyWarsGame.getBukkitSpectators().contains(damager)) {
