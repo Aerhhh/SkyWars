@@ -2,9 +2,8 @@ package net.aerh.skywars.game;
 
 import net.aerh.skywars.game.event.GameEvent;
 import net.aerh.skywars.util.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -17,7 +16,7 @@ public class GameLoop {
     private final SkyWarsGame game;
     private GameEvent currentEvent;
     private long nextEventTime;
-    private BukkitTask gameEndTask;
+    private int gameEndTaskId;
 
     /**
      * Represents the game loop of a {@link SkyWarsGame}.
@@ -60,45 +59,49 @@ public class GameLoop {
         long delayInMillis = TimeUnit.SECONDS.toMillis(currentEvent.getDelay() / TICKS_PER_SECOND);
         nextEventTime = System.currentTimeMillis() + delayInMillis;
 
-        gameEndTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (game.getAlivePlayers().size() <= 1) {
-                    game.end();
-                    cancel();
-                    return;
-                }
+        Bukkit.getScheduler().runTaskTimer(game.getPlugin(), task -> {
+            gameEndTaskId = task.getTaskId();
 
-                if (System.currentTimeMillis() >= nextEventTime) {
-                    next();
-                    return;
-                }
+            if (game.getAlivePlayers().size() <= 1) {
+                game.end();
+                task.cancel();
+                return;
+            }
 
-                game.getOnlinePlayers().forEach(skyWarsPlayer -> {
-                    getNextEvent().ifPresentOrElse(event -> {
-                        skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + currentEvent.getDisplayName()
+            if (System.currentTimeMillis() >= nextEventTime) {
+                next();
+                return;
+            }
+
+            game.getOnlinePlayers().forEach(skyWarsPlayer -> {
+                getNextEvent().ifPresentOrElse(event -> {
+                    skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + currentEvent.getDisplayName()
+                        + " " + Utils.formatTimeMillis(nextEventTime - System.currentTimeMillis()));
+                }, () -> {
+                    // If there is no next event, we can assume that the game is ending, so display the game end event name
+                    getCurrentEvent().ifPresentOrElse(event -> {
+                        skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + event.getDisplayName()
                             + " " + Utils.formatTimeMillis(nextEventTime - System.currentTimeMillis()));
-                    }, () -> {
-                        // If there is no next event, we can assume that the game is ending, so display the game end event name
-                        getCurrentEvent().ifPresentOrElse(event -> {
-                            skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + event.getDisplayName()
-                                + " " + Utils.formatTimeMillis(nextEventTime - System.currentTimeMillis()));
-                        }, () -> skyWarsPlayer.getScoreboard().add(8, ChatColor.GRAY + "???"));
-                    });
-
-                    skyWarsPlayer.getScoreboard().update();
+                    }, () -> skyWarsPlayer.getScoreboard().add(8, ChatColor.GRAY + "???"));
                 });
 
-                currentEvent.onTick();
-            }
-        }.runTaskTimer(game.getPlugin(), 0, TICKS_PER_SECOND);
+                skyWarsPlayer.getScoreboard().update();
+            });
+
+            currentEvent.onTick();
+        }, 0L, TICKS_PER_SECOND);
+
+
     }
 
     /**
      * Cancels all tasks.
      */
     void cancelTasks() {
-        Optional.ofNullable(gameEndTask).ifPresent(BukkitTask::cancel);
+        Optional.of(gameEndTaskId).ifPresent(integer -> {
+            Bukkit.getScheduler().cancelTask(integer);
+            gameEndTaskId = -1;
+        });
     }
 
     /**
