@@ -94,6 +94,9 @@ public class GameLoop {
         }.runTaskTimer(game.getPlugin(), 0, 20L);
     }
 
+    /**
+     * Cancels all tasks.
+     */
     void cancelTasks() {
         Optional.ofNullable(gameEndTask).ifPresent(BukkitTask::cancel);
     }
@@ -107,6 +110,10 @@ public class GameLoop {
         return Optional.ofNullable(game.getGameEvents().peek());
     }
 
+    /**
+     * Gets the next {@link GameEvent} in the queue and removes it from the queue. Can be null.
+     * @return the next {@link GameEvent} in the queue or null if there are no more events left
+     */
     public Optional<GameEvent> getNextEventAndRemove() {
         return Optional.ofNullable(game.getGameEvents().poll());
     }
@@ -120,6 +127,10 @@ public class GameLoop {
         return Optional.ofNullable(currentEvent);
     }
 
+    /**
+     * Gets the time in milliseconds until the next event.
+     * @return the time in milliseconds until the next event
+     */
     public long getNextEventTime() {
         return nextEventTime;
     }
