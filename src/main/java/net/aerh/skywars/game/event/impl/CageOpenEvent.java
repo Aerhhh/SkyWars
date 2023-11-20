@@ -7,6 +7,7 @@ import net.aerh.skywars.game.island.Island;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class CageOpenEvent extends GameEvent {
@@ -14,11 +15,16 @@ public class CageOpenEvent extends GameEvent {
     private final GameSettings settings = game.getSettings();
 
     public CageOpenEvent(SkyWarsGame game) {
-        super(game, "Game Start", 0L);
+        super(game, "Game Start", 15L, TimeUnit.SECONDS);
     }
 
     @Override
-    public void onStart() {
+    public void onSchedule() {
+        game.teleportPlayers();
+    }
+
+    @Override
+    public void onTrigger() {
         game.log(Level.INFO, "Opening cages!");
 
         for (Island island : game.getIslands()) {
@@ -32,10 +38,7 @@ public class CageOpenEvent extends GameEvent {
         }
 
         game.broadcast(ChatColor.YELLOW + "Cages opened! " + ChatColor.RED + "FIGHT!");
-    }
 
-    @Override
-    public void onEnd() {
         game.getPlugin().getServer().getScheduler().runTaskLater(game.getPlugin(), () -> {
             settings.allowDamage(true);
             settings.setHunger(true);
@@ -48,7 +51,7 @@ public class CageOpenEvent extends GameEvent {
     }
 
     @Override
-    public void tick() {
+    public void onTick() {
         // Not needed
     }
 }

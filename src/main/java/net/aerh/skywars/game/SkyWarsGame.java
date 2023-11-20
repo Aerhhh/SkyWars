@@ -125,15 +125,16 @@ public class SkyWarsGame {
                 player.setGameMode(GameMode.SURVIVAL);
             });
 
-        gameLoop.next(false);
+        gameLoop.next();
     }
 
     /**
      * Ends the game.
      */
     public void end() {
-        gameLoop.stop();
         state = GameState.ENDING;
+
+        gameLoop.cancelTasks();
 
         getOnlinePlayers().forEach(skyWarsPlayer -> {
             skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + "Game over!");
@@ -210,7 +211,7 @@ public class SkyWarsGame {
         scoreboard.update();
         scoreboard.send(player);
 
-        setupPlayerNameColors(player);
+        setupPlayerNameColors(player, scoreboard.getScoreboard());
     }
 
     /**
@@ -218,11 +219,28 @@ public class SkyWarsGame {
      *
      * @param player the {@link Player} to set up the colors for
      */
-    private void setupPlayerNameColors(Player player) {
-        Scoreboard scoreboard = player.getScoreboard();
-        Team green = scoreboard.registerNewTeam("green");
-        Team gray = scoreboard.registerNewTeam("gray");
-        Team red = scoreboard.registerNewTeam("red");
+    private void setupPlayerNameColors(Player player, Scoreboard scoreboard) {
+        Team green;
+        Team gray;
+        Team red;
+
+        if (scoreboard.getTeam("green") == null) {
+            green = scoreboard.registerNewTeam("green");
+        } else {
+            green = scoreboard.getTeam("green");
+        }
+
+        if (scoreboard.getTeam("gray") == null) {
+            gray = scoreboard.registerNewTeam("gray");
+        } else {
+            gray = scoreboard.getTeam("gray");
+        }
+
+        if (scoreboard.getTeam("red") == null) {
+            red = scoreboard.registerNewTeam("red");
+        } else {
+            red = scoreboard.getTeam("red");
+        }
 
         green.setColor(ChatColor.GREEN);
         green.setAllowFriendlyFire(false);
@@ -250,7 +268,6 @@ public class SkyWarsGame {
      */
     private void startCountdown() {
         state = GameState.STARTING;
-        plugin.getServer().getScheduler().runTaskLater(plugin, this::teleportPlayers, 10L);
 
         countdownTask = new BukkitRunnable() {
             int countdown = 10;

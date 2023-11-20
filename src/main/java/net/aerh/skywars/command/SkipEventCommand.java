@@ -30,9 +30,7 @@ public class SkipEventCommand implements CommandExecutor {
                 return;
             }
 
-            skyWarsGame.getGameLoop().getNextEvent().ifPresentOrElse(gameEvent -> skyWarsGame.getGameLoop().next(true),
-                () -> player.sendMessage(ChatColor.RED + "There is no next event!")
-            );
+            skyWarsGame.getGameLoop().getNextEvent().ifPresentOrElse(gameEvent -> skyWarsGame.getGameLoop().next(), skyWarsGame::end);
         }, () -> player.sendMessage(ChatColor.RED + "You are not in a game!"));
 
         return true;

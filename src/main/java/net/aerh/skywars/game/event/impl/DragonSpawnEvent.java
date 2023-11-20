@@ -18,7 +18,13 @@ public class DragonSpawnEvent extends GameEvent {
     }
 
     @Override
-    public void onStart() {
+    public void onSchedule() {
+        // Not needed
+    }
+
+    @Override
+    public void onTrigger() {
+        // Not needed
         for (int i = 0; i < MAX_DRAGONS; i++) {
             Island randomIsland = game.getIslands().get(ThreadLocalRandom.current().nextInt(game.getIslands().size()));
             EnderDragon dragon = game.getWorld().spawn(randomIsland.getSpawnLocation().add(0, 10, 0), EnderDragon.class);
@@ -32,12 +38,7 @@ public class DragonSpawnEvent extends GameEvent {
     }
 
     @Override
-    public void onEnd() {
-        // Not needed
-    }
-
-    @Override
-    public void tick() {
+    public void onTick() {
         // Not needed
     }
 }

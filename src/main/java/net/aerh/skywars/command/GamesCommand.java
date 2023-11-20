@@ -25,10 +25,17 @@ public class GamesCommand implements CommandExecutor {
             stringBuilder.append(ChatColor.YELLOW).append(skyWarsGame.getWorld().getName()).append(": ").append(ChatColor.RESET).append(skyWarsGame.getState()).append("\n")
                 .append(ChatColor.YELLOW).append("  Next Event: ").append(ChatColor.RESET);
 
-            skyWarsGame.getGameLoop().getCurrentEvent().ifPresentOrElse(gameEvent -> {
-                stringBuilder.append(gameEvent.getDisplayName()).append(" in ").append(Utils.formatTime(skyWarsGame.getGameLoop().getSecondsToNextEvent()))
+            skyWarsGame.getGameLoop().getNextEvent().ifPresentOrElse(gameEvent -> {
+                stringBuilder.append(gameEvent.getDisplayName()).append(" in ").append(Utils.formatTimeMillis(skyWarsGame.getGameLoop().getNextEventTime() - System.currentTimeMillis()))
                     .append(ChatColor.GRAY).append(" (").append(gameEvent.getClass().getSimpleName()).append(")");
             }, () -> stringBuilder.append("None"));
+
+            stringBuilder.append("\n").append(ChatColor.YELLOW).append("  Current Event: ").append(ChatColor.RESET);
+
+            skyWarsGame.getGameLoop().getCurrentEvent().ifPresentOrElse(event -> {
+                stringBuilder.append(ChatColor.RESET).append(event.getDisplayName())
+                    .append(ChatColor.GRAY).append(" (").append(event.getClass().getSimpleName()).append(")");
+            }, () -> stringBuilder.append(ChatColor.RESET).append("None"));
 
             stringBuilder.append("\n")
                 .append(ChatColor.YELLOW).append("  Islands: ").append(ChatColor.RESET).append(skyWarsGame.getIslands().size()).append("\n")

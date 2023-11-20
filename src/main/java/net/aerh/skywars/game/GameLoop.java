@@ -7,15 +7,15 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class GameLoop {
 
     private final SkyWarsGame game;
     private GameEvent currentEvent;
-    private BukkitTask eventTask;
+    private long nextEventTime;
     private BukkitTask gameEndTask;
-    private int secondsToNextEvent;
 
     /**
      * Represents the game loop of a {@link SkyWarsGame}.
@@ -27,79 +27,21 @@ public class GameLoop {
     }
 
     /**
-     * Stops the game loop.
-     */
-    public void stop() {
-        if (currentEvent != null) {
-            currentEvent.onEnd();
-            currentEvent = null;
-        }
-
-        cancelTasks();
-    }
-
-    /**
      * Starts the game loop.
      */
-    public void next(boolean skipped) {
+    public void next() {
         cancelTasks();
 
         if (game.getState() == GameState.ENDING) {
             return;
         }
 
-        GameEvent gameEvent = game.getGameEvents().poll();
-
-        if (gameEvent == null) {
-            game.log(Level.INFO, "No more events left!");
-            game.end();
-            return;
-        }
-
-        currentEvent = gameEvent;
-
-        game.log(Level.INFO, "Next event: " + gameEvent.getDisplayName() + " in " + gameEvent.getDelay() + " ticks (" + game.getGameEvents().size() + " events left)");
-        secondsToNextEvent = (int) gameEvent.getDelay() / 20;
-
-        if (gameEvent.getDelay() <= 0 || skipped) {
-            currentEvent.onEnd();
-            startEvent(gameEvent);
-            return;
-        }
-
-        gameEndTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (game.getAlivePlayers().size() <= 1) {
-                    cancel();
-                    game.end();
-                    game.log(Level.INFO, "Game ended because there are no more players left!");
-                    return;
-                }
-
-                if (secondsToNextEvent <= 0) {
-                    cancel();
-                }
-
-                String timeUntilNextEvent = Utils.formatTime(secondsToNextEvent);
-
-                game.getOnlinePlayers().forEach(skyWarsPlayer -> {
-                    skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + gameEvent.getDisplayName() + " " + timeUntilNextEvent);
-                    skyWarsPlayer.getScoreboard().update();
-                });
-
-                gameEvent.tick();
-
-                secondsToNextEvent--;
-            }
-        }.runTaskTimer(game.getPlugin(), 0, 20L);
-
-        eventTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                startEvent(gameEvent);
-            }
-        }.runTaskLater(game.getPlugin(), gameEvent.getDelay());
+        getNextEventAndRemove().ifPresentOrElse(
+            this::startEvent,
+            () -> {
+                game.log(Level.INFO, "No more events left!");
+                game.end();
+            });
     }
 
     /**
@@ -108,19 +50,50 @@ public class GameLoop {
      * @param gameEvent the {@link GameEvent} to execute
      */
     public void startEvent(GameEvent gameEvent) {
-        if (currentEvent != null && !currentEvent.equals(gameEvent)) {
-            currentEvent.onEnd();
+        if (currentEvent != null) {
+            currentEvent.onTrigger();
         }
 
         currentEvent = gameEvent;
-        currentEvent.onStart();
-        game.log(Level.INFO, "Executing event: " + gameEvent.getDisplayName() + " (" + gameEvent.getClass().getSimpleName() + ")" + " - " + game.getGameEvents().size() + " events left");
+        currentEvent.onSchedule();
 
-        next(false);
+        long delayInMillis = TimeUnit.SECONDS.toMillis(currentEvent.getDelay() / 20);
+        nextEventTime = System.currentTimeMillis() + delayInMillis;
+
+        gameEndTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (game.getAlivePlayers().size() <= 1) {
+                    game.end();
+                    cancel();
+                    return;
+                }
+
+                if (System.currentTimeMillis() >= nextEventTime) {
+                    next();
+                    return;
+                }
+
+                game.getOnlinePlayers().forEach(skyWarsPlayer -> {
+                    getNextEvent().ifPresentOrElse(event -> {
+                        skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + currentEvent.getDisplayName()
+                            + " " + Utils.formatTimeMillis(nextEventTime - System.currentTimeMillis()));
+                    }, () -> {
+                        getCurrentEvent().ifPresentOrElse(event -> {
+                            skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + event.getDisplayName()
+                                + " " + Utils.formatTimeMillis(nextEventTime - System.currentTimeMillis()));
+                        }, () -> skyWarsPlayer.getScoreboard().add(8, ChatColor.GRAY + "???"));
+                    });
+
+                    skyWarsPlayer.getScoreboard().update();
+                });
+
+                currentEvent.onTick();
+            }
+        }.runTaskTimer(game.getPlugin(), 0, 20L);
     }
 
-    private void cancelTasks() {
-        Optional.ofNullable(eventTask).ifPresent(BukkitTask::cancel);
+    void cancelTasks() {
         Optional.ofNullable(gameEndTask).ifPresent(BukkitTask::cancel);
     }
 
@@ -133,13 +106,8 @@ public class GameLoop {
         return Optional.ofNullable(game.getGameEvents().peek());
     }
 
-    /**
-     * Gets the amount of seconds until the next {@link GameEvent}.
-     *
-     * @return the amount of seconds until the next {@link GameEvent}
-     */
-    public int getSecondsToNextEvent() {
-        return secondsToNextEvent;
+    public Optional<GameEvent> getNextEventAndRemove() {
+        return Optional.ofNullable(game.getGameEvents().poll());
     }
 
     /**
@@ -149,5 +117,9 @@ public class GameLoop {
      */
     public Optional<GameEvent> getCurrentEvent() {
         return Optional.ofNullable(currentEvent);
+    }
+
+    public long getNextEventTime() {
+        return nextEventTime;
     }
 }

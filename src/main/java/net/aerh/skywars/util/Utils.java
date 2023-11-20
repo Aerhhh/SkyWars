@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -186,6 +187,19 @@ public class Utils {
     public static String formatTime(int remainingSeconds) {
         int minutes = remainingSeconds / 60;
         int seconds = remainingSeconds % 60;
+
+        return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    /**
+     * Formats the given time in milliseconds to a string in the format mm:ss.
+     *
+     * @param millis The time in milliseconds.
+     * @return The formatted time string.
+     */
+    public static String formatTimeMillis(long millis) {
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(minutes);
 
         return String.format("%02d:%02d", minutes, seconds);
     }

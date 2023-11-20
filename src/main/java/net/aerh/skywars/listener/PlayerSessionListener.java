@@ -63,12 +63,8 @@ public class PlayerSessionListener implements Listener {
             }
 
             skyWarsGame.getPlayer(player).ifPresentOrElse(skyWarsPlayer -> {
-                if (skyWarsGame.getState() == GameState.STARTING) {
-                    skyWarsGame.getIsland(skyWarsPlayer).ifPresentOrElse(island -> player.teleport(island.getSpawnLocation().clone().add(0.5, 0, 0.5)),
-                        () -> skyWarsGame.setSpectator(skyWarsPlayer));
-                } else {
-                    player.teleport(skyWarsGame.getPregameSpawn());
-                }
+                skyWarsGame.getIsland(skyWarsPlayer).ifPresentOrElse(island -> player.teleport(skyWarsGame.getPregameSpawn()),
+                    () -> skyWarsGame.setSpectator(skyWarsPlayer));
 
                 skyWarsPlayer.setScoreboard(new PlayerScoreboard(ChatColor.YELLOW + ChatColor.BOLD.toString() + "SkyWars"));
             }, () -> player.kickPlayer(GENERIC_KICK_MESSAGE));

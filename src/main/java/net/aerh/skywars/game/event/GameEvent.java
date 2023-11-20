@@ -56,10 +56,10 @@ public abstract class GameEvent {
     /**
      * Executes the event.
      */
-    public abstract void onStart();
+    public abstract void onSchedule();
 
-    public abstract void onEnd();
+    public abstract void onTrigger();
 
-    public abstract void tick();
+    public abstract void onTick();
 }
 
