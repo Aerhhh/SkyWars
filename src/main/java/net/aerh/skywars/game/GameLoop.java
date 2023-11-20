@@ -97,10 +97,8 @@ public class GameLoop {
      * Cancels all tasks.
      */
     void cancelTasks() {
-        Optional.of(gameEndTaskId).ifPresent(integer -> {
-            Bukkit.getScheduler().cancelTask(integer);
-            gameEndTaskId = -1;
-        });
+        Bukkit.getScheduler().cancelTask(gameEndTaskId);
+        gameEndTaskId = -1;
     }
 
     /**
