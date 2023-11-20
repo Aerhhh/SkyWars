@@ -161,7 +161,8 @@ public class SkyWarsGame {
 
         if (!getTopPlayers().isEmpty()) {
             getTopPlayers().forEach(skyWarsPlayer -> {
-                broadcast(CenteredMessage.generate(ChatColor.GOLD + skyWarsPlayer.getDisplayName() + ChatColor.RESET + ": " + ChatColor.YELLOW + skyWarsPlayer.getKills() + " kill" + (skyWarsPlayer.getKills() == 1 ? "" : "s")));
+                broadcast(CenteredMessage.generate(ChatColor.GOLD + skyWarsPlayer.getDisplayName() + ChatColor.RESET + ": "
+                    + ChatColor.YELLOW + skyWarsPlayer.getKills() + " kill" + (skyWarsPlayer.getKills() == 1 ? "" : "s")));
             });
         } else {
             broadcast(CenteredMessage.generate(ChatColor.RED + "Nobody!"));
@@ -171,7 +172,7 @@ public class SkyWarsGame {
         broadcast(Utils.SEPARATOR);
 
         players.stream()
-            .filter(skyWarsPlayer -> winner == null || !winner.getUuid().equals(skyWarsPlayer.getUuid()))
+            .filter(skyWarsPlayer -> getWinner().isEmpty() || !winner.getUuid().equals(skyWarsPlayer.getUuid()))
             .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer() != null)
             .forEach(this::setSpectator);
 
