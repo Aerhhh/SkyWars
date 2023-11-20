@@ -79,6 +79,7 @@ public class GameLoop {
                         skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + currentEvent.getDisplayName()
                             + " " + Utils.formatTimeMillis(nextEventTime - System.currentTimeMillis()));
                     }, () -> {
+                        // If there is no next event, we can assume that the game is ending, so display the game end event name
                         getCurrentEvent().ifPresentOrElse(event -> {
                             skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + event.getDisplayName()
                                 + " " + Utils.formatTimeMillis(nextEventTime - System.currentTimeMillis()));
