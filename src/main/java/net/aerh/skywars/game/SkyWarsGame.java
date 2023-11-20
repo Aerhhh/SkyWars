@@ -77,16 +77,14 @@ public class SkyWarsGame {
         try {
             parseIslands(config);
         } catch (IllegalArgumentException exception) {
-            log(Level.SEVERE, "Failed to parse islands!");
-            exception.printStackTrace();
+            Bukkit.getLogger().log(Level.SEVERE, "Failed to parse islands!", exception);
             Bukkit.getServer().shutdown();
         }
 
         try {
             parseChests(config);
         } catch (IllegalArgumentException exception) {
-            log(Level.SEVERE, "Failed to parse chests!");
-            exception.printStackTrace();
+            Bukkit.getLogger().log(Level.SEVERE, "Failed to parse chests!", exception);
         }
 
         // I made this because the map I'm using to test already has chest signs so it'll be quicker to just use them

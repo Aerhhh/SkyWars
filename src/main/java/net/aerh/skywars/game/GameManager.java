@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class GameManager {
 
@@ -40,7 +41,7 @@ public class GameManager {
                 addGame(MapLoader.loadRandomMap(plugin, plugin.getDataFolder().getAbsolutePath() + File.separator + "map-templates", "game-" + (i + 1)));
             }
         } catch (IOException | IllegalStateException exception) {
-            exception.printStackTrace();
+            Bukkit.getLogger().log(Level.SEVERE, "Could not create games!", exception);
             Bukkit.getServer().shutdown();
         }
     }

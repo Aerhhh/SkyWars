@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -88,11 +89,11 @@ public class Utils {
                     try {
                         Files.delete(path);
                     } catch (IOException e) {
-                        Bukkit.getLogger().warning("Could not delete " + path + ": " + e.getMessage());
+                        Bukkit.getLogger().log(Level.SEVERE, "Could not delete " + path + "!", e);
                     }
                 });
         } catch (IOException exception) {
-            Bukkit.getLogger().warning("Could not delete directory " + directoryPath + ": " + exception.getMessage());
+            Bukkit.getLogger().log(Level.SEVERE, "Could not delete folder " + directoryPath + "!", exception);
         }
     }
 
@@ -110,7 +111,7 @@ public class Utils {
                 try {
                     Files.copy(sourcePath, targetPath);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Bukkit.getLogger().log(Level.SEVERE, "Could not copy " + sourcePath + " to " + targetPath + "!", e);
                 }
             });
         }
