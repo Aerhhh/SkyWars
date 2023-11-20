@@ -4,6 +4,7 @@ import net.aerh.skywars.game.GameSettings;
 import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.game.event.GameEvent;
 import net.aerh.skywars.game.island.Island;
+import net.aerh.skywars.util.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
@@ -47,7 +48,7 @@ public class CageOpenEvent extends GameEvent {
             settings.allowBlockBreaking(true);
             settings.allowBlockPlacing(true);
             settings.setInteractable(true);
-        }, 20L);
+        }, Utils.TICKS_PER_SECOND);
     }
 
     @Override

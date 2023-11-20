@@ -189,7 +189,7 @@ public class SkyWarsGame {
             refillableChests.clear();
             gameEvents.clear();
             plugin.getGameManager().removeGame(this);
-        }, 20L * 30L);
+        }, Utils.TICKS_PER_SECOND * 30L);
     }
 
     /**
@@ -291,7 +291,7 @@ public class SkyWarsGame {
                     countdown--;
                 }
             }
-        }.runTaskTimer(plugin, 10L, 20L);
+        }.runTaskTimer(plugin, 10L, Utils.TICKS_PER_SECOND);
     }
 
     /**

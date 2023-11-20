@@ -2,6 +2,7 @@ package net.aerh.skywars.game;
 
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.map.MapLoader;
+import net.aerh.skywars.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -52,7 +53,7 @@ public class GameManager {
                 plugin.getLogger().info("All games ended, shutting down server!");
                 Bukkit.getServer().shutdown();
             }
-        }, 0L, 20L * 5L);
+        }, 0L, Utils.TICKS_PER_SECOND * 5L);
     }
 
     /**

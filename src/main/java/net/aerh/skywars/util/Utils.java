@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 public class Utils {
 
+    public static final int TICKS_PER_SECOND = 20;
     public static final String SEPARATOR = ChatColor.GREEN + ChatColor.STRIKETHROUGH.toString() + repeat(' ', 72);
     public static final DecimalFormat TWO_DECIMAL_PLACES_FORMAT = new DecimalFormat("#.##");
 

@@ -12,6 +12,8 @@ import java.util.logging.Level;
 
 public class GameLoop {
 
+    private static final int TICKS_PER_SECOND = 20;
+
     private final SkyWarsGame game;
     private GameEvent currentEvent;
     private long nextEventTime;
@@ -45,19 +47,17 @@ public class GameLoop {
     }
 
     /**
-     * Executes a {@link GameEvent}.
+     * Schedules the given {@link GameEvent} to be executed.
      *
      * @param gameEvent the {@link GameEvent} to execute
      */
     public void startEvent(GameEvent gameEvent) {
-        if (currentEvent != null) {
-            currentEvent.onTrigger();
-        }
+        getCurrentEvent().ifPresent(GameEvent::onTrigger);
 
         currentEvent = gameEvent;
         currentEvent.onSchedule();
 
-        long delayInMillis = TimeUnit.SECONDS.toMillis(currentEvent.getDelay() / 20);
+        long delayInMillis = TimeUnit.SECONDS.toMillis(currentEvent.getDelay() / TICKS_PER_SECOND);
         nextEventTime = System.currentTimeMillis() + delayInMillis;
 
         gameEndTask = new BukkitRunnable() {
@@ -91,7 +91,7 @@ public class GameLoop {
 
                 currentEvent.onTick();
             }
-        }.runTaskTimer(game.getPlugin(), 0, 20L);
+        }.runTaskTimer(game.getPlugin(), 0, TICKS_PER_SECOND);
     }
 
     /**
