@@ -38,13 +38,13 @@ public class SkyWarsGame {
     private final World world;
     private final Location pregameSpawn;
     private final GameLoop gameLoop;
-    private final GameSettings settings = new GameSettings();
-    private final Set<SkyWarsPlayer> players = new HashSet<>();
-    private final Set<SkyWarsPlayer> spectators = new HashSet<>();
-    private final Queue<GameEvent> gameEvents = new LinkedList<>();
-    private final Set<RefillableChest> refillableChests = new HashSet<>();
+    private final GameSettings settings;
+    private final Set<SkyWarsPlayer> players;
+    private final Set<SkyWarsPlayer> spectators;
+    private final Queue<GameEvent> gameEvents;
+    private final Set<RefillableChest> refillableChests;
     private final String mapName;
-    private final List<Island> islands = new ArrayList<>();
+    private final List<Island> islands;
     private GameState state = GameState.PRE_GAME;
     private BukkitTask countdownTask;
     private SkyWarsPlayer winner;
@@ -62,6 +62,13 @@ public class SkyWarsGame {
         this.mapName = config.get("name").getAsString();
         this.pregameSpawn = Utils.parseConfigLocationObject(config, this.world, "pregame");
 
+        this.islands= new ArrayList<>();
+        this.players = new HashSet<>();
+        this.spectators = new HashSet<>();
+        this.gameEvents = new LinkedList<>();
+        this.refillableChests = new HashSet<>();
+
+        this.settings = new GameSettings();
         settings.setInteractable(false);
 
         addGameEvents(new CageOpenEvent(this), new ChestRefillEvent(this), new ChestRefillEvent(this), new DragonSpawnEvent(this), new GameEndEvent(this));
