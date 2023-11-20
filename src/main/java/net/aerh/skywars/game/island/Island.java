@@ -46,6 +46,9 @@ public class Island {
         return spawnLocation;
     }
 
+    /**
+     * Spawns a glass cage around the island spawn location.
+     */
     public void spawnCage() {
         for (int x = -2; x <= 2; x++) {
             for (int y = -1; y <= 3; y++) {

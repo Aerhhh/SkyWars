@@ -34,6 +34,10 @@ public class SkyWarsPlayer {
         return uuid;
     }
 
+    /**
+     * Gets the display name of the player.
+     * @return the display name of the player
+     */
     public String getDisplayName() {
         return displayName;
     }
