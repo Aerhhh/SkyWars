@@ -36,6 +36,7 @@ public class SkyWarsPlayer {
 
     /**
      * Gets the display name of the player.
+     *
      * @return the display name of the player
      */
     public String getDisplayName() {

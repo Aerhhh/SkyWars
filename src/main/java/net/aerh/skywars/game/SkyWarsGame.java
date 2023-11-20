@@ -1,6 +1,7 @@
 package net.aerh.skywars.game;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.chest.ChestType;
@@ -60,9 +61,9 @@ public class SkyWarsGame {
         this.plugin = plugin;
         this.world = world;
         this.mapName = config.get("name").getAsString();
-        this.pregameSpawn = Utils.parseConfigLocationObject(config, this.world, "pregame");
+        this.pregameSpawn = parseConfigLocationObject(config, this.world, "pregame");
 
-        this.islands= new ArrayList<>();
+        this.islands = new ArrayList<>();
         this.players = new HashSet<>();
         this.spectators = new HashSet<>();
         this.gameEvents = new LinkedList<>();
@@ -494,7 +495,7 @@ public class SkyWarsGame {
      * @param config the {@link JsonObject} to parse from
      */
     private void parseIslands(JsonObject config) {
-        Utils.parseConfigLocationArray(config, "islands").forEach(island -> {
+        parseConfigLocationArray(config, "islands").forEach(island -> {
             try {
                 double x = island.get("x").getAsDouble();
                 double y = island.get("y").getAsDouble();
@@ -516,7 +517,7 @@ public class SkyWarsGame {
     private void parseChests(JsonObject config) {
         log(Level.INFO, "Parsing chest locations from map config...");
 
-        Utils.parseConfigLocationArray(config, "chests").forEach(chest -> {
+        parseConfigLocationArray(config, "chests").forEach(chest -> {
             try {
                 double x = chest.get("x").getAsDouble();
                 double y = chest.get("y").getAsDouble();
@@ -742,5 +743,50 @@ public class SkyWarsGame {
 
     private void addGameEvents(GameEvent... events) {
         gameEvents.addAll(Arrays.asList(events));
+    }
+
+    /**
+     * Parses a {@link Location} from a {@link JsonObject}.
+     *
+     * @param config the {@link JsonObject} to parse from
+     * @param field  the field to parse
+     * @return the parsed {@link Location}
+     */
+    private Location parseConfigLocationObject(JsonObject config, World world, String field) {
+        JsonObject locationsObject = config.getAsJsonObject("locations");
+        JsonObject desiredLocation = locationsObject.getAsJsonObject(field);
+
+        if (!desiredLocation.has("x") || !desiredLocation.has("y") || !desiredLocation.has("z")) {
+            throw new IllegalStateException("Location is missing coordinates! " + desiredLocation);
+        }
+
+        Location location = new Location(world, desiredLocation.get("x").getAsDouble(), desiredLocation.get("y").getAsDouble(), desiredLocation.get("z").getAsDouble());
+
+        if (desiredLocation.has("yaw")) {
+            location.setYaw(desiredLocation.get("yaw").getAsFloat());
+        }
+
+        if (desiredLocation.has("pitch")) {
+            location.setPitch(desiredLocation.get("pitch").getAsFloat());
+        }
+
+        return location;
+    }
+
+    private List<JsonObject> parseConfigLocationArray(JsonObject config, String field) {
+        JsonObject locationsObject = config.getAsJsonObject("locations");
+        List<JsonObject> locations = new ArrayList<>();
+
+        for (JsonElement locationElement : locationsObject.getAsJsonArray(field)) {
+            JsonObject locationObject = locationElement.getAsJsonObject();
+
+            if (!locationObject.has("x") || !locationObject.has("y") || !locationObject.has("z")) {
+                throw new IllegalStateException("Location is missing coordinates! " + locationObject);
+            }
+
+            locations.add(locationObject);
+        }
+
+        return locations;
     }
 }

@@ -112,6 +112,7 @@ public class GameLoop {
 
     /**
      * Gets the next {@link GameEvent} in the queue and removes it from the queue. Can be null.
+     *
      * @return the next {@link GameEvent} in the queue or null if there are no more events left
      */
     public Optional<GameEvent> getNextEventAndRemove() {
@@ -129,6 +130,7 @@ public class GameLoop {
 
     /**
      * Gets the time in milliseconds until the next event.
+     *
      * @return the time in milliseconds until the next event
      */
     public long getNextEventTime() {
