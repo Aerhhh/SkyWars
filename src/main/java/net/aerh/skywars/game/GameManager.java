@@ -50,7 +50,7 @@ public class GameManager {
      * Registers the cleanup tasks.
      */
     public void registerCleanupTask() {
-        plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+        plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
             plugin.getLogger().info("Checking if all games have ended");
 
             if (games.isEmpty()) {
