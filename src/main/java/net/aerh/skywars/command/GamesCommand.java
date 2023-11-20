@@ -43,6 +43,7 @@ public class GamesCommand implements CommandExecutor {
                 .append(ChatColor.YELLOW).append("  Players: ").append(ChatColor.RESET).append(skyWarsGame.getBukkitPlayers().size()).append("/")
                 .append(skyWarsGame.getMaxPlayers()).append("\n")
                 .append(ChatColor.YELLOW).append("  Spectators: ").append(ChatColor.RESET).append(skyWarsGame.getBukkitSpectators().size()).append("\n")
+                .append(ChatColor.YELLOW).append("  Online: ").append(ChatColor.RESET).append(skyWarsGame.getOnlinePlayers().size()).append("\n")
                 .append(ChatColor.YELLOW).append("  Winner: ").append(ChatColor.RESET);
 
             skyWarsGame.getWinner().ifPresentOrElse(skyWarsPlayer -> stringBuilder.append(skyWarsPlayer.getUuid()).append("\n"),

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class GameManager {
 
@@ -48,10 +49,14 @@ public class GameManager {
      * Registers the cleanup tasks.
      */
     public void registerCleanupTask() {
-        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+        plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+            plugin.getLogger().info("Checking if all games have ended");
+
             if (games.isEmpty()) {
                 plugin.getLogger().info("All games ended, shutting down server!");
                 Bukkit.getServer().shutdown();
+            } else {
+                plugin.getLogger().info("Remaining games: " + games.size());
             }
         }, 0L, Utils.TICKS_PER_SECOND * 5L);
     }
@@ -93,8 +98,18 @@ public class GameManager {
      * @return the {@link SkyWarsGame} or null if not found
      */
     public Optional<SkyWarsGame> findGame(Player player) {
+        return findGame(player.getUniqueId());
+    }
+
+    /**
+     * Finds a game by a player {@link UUID}.
+     *
+     * @param uuid the {@link UUID} to find the game of
+     * @return the {@link SkyWarsGame} or null if not found
+     */
+    public Optional<SkyWarsGame> findGame(UUID uuid) {
         return games.stream()
-            .filter(game -> game.getBukkitPlayers().contains(player))
+            .filter(game -> game.getPlayer(uuid).isPresent())
             .findFirst();
     }
 

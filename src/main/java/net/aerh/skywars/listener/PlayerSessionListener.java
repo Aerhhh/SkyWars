@@ -30,6 +30,13 @@ public class PlayerSessionListener implements Listener {
 
     @EventHandler
     public void onLogin(AsyncPlayerPreLoginEvent event) {
+        plugin.getGameManager().findGame(event.getUniqueId()).ifPresent(skyWarsGame -> {
+            skyWarsGame.getPlayer(event.getUniqueId()).ifPresent(skyWarsPlayer -> {
+                skyWarsGame.getPlayers().remove(skyWarsPlayer);
+                skyWarsGame.log(Level.INFO, "Removed player " + event.getName() + " from old game: " + skyWarsGame.getWorld().getName() + "!");
+            });
+        });
+
         plugin.getGameManager().findNextFreeGame().ifPresentOrElse(skyWarsGame -> {
             SkyWarsPlayer skyWarsPlayer = new SkyWarsPlayer(event.getUniqueId(), event.getName());
 
@@ -37,7 +44,7 @@ public class PlayerSessionListener implements Listener {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, GENERIC_KICK_MESSAGE);
             }
 
-            if (skyWarsGame.getIsland(skyWarsPlayer) == null) {
+            if (skyWarsGame.getIsland(skyWarsPlayer).isEmpty()) {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, GENERIC_KICK_MESSAGE);
             }
         }, () -> event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatColor.RED + "No games available!"));
@@ -60,6 +67,7 @@ public class PlayerSessionListener implements Listener {
             if (skyWarsGame.getState() == GameState.PRE_GAME || skyWarsGame.getState() == GameState.STARTING) {
                 skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " joined! "
                     + ChatColor.GRAY + "(" + skyWarsGame.getBukkitPlayers().size() + "/" + skyWarsGame.getMaxPlayers() + ")");
+                skyWarsGame.checkPlayerCountForCountdown();
             }
 
             skyWarsGame.getPlayer(player).ifPresentOrElse(skyWarsPlayer -> {
@@ -91,19 +99,22 @@ public class PlayerSessionListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
 
-        plugin.getGameManager().findGame(player).ifPresent(skyWarsGame -> {
-            skyWarsGame.getPlayer(player).ifPresent(skyWarsPlayer1 -> {
-                skyWarsGame.removePlayer(skyWarsPlayer1);
-                skyWarsGame.log(Level.INFO, "Player " + player.getName() + " left the game!");
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            plugin.getGameManager().findGame(player).ifPresent(skyWarsGame -> {
+                skyWarsGame.getPlayer(player).ifPresent(skywarsPlayer -> {
+                    skyWarsGame.removePlayer(skywarsPlayer);
+                    skyWarsGame.log(Level.INFO, "Player " + player.getName() + " left the game!");
 
-                if (skyWarsGame.getState() == GameState.PRE_GAME || skyWarsGame.getState() == GameState.STARTING) {
-                    skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left! "
-                        + ChatColor.GRAY + "(" + skyWarsGame.getBukkitPlayers().size() + "/" + skyWarsGame.getMaxPlayers() + ")");
-                } else {
-                    skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left!");
-                }
+                    if (skyWarsGame.getState() == GameState.PRE_GAME || skyWarsGame.getState() == GameState.STARTING) {
+                        skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left! "
+                            + ChatColor.GRAY + "(" + skyWarsGame.getBukkitPlayers().size() + "/" + skyWarsGame.getMaxPlayers() + ")");
+                        skyWarsGame.checkPlayerCountForCountdown();
+                    } else {
+                        skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left!");
+                    }
+                });
             });
-        });
+        }, 1L);
 
         event.setQuitMessage(null);
     }

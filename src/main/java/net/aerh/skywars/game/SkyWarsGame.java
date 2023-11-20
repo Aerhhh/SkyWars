@@ -179,7 +179,7 @@ public class SkyWarsGame {
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             getBukkitSpectators().forEach(spectator -> spectator.kickPlayer(ChatColor.RED + "Game ended!"));
 
-            if (winner != null && winner.getBukkitPlayer() != null) {
+            if (winner != null && winner.getBukkitPlayer() != null && getOnlinePlayers().contains(winner)) {
                 winner.getBukkitPlayer().kickPlayer(ChatColor.GREEN + "You won!");
             }
 
@@ -189,7 +189,7 @@ public class SkyWarsGame {
             refillableChests.clear();
             gameEvents.clear();
             plugin.getGameManager().removeGame(this);
-        }, Utils.TICKS_PER_SECOND * 30L);
+        }, Utils.TICKS_PER_SECOND * 10L);
     }
 
     /**
@@ -258,8 +258,8 @@ public class SkyWarsGame {
     /**
      * Checks the player count to start the countdown.
      */
-    private void checkPlayerCountForCountdown() {
-        if (players.size() >= MIN_PLAYER_COUNT && (countdownTask == null)) {
+    public void checkPlayerCountForCountdown() {
+        if (getOnlinePlayers().size() >= MIN_PLAYER_COUNT && (countdownTask == null)) {
             startCountdown();
         }
     }
@@ -275,7 +275,7 @@ public class SkyWarsGame {
 
             @Override
             public void run() {
-                if (players.size() < MIN_PLAYER_COUNT) {
+                if (getOnlinePlayers().size() < MIN_PLAYER_COUNT) {
                     cancel();
                     countdownTask = null;
                     broadcast(ChatColor.RED + "Not enough players to start the game!");
@@ -356,9 +356,8 @@ public class SkyWarsGame {
 
         players.add(player);
         island.get().assignPlayer(player);
-        Bukkit.getScheduler().runTask(plugin, () -> island.get().spawnCage());
+        plugin.getServer().getScheduler().runTask(plugin, () -> island.get().spawnCage());
 
-        checkPlayerCountForCountdown();
         log(Level.INFO, "Added player " + player.getUuid() + " to island " + Utils.parseLocationToString(island.get().getSpawnLocation()) + "!");
 
         if (state != GameState.STARTING) {
@@ -381,9 +380,9 @@ public class SkyWarsGame {
     public void removePlayer(SkyWarsPlayer player) {
         spectators.remove(player);
 
-        if (state == GameState.PRE_GAME) {
+        /*if (state == GameState.PRE_GAME) {
             checkPlayerCountForCountdown();
-        }
+        }*/
 
         getIsland(player).ifPresent(Island::removePlayer);
 
@@ -445,6 +444,7 @@ public class SkyWarsGame {
 
     public Set<SkyWarsPlayer> getOnlinePlayers() {
         return Stream.concat(players.stream(), spectators.stream())
+            .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer() != null)
             .collect(Collectors.toSet());
     }
 
@@ -714,6 +714,15 @@ public class SkyWarsGame {
             .map(SkyWarsPlayer::getBukkitPlayer)
             .filter(Objects::nonNull)
             .collect(Collectors.toSet());
+    }
+
+    /**
+     * Gets the {@link Set} of {@link SkyWarsPlayer players} in this game.
+     *
+     * @return the {@link Set} of {@link SkyWarsPlayer players}
+     */
+    public Set<SkyWarsPlayer> getPlayers() {
+        return players;
     }
 
     /**
