@@ -355,6 +355,7 @@ public class SkyWarsGame {
 
         players.add(player);
         island.get().assignPlayer(player);
+        Bukkit.getScheduler().runTask(plugin, () -> island.get().spawnCage());
 
         checkPlayerCountForCountdown();
         log(Level.INFO, "Added player " + player.getUuid() + " to island " + Utils.parseLocationToString(island.get().getSpawnLocation()) + "!");

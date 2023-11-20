@@ -2,6 +2,7 @@ package net.aerh.skywars.game.island;
 
 import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,6 +45,25 @@ public class Island {
     public Location getSpawnLocation() {
         return spawnLocation;
     }
+
+    public void spawnCage() {
+        for (int x = -2; x <= 2; x++) {
+            for (int y = -1; y <= 3; y++) {
+                for (int z = -2; z <= 2; z++) {
+                    Material type;
+
+                    if (x == -2 || x == 2 || y == -1 || y == 3 || z == -2 || z == 2) {
+                        type = Material.GLASS;
+                    } else {
+                        type = Material.AIR;
+                    }
+
+                    spawnLocation.clone().add(x, y, z).getBlock().setType(type);
+                }
+            }
+        }
+    }
+
 
     /**
      * Gets the player assigned to this island. Can be null.
