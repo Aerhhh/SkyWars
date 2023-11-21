@@ -15,7 +15,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.potion.PotionEffectType;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.logging.Level;
 
@@ -59,6 +61,9 @@ public class PlayerSessionListener implements Listener {
         player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20.0D);
         player.setHealth(20.0D);
         player.setSaturation(20.0F);
+        player.setWalkSpeed(0.2F);
+        player.setFlySpeed(0.2F);
+        Arrays.stream(PotionEffectType.values()).forEach(player::removePotionEffect);
 
         SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresentOrElse(skyWarsGame -> {
             skyWarsGame.log(Level.INFO, "Player " + player.getName() + " joined the game!");
