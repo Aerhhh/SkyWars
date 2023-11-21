@@ -52,7 +52,8 @@ public class GameManager {
 
             if (games.isEmpty()) {
                 SkyWarsPlugin.getInstance().getLogger().info("All games ended, shutting down server!");
-                Bukkit.getServer().shutdown();
+                createGames(SkyWarsPlugin.DESIRED_GAME_COUNT);
+
             } else {
                 SkyWarsPlugin.getInstance().getLogger().info("Remaining games: " + games.size());
             }

@@ -1,6 +1,7 @@
 package net.aerh.skywars.util.menu;
 
 import net.aerh.skywars.SkyWarsPlugin;
+import net.aerh.skywars.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -52,7 +53,7 @@ public abstract class CustomMenu implements InventoryHolder {
             if (addCloseButton) {
                 addCloseButton();
             }
-        }, 0L, 20L));
+        }, 0L, Utils.TICKS_PER_SECOND));
 
         player.openInventory(inventory);
     }
@@ -62,6 +63,13 @@ public abstract class CustomMenu implements InventoryHolder {
         return inventory;
     }
 
+    /**
+     * Sets an item in the inventory at the specified slot.
+     *
+     * @param slot   The slot to set the item in.
+     * @param item   The item to set.
+     * @param action The ClickAction associated with the item.
+     */
     protected void setItem(int slot, ItemStack item, ClickAction action) {
         inventory.setItem(slot, item);
         actions.put(slot, action);
@@ -81,6 +89,9 @@ public abstract class CustomMenu implements InventoryHolder {
         }
     }
 
+    /**
+     * Adds a close button to the inventory at the bottom-middle slot.
+     */
     private void addCloseButton() {
         ItemStack closeButton = new ItemStack(Material.BARRIER);
         ItemMeta closeButtonMeta = closeButton.getItemMeta();

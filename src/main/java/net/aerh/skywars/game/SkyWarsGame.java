@@ -45,6 +45,7 @@ public class SkyWarsGame {
     private final Set<SkyWarsPlayer> spectators;
     private final Queue<GameEvent> gameEvents;
     private final Set<RefillableChest> refillableChests;
+    private final Map<String, Integer> kills;
     private final String mapName;
     private final List<Island> islands;
     private GameState state = GameState.PRE_GAME;
@@ -67,6 +68,7 @@ public class SkyWarsGame {
         this.spectators = new HashSet<>();
         this.gameEvents = new LinkedList<>();
         this.refillableChests = new HashSet<>();
+        this.kills = new HashMap<>();
 
         this.settings = new GameSettings();
         settings.setInteractable(false);
@@ -326,9 +328,9 @@ public class SkyWarsGame {
         broadcast(CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "Top Players"));
 
         if (!getTopPlayers().isEmpty()) {
-            getTopPlayers().forEach(skyWarsPlayer -> {
-                broadcast(CenteredMessage.generate(ChatColor.GOLD + skyWarsPlayer.getDisplayName() + ChatColor.RESET + ": "
-                    + ChatColor.YELLOW + skyWarsPlayer.getKills() + " kill" + (skyWarsPlayer.getKills() == 1 ? "" : "s")));
+            getTopPlayers().forEach((string, integer) -> {
+                broadcast(CenteredMessage.generate(ChatColor.GOLD + string + ChatColor.RESET + ": "
+                    + ChatColor.YELLOW + integer + " kill" + (integer == 1 ? "" : "s")));
             });
         } else {
             broadcast(CenteredMessage.generate(ChatColor.RED + "Nobody!"));
@@ -354,6 +356,15 @@ public class SkyWarsGame {
             islands.clear();
             refillableChests.clear();
             gameEvents.clear();
+            kills.clear();
+
+            if (SkyWarsPlugin.getInstance().getServer().unloadWorld(world, false)) {
+                log(Level.INFO, "Unloaded world " + world.getName() + " successfully!");
+                Utils.deleteFolder(world.getWorldFolder().toPath());
+            } else {
+                log(Level.SEVERE, "Failed to unload world " + world.getName() + "!");
+            }
+
             SkyWarsPlugin.getInstance().getGameManager().removeGame(this);
         }, Utils.TICKS_PER_SECOND * 15L);
     }
@@ -404,6 +415,7 @@ public class SkyWarsGame {
      * @param player the {@link SkyWarsPlayer} to remove
      */
     public void removePlayer(SkyWarsPlayer player) {
+        players.remove(player);
         spectators.remove(player);
 
         /*if (state == GameState.PRE_GAME) {
@@ -430,6 +442,21 @@ public class SkyWarsGame {
                 getIsland(player).ifPresentOrElse(i -> player.getBukkitPlayer().get().teleport(i.getSpawnLocation().clone().add(0.5, 0, 0.5)),
                     () -> setSpectator(player));
             });
+    }
+
+    public void addKill(SkyWarsPlayer player) {
+        kills.put(player.getDisplayName(), kills.getOrDefault(player.getDisplayName(), 0) + 1);
+
+        player.getScoreboard().add(5, ChatColor.RESET + "Kills: " + ChatColor.GREEN + getKills(player));
+        player.getScoreboard().update();
+    }
+
+    public int getKills(SkyWarsPlayer player) {
+        return kills.getOrDefault(player.getDisplayName(), 0);
+    }
+
+    public Map<String, Integer> getKills() {
+        return kills;
     }
 
     /**
@@ -501,15 +528,17 @@ public class SkyWarsGame {
     }
 
     /**
-     * Gets a {@link List} of the top 3 {@link SkyWarsPlayer players} based on kills.
+     * Gets a {@link List} of the top 3 players by display name in this game.
      *
-     * @return the {@link List} of the top 3 {@link SkyWarsPlayer players} based on kills
+     * @return the {@link List} of the top 3 players by display name in this game
      */
-    private List<SkyWarsPlayer> getTopPlayers() {
-        return players.stream()
-            .sorted(Comparator.comparingInt(SkyWarsPlayer::getKills).reversed())
+    private Map<String, Integer> getTopPlayers() {
+        return kills.entrySet().stream()
+            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
             .limit(3)
-            .toList();
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                (oldValue, newValue) -> oldValue, LinkedHashMap::new)
+            );
     }
 
     /**

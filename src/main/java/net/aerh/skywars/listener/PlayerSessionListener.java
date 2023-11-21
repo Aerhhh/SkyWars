@@ -26,6 +26,7 @@ public class PlayerSessionListener implements Listener {
     public void onLogin(AsyncPlayerPreLoginEvent event) {
         SkyWarsPlugin.getInstance().getGameManager().findGame(event.getUniqueId()).ifPresent(skyWarsGame -> {
             skyWarsGame.getPlayer(event.getUniqueId()).ifPresent(skyWarsPlayer -> {
+                skyWarsGame.removePlayer(skyWarsPlayer);
                 skyWarsGame.getPlayers().remove(skyWarsPlayer);
                 skyWarsGame.log(Level.INFO, "Removed player " + event.getName() + " from old game: " + skyWarsGame.getWorld().getName() + "!");
             });
@@ -36,11 +37,15 @@ public class PlayerSessionListener implements Listener {
 
             if (!skyWarsGame.addPlayer(skyWarsPlayer)) {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, GENERIC_KICK_MESSAGE);
+                return;
             }
 
             if (skyWarsGame.getIsland(skyWarsPlayer).isEmpty()) {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, GENERIC_KICK_MESSAGE);
+                return;
             }
+
+            skyWarsGame.getKills().putIfAbsent(event.getName(), 0);
         }, () -> event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatColor.RED + "No games available!"));
     }
 
@@ -98,6 +103,7 @@ public class PlayerSessionListener implements Listener {
             SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
                 skyWarsGame.getPlayer(player).ifPresent(skywarsPlayer -> {
                     skyWarsGame.removePlayer(skywarsPlayer);
+                    // We don't remove the player from the list of players here so they can show up in the leaderboard after the game
                     skyWarsGame.log(Level.INFO, "Player " + player.getName() + " left the game!");
 
                     if (skyWarsGame.getState() == GameState.PRE_GAME || skyWarsGame.getState() == GameState.STARTING) {

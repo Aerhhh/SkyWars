@@ -25,13 +25,12 @@ import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.world.TimeSkipEvent;
 
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 public class GameListener implements Listener {
 
-    private final Cache<UUID, UUID> lastDamager = Caffeine.newBuilder()
+    private final Cache<String, String> lastDamager = Caffeine.newBuilder()
         .expireAfterWrite(10, TimeUnit.SECONDS)
         .scheduler(Scheduler.systemScheduler())
         .build();
@@ -61,17 +60,18 @@ public class GameListener implements Listener {
                 return;
             }
 
+            String damagerName = lastDamager.getIfPresent(player.getName());
+
             event.setCancelled(true);
             player.sendTitle(ChatColor.RED + ChatColor.BOLD.toString() + "YOU DIED!", ChatColor.GRAY + "Better luck next time!", 0, 20 * 5, 20);
-
-
-            UUID uuid = lastDamager.getIfPresent(player.getUniqueId());
-
             skyWarsGame.getPlayer(player).ifPresent(skyWarsGame::setSpectator);
-            skyWarsGame.getPlayer(uuid).ifPresentOrElse(killer -> {
-                skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " was killed by " + ChatColor.GOLD + killer.getDisplayName());
-                killer.addKill();
-            }, () -> skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " died!"));
+            skyWarsGame.getKills().put(damagerName, skyWarsGame.getKills().get(damagerName) + 1);
+
+            if (damagerName != null) {
+                skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " was killed by " + ChatColor.GOLD + damagerName);
+            } else {
+                skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " died!");
+            }
         });
     }
 
@@ -97,7 +97,7 @@ public class GameListener implements Listener {
                 return;
             }
 
-            lastDamager.put(player.getUniqueId(), damager.getUniqueId());
+            lastDamager.put(player.getName(), damager.getName());
         });
     }
 

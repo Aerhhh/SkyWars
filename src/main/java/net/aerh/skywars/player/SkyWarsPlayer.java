@@ -1,7 +1,6 @@
 package net.aerh.skywars.player;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 
@@ -13,7 +12,6 @@ public class SkyWarsPlayer {
     private final UUID uuid;
     private final String displayName;
     private PlayerScoreboard scoreboard;
-    private int kills;
     private boolean canSeeSpectators;
 
     /**
@@ -42,50 +40,6 @@ public class SkyWarsPlayer {
      */
     public String getDisplayName() {
         return displayName;
-    }
-
-    /**
-     * Gets the amount of kills the player has.
-     *
-     * @return the amount of kills the player has
-     */
-    public int getKills() {
-        return kills;
-    }
-
-    /**
-     * Sets the amount of kills the player has.
-     *
-     * @param kills the amount of kills the player should have
-     */
-    public void setKills(int kills) {
-        this.kills = kills;
-
-        if (scoreboard != null) {
-            scoreboard.add(5, ChatColor.RESET + "Kills: " + ChatColor.GREEN + this.kills);
-            scoreboard.update();
-        }
-    }
-
-    /**
-     * Adds a kill to the player.
-     */
-    public void addKill() {
-        setKills(++kills);
-    }
-
-    /**
-     * Removes a kill from the player.
-     */
-    public void removeKill() {
-        setKills(--kills);
-    }
-
-    /**
-     * Resets the amount of kills the player has.
-     */
-    public void resetKills() {
-        setKills(0);
     }
 
     /**

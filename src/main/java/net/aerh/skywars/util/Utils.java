@@ -1,5 +1,6 @@
 package net.aerh.skywars.util;
 
+import net.aerh.skywars.SkyWarsPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -88,12 +89,13 @@ public class Utils {
                 .forEach(path -> {
                     try {
                         Files.delete(path);
+                        SkyWarsPlugin.getInstance().getLogger().info("Deleted file at path: " + path);
                     } catch (IOException e) {
-                        Bukkit.getLogger().log(Level.SEVERE, "Could not delete " + path + "!", e);
+                        SkyWarsPlugin.getInstance().getLogger().log(Level.SEVERE, "Could not delete " + path + "!", e);
                     }
                 });
         } catch (IOException exception) {
-            Bukkit.getLogger().log(Level.SEVERE, "Could not delete folder " + directoryPath + "!", exception);
+            SkyWarsPlugin.getInstance().getLogger().log(Level.SEVERE, "Could not delete folder " + directoryPath + "!", exception);
         }
     }
 
