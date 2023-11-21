@@ -16,16 +16,19 @@ import java.util.Arrays;
 
 public final class SkyWarsPlugin extends JavaPlugin {
 
-    private static final int DESIRED_GAME_COUNT = 5;
+    public static final int DESIRED_GAME_COUNT = 5;
 
     private static SkyWarsPlugin instance;
     private GameManager gameManager;
 
     @Override
-    public void onEnable() {
-        Arrays.stream(Bukkit.getWorldContainer().listFiles((dir, name) -> name.startsWith("game-"))).forEach(file -> Utils.deleteFolder(file.toPath()));
-
+    public void onLoad() {
         instance = this;
+        Arrays.stream(Bukkit.getWorldContainer().listFiles((dir, name) -> name.startsWith("game-"))).forEach(file -> Utils.deleteFolder(file.toPath()));
+    }
+
+    @Override
+    public void onEnable() {
         gameManager = new GameManager();
 
         Bukkit.getScheduler().runTask(this, () -> {
