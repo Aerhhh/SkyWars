@@ -22,20 +22,19 @@ public class MapLoader {
     /**
      * Loads a random map from the given file path and creates a world with the given name.
      *
-     * @param plugin    the {@link SkyWarsPlugin plugin} instance
      * @param filePath  the path to the map directory
      * @param worldName the name of the world to create
      * @return the {@link SkyWarsGame game} instance
      * @throws IOException If the map directory could not be copied or the config.json could not be read
      */
-    public static SkyWarsGame loadRandomMap(SkyWarsPlugin plugin, String filePath, String worldName) throws IOException {
+    public static SkyWarsGame loadRandomMap(String filePath, String worldName) throws IOException {
         File[] mapDirs = new File(filePath).listFiles(File::isDirectory);
 
         if (mapDirs == null || mapDirs.length == 0) {
             throw new IllegalStateException("No map directory found");
         }
 
-        plugin.getLogger().info("Found " + mapDirs.length + " map directories!");
+        SkyWarsPlugin.getInstance().getLogger().info("Found " + mapDirs.length + " map directories!");
 
         File mapDir = mapDirs[ThreadLocalRandom.current().nextInt(mapDirs.length)];
         File configFile = new File(mapDir, "config.json");
@@ -44,22 +43,22 @@ public class MapLoader {
             throw new IllegalStateException("No config.json found in map directory '" + mapDir.getName() + "' (" + mapDir.getAbsolutePath() + ")");
         }
 
-        plugin.getLogger().info("Loading map " + mapDir.getName() + "... (" + mapDir.getAbsolutePath() + ")");
+        SkyWarsPlugin.getInstance().getLogger().info("Loading map " + mapDir.getName() + "... (" + mapDir.getAbsolutePath() + ")");
 
-        File worldDir = new File(plugin.getServer().getWorldContainer(), worldName);
+        File worldDir = new File(SkyWarsPlugin.getInstance().getServer().getWorldContainer(), worldName);
 
-        plugin.getLogger().info("Copying map directory " + mapDir.getName() + " to " + worldDir.getName() + "...");
+        SkyWarsPlugin.getInstance().getLogger().info("Copying map directory " + mapDir.getName() + " to " + worldDir.getName() + "...");
         Utils.copyDirectory(mapDir, worldDir);
 
         JsonObject config;
         try (FileReader reader = new FileReader(configFile)) {
             config = GSON.fromJson(reader, JsonObject.class);
-            plugin.getLogger().info("Loaded config.json for map " + config.get("name").getAsString());
+            SkyWarsPlugin.getInstance().getLogger().info("Loaded config.json for map " + config.get("name").getAsString());
         } catch (IOException e) {
             throw new IllegalStateException("Could not read config.json", e);
         }
 
-        plugin.getLogger().info("Creating world " + worldName + "...");
+        SkyWarsPlugin.getInstance().getLogger().info("Creating world " + worldName + "...");
         World world = Bukkit.createWorld(new WorldCreator(worldName));
 
         if (world == null) {
@@ -70,6 +69,6 @@ public class MapLoader {
         world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
         world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
 
-        return new SkyWarsGame(plugin, world, config);
+        return new SkyWarsGame(world, config);
     }
 }

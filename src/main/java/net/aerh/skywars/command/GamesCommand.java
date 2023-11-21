@@ -10,18 +10,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class GamesCommand implements CommandExecutor {
 
-    private final SkyWarsPlugin plugin;
-
-    public GamesCommand(SkyWarsPlugin plugin) {
-        this.plugin = plugin;
-    }
-
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(ChatColor.GOLD).append("Games (").append(plugin.getGameManager().getGames().size()).append("):").append("\n");
+        stringBuilder.append(ChatColor.GOLD).append("Games (").append(SkyWarsPlugin.getInstance().getGameManager().getGames().size()).append("):").append("\n");
 
-        plugin.getGameManager().getGames().forEach(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().getGames().forEach(skyWarsGame -> {
             stringBuilder.append(ChatColor.YELLOW).append(skyWarsGame.getWorld().getName()).append(": ").append(ChatColor.RESET).append(skyWarsGame.getState()).append("\n")
                 .append(ChatColor.YELLOW).append("  Next Event: ").append(ChatColor.RESET);
 

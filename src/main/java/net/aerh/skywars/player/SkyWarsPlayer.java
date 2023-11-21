@@ -1,11 +1,10 @@
 package net.aerh.skywars.player;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
-import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class SkyWarsPlayer {
@@ -13,7 +12,7 @@ public class SkyWarsPlayer {
     private final UUID uuid;
     private final String displayName;
     private PlayerScoreboard scoreboard;
-    private int kills;
+    private boolean canSeeSpectators;
 
     /**
      * Represents a player in the game.
@@ -44,57 +43,12 @@ public class SkyWarsPlayer {
     }
 
     /**
-     * Gets the amount of kills the player has.
-     *
-     * @return the amount of kills the player has
-     */
-    public int getKills() {
-        return kills;
-    }
-
-    /**
-     * Sets the amount of kills the player has.
-     *
-     * @param kills the amount of kills the player should have
-     */
-    public void setKills(int kills) {
-        this.kills = kills;
-
-        if (scoreboard != null) {
-            scoreboard.add(5, ChatColor.RESET + "Kills: " + ChatColor.GREEN + this.kills);
-            scoreboard.update();
-        }
-    }
-
-    /**
-     * Adds a kill to the player.
-     */
-    public void addKill() {
-        setKills(++kills);
-    }
-
-    /**
-     * Removes a kill from the player.
-     */
-    public void removeKill() {
-        setKills(--kills);
-    }
-
-    /**
-     * Resets the amount of kills the player has.
-     */
-    public void resetKills() {
-        setKills(0);
-    }
-
-    /**
      * Gets the {@link Player} object of the player. Can be null.
      *
      * @return the {@link Player} object of the player
      */
-    @Nullable
-    public Player getBukkitPlayer() {
-        return Bukkit.getPlayer(uuid);
+    public Optional<Player> getBukkitPlayer() {
+        return Optional.ofNullable(Bukkit.getPlayer(uuid));
     }
 
     /**
@@ -115,10 +69,11 @@ public class SkyWarsPlayer {
         this.scoreboard = scoreboard;
     }
 
-    @Override
-    public String toString() {
-        return "SkyWarsPlayer{" +
-            "uuid=" + uuid +
-            '}';
+    public boolean canSeeSpectators() {
+        return canSeeSpectators;
+    }
+
+    public void setCanSeeSpectators(boolean seeSpectators) {
+        this.canSeeSpectators = seeSpectators;
     }
 }

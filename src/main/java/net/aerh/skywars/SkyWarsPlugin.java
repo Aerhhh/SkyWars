@@ -8,6 +8,7 @@ import net.aerh.skywars.game.GameManager;
 import net.aerh.skywars.listener.GameListener;
 import net.aerh.skywars.listener.PlayerSessionListener;
 import net.aerh.skywars.util.Utils;
+import net.aerh.skywars.util.menu.CustomMenuListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -15,28 +16,38 @@ import java.util.Arrays;
 
 public final class SkyWarsPlugin extends JavaPlugin {
 
-    private static final int DESIRED_GAME_COUNT = 5;
+    public static final int DESIRED_GAME_COUNT = 5;
 
+    private static SkyWarsPlugin instance;
     private GameManager gameManager;
+
+    public static SkyWarsPlugin getInstance() {
+        return instance;
+    }
+
+    @Override
+    public void onLoad() {
+        instance = this;
+        Arrays.stream(Bukkit.getWorldContainer().listFiles((dir, name) -> name.startsWith("game-"))).forEach(file -> Utils.deleteFolder(file.toPath()));
+    }
 
     @Override
     public void onEnable() {
-        Arrays.stream(Bukkit.getWorldContainer().listFiles((dir, name) -> name.startsWith("game-"))).forEach(file -> Utils.deleteFolder(file.toPath()));
-
-        gameManager = new GameManager(this);
+        gameManager = new GameManager();
 
         Bukkit.getScheduler().runTask(this, () -> {
             gameManager.createGames(DESIRED_GAME_COUNT);
             gameManager.registerCleanupTask();
         });
 
-        getServer().getPluginManager().registerEvents(new PlayerSessionListener(this), this);
-        getServer().getPluginManager().registerEvents(new GameListener(this), this);
+        getServer().getPluginManager().registerEvents(new CustomMenuListener(), this);
+        getServer().getPluginManager().registerEvents(new PlayerSessionListener(), this);
+        getServer().getPluginManager().registerEvents(new GameListener(), this);
 
-        getCommand("start").setExecutor(new StartGameCommand(this));
-        getCommand("end").setExecutor(new EndGameCommand(this));
-        getCommand("games").setExecutor(new GamesCommand(this));
-        getCommand("skipevent").setExecutor(new SkipEventCommand(this));
+        getCommand("start").setExecutor(new StartGameCommand());
+        getCommand("end").setExecutor(new EndGameCommand());
+        getCommand("games").setExecutor(new GamesCommand());
+        getCommand("skipevent").setExecutor(new SkipEventCommand());
     }
 
     public GameManager getGameManager() {

@@ -1,5 +1,6 @@
 package net.aerh.skywars.game;
 
+import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.event.GameEvent;
 import net.aerh.skywars.util.Utils;
 import org.bukkit.Bukkit;
@@ -58,7 +59,7 @@ public class GameLoop {
         long delayInMillis = TimeUnit.SECONDS.toMillis(currentEvent.getDelay() / Utils.TICKS_PER_SECOND);
         nextEventTime = System.currentTimeMillis() + delayInMillis;
 
-        Bukkit.getScheduler().runTaskTimer(game.getPlugin(), task -> {
+        Bukkit.getScheduler().runTaskTimer(SkyWarsPlugin.getInstance(), task -> {
             gameEndTaskId = task.getTaskId();
 
             if (game.getAlivePlayers().size() <= 1) {

@@ -10,43 +10,43 @@ import org.bukkit.GameMode;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Level;
 
 public class PlayerSessionListener implements Listener {
 
     private static final String GENERIC_KICK_MESSAGE = ChatColor.RED + "An error occurred while trying to join the game!";
 
-    private final SkyWarsPlugin plugin;
-
-    public PlayerSessionListener(SkyWarsPlugin plugin) {
-        this.plugin = plugin;
-    }
-
     @EventHandler
     public void onLogin(AsyncPlayerPreLoginEvent event) {
-        plugin.getGameManager().findGame(event.getUniqueId()).ifPresent(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findGame(event.getUniqueId()).ifPresent(skyWarsGame -> {
             skyWarsGame.getPlayer(event.getUniqueId()).ifPresent(skyWarsPlayer -> {
+                skyWarsGame.removePlayer(skyWarsPlayer);
                 skyWarsGame.getPlayers().remove(skyWarsPlayer);
                 skyWarsGame.log(Level.INFO, "Removed player " + event.getName() + " from old game: " + skyWarsGame.getWorld().getName() + "!");
             });
         });
 
-        plugin.getGameManager().findNextFreeGame().ifPresentOrElse(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findNextFreeGame().ifPresentOrElse(skyWarsGame -> {
             SkyWarsPlayer skyWarsPlayer = new SkyWarsPlayer(event.getUniqueId(), event.getName());
 
             if (!skyWarsGame.addPlayer(skyWarsPlayer)) {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, GENERIC_KICK_MESSAGE);
+                return;
             }
 
             if (skyWarsGame.getIsland(skyWarsPlayer).isEmpty()) {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, GENERIC_KICK_MESSAGE);
+                return;
             }
+
+            skyWarsGame.getKills().putIfAbsent(event.getName(), 0);
         }, () -> event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatColor.RED + "No games available!"));
     }
 
@@ -60,7 +60,7 @@ public class PlayerSessionListener implements Listener {
         player.setHealth(20.0D);
         player.setSaturation(20.0F);
 
-        plugin.getGameManager().findGame(player).ifPresentOrElse(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresentOrElse(skyWarsGame -> {
             skyWarsGame.log(Level.INFO, "Player " + player.getName() + " joined the game!");
             player.setGameMode(GameMode.ADVENTURE);
 
@@ -79,30 +79,32 @@ public class PlayerSessionListener implements Listener {
 
 
             Bukkit.getOnlinePlayers().forEach(p -> {
-                p.hidePlayer(plugin, player);
-                player.hidePlayer(plugin, p);
+                p.hidePlayer(SkyWarsPlugin.getInstance(), player);
+                player.hidePlayer(SkyWarsPlugin.getInstance(), p);
             });
 
-            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            SkyWarsPlugin.getInstance().getServer().getScheduler().runTaskLater(SkyWarsPlugin.getInstance(), () -> {
                 skyWarsGame.getOnlinePlayers().stream()
                     .map(SkyWarsPlayer::getBukkitPlayer)
-                    .filter(Objects::nonNull)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
                     .forEach(p -> {
-                        p.showPlayer(plugin, player);
-                        player.showPlayer(plugin, p);
+                        p.showPlayer(SkyWarsPlugin.getInstance(), player);
+                        player.showPlayer(SkyWarsPlugin.getInstance(), p);
                     });
             }, 1L);
         }, () -> player.kickPlayer(GENERIC_KICK_MESSAGE));
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
 
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            plugin.getGameManager().findGame(player).ifPresent(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getServer().getScheduler().runTaskLater(SkyWarsPlugin.getInstance(), () -> {
+            SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
                 skyWarsGame.getPlayer(player).ifPresent(skywarsPlayer -> {
                     skyWarsGame.removePlayer(skywarsPlayer);
+                    // We don't remove the player from the list of players here so they can show up in the leaderboard after the game
                     skyWarsGame.log(Level.INFO, "Player " + player.getName() + " left the game!");
 
                     if (skyWarsGame.getState() == GameState.PRE_GAME || skyWarsGame.getState() == GameState.STARTING) {
