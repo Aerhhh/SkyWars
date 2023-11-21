@@ -4,8 +4,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
-import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class SkyWarsPlayer {
@@ -14,6 +14,7 @@ public class SkyWarsPlayer {
     private final String displayName;
     private PlayerScoreboard scoreboard;
     private int kills;
+    private boolean canSeeSpectators;
 
     /**
      * Represents a player in the game.
@@ -92,9 +93,8 @@ public class SkyWarsPlayer {
      *
      * @return the {@link Player} object of the player
      */
-    @Nullable
-    public Player getBukkitPlayer() {
-        return Bukkit.getPlayer(uuid);
+    public Optional<Player> getBukkitPlayer() {
+        return Optional.ofNullable(Bukkit.getPlayer(uuid));
     }
 
     /**
@@ -115,10 +115,11 @@ public class SkyWarsPlayer {
         this.scoreboard = scoreboard;
     }
 
-    @Override
-    public String toString() {
-        return "SkyWarsPlayer{" +
-            "uuid=" + uuid +
-            '}';
+    public boolean canSeeSpectators() {
+        return canSeeSpectators;
+    }
+
+    public void setCanSeeSpectators(boolean seeSpectators) {
+        this.canSeeSpectators = seeSpectators;
     }
 }

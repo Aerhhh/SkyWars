@@ -11,12 +11,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class EndGameCommand implements CommandExecutor {
 
-    private final SkyWarsPlugin plugin;
-
-    public EndGameCommand(SkyWarsPlugin plugin) {
-        this.plugin = plugin;
-    }
-
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player)) {
@@ -24,7 +18,7 @@ public class EndGameCommand implements CommandExecutor {
             return true;
         }
 
-        plugin.getGameManager().findGame(player).ifPresentOrElse(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresentOrElse(skyWarsGame -> {
             if (skyWarsGame.getState() != GameState.IN_GAME) {
                 player.sendMessage(ChatColor.RED + "You cannot end games that haven't started!");
                 return;

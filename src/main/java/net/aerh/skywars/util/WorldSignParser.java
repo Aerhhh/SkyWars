@@ -1,6 +1,5 @@
 package net.aerh.skywars.util;
 
-import net.aerh.skywars.SkyWarsPlugin;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -19,22 +18,18 @@ import java.util.stream.Collectors;
 
 public class WorldSignParser {
 
-    private final SkyWarsPlugin plugin;
     private final World world;
     private final List<ParsedSign> signs;
 
     /**
      * Creates a new world sign parser.
      *
-     * @param plugin               The {@link SkyWarsPlugin plugin} instance.
      * @param world                The {@link World world} to parse signs in.
      * @param removeSignsFromWorld If the signs should be removed from the world.
      */
-    public WorldSignParser(@NotNull SkyWarsPlugin plugin, @NotNull World world, boolean removeSignsFromWorld) {
-        Objects.requireNonNull(plugin, "plugin cannot be null!");
+    public WorldSignParser(@NotNull World world, boolean removeSignsFromWorld) {
         Objects.requireNonNull(world, "world cannot be null!");
 
-        this.plugin = plugin;
         this.world = world;
         this.signs = new ArrayList<>();
 

@@ -17,16 +17,13 @@ import java.util.logging.Level;
 
 public class GameManager {
 
-    private final SkyWarsPlugin plugin;
     private final List<SkyWarsGame> games;
 
     /**
-     * Creates a new game manager.
+     * Creates a new game manager instance.
      *
-     * @param plugin the plugin
      */
-    public GameManager(SkyWarsPlugin plugin) {
-        this.plugin = plugin;
+    public GameManager() {
         this.games = new ArrayList<>();
     }
 
@@ -38,7 +35,7 @@ public class GameManager {
     public void createGames(int amount) {
         try {
             for (int i = 0; i < amount; i++) {
-                addGame(MapLoader.loadRandomMap(plugin, plugin.getDataFolder().getAbsolutePath() + File.separator + "map-templates", "game-" + (i + 1)));
+                addGame(MapLoader.loadRandomMap(SkyWarsPlugin.getInstance().getDataFolder().getAbsolutePath() + File.separator + "map-templates", "game-" + (i + 1)));
             }
         } catch (IOException | IllegalStateException exception) {
             Bukkit.getLogger().log(Level.SEVERE, "Could not create games!", exception);
@@ -50,14 +47,14 @@ public class GameManager {
      * Registers the cleanup tasks.
      */
     public void registerCleanupTask() {
-        plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
-            plugin.getLogger().info("Checking if all games have ended");
+        SkyWarsPlugin.getInstance().getServer().getScheduler().runTaskTimer(SkyWarsPlugin.getInstance(), () -> {
+            SkyWarsPlugin.getInstance().getLogger().info("Checking if all games have ended");
 
             if (games.isEmpty()) {
-                plugin.getLogger().info("All games ended, shutting down server!");
+                SkyWarsPlugin.getInstance().getLogger().info("All games ended, shutting down server!");
                 Bukkit.getServer().shutdown();
             } else {
-                plugin.getLogger().info("Remaining games: " + games.size());
+                SkyWarsPlugin.getInstance().getLogger().info("Remaining games: " + games.size());
             }
         }, 0L, Utils.TICKS_PER_SECOND * 5L);
     }

@@ -1,5 +1,6 @@
 package net.aerh.skywars.game.event.impl;
 
+import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.GameSettings;
 import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.game.event.GameEvent;
@@ -40,7 +41,7 @@ public class CageOpenEvent extends GameEvent {
 
         game.broadcast(ChatColor.YELLOW + "Cages opened! " + ChatColor.RED + "FIGHT!");
 
-        game.getPlugin().getServer().getScheduler().runTaskLater(game.getPlugin(), () -> {
+        SkyWarsPlugin.getInstance().getServer().getScheduler().runTaskLater(SkyWarsPlugin.getInstance(), () -> {
             settings.allowDamage(true);
             settings.setHunger(true);
             settings.allowItemDrops(true);

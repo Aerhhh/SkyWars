@@ -5,6 +5,8 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Scheduler;
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.GameState;
+import net.aerh.skywars.menu.PlayerTrackerMenu;
+import net.aerh.skywars.menu.SpectatorSettingsMenu;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EnderDragon;
@@ -34,12 +36,6 @@ public class GameListener implements Listener {
         .scheduler(Scheduler.systemScheduler())
         .build();
 
-    private final SkyWarsPlugin plugin;
-
-    public GameListener(SkyWarsPlugin plugin) {
-        this.plugin = plugin;
-    }
-
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
         event.setDeathMessage(null);
@@ -51,7 +47,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        plugin.getGameManager().findGame(player).ifPresent(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
             if (skyWarsGame.getState() == GameState.PRE_GAME || skyWarsGame.getState() == GameState.STARTING) {
                 return;
             }
@@ -95,7 +91,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        plugin.getGameManager().findGame(player).ifPresent(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
             if (skyWarsGame.getBukkitSpectators().contains(damager)) {
                 event.setCancelled(true);
                 return;
@@ -119,7 +115,7 @@ public class GameListener implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
 
-        plugin.getGameManager().findGame(player).ifPresent(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
             if (skyWarsGame.getBukkitSpectators().contains(player)) {
                 event.setCancelled(true);
                 return;
@@ -135,8 +131,7 @@ public class GameListener implements Listener {
 
     @EventHandler
     public void onBlockExplode(EntityExplodeEvent event) {
-
-        plugin.getGameManager().findGame(event.getEntity().getWorld()).ifPresent(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findGame(event.getEntity().getWorld()).ifPresent(skyWarsGame -> {
             event.blockList().stream()
                 .map(Block::getLocation)
                 .filter(location -> skyWarsGame.getRefillableChests().stream().anyMatch(refillableChest -> refillableChest.getLocation().equals(location)))
@@ -148,7 +143,7 @@ public class GameListener implements Listener {
     public void onBlockPlace(BlockPlaceEvent event) {
         Player player = event.getPlayer();
 
-        plugin.getGameManager().findGame(player).ifPresent(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
             if (skyWarsGame.getBukkitSpectators().contains(player)) {
                 event.setCancelled(true);
                 return;
@@ -163,7 +158,7 @@ public class GameListener implements Listener {
     @EventHandler
     public void onEntityTarget(EntityTargetEvent event) {
         if (event.getEntity() instanceof EnderDragon enderDragon && event.getTarget() instanceof Player target) {
-            plugin.getGameManager().findGame(target).ifPresent(skyWarsGame -> {
+            SkyWarsPlugin.getInstance().getGameManager().findGame(target).ifPresent(skyWarsGame -> {
                 if (skyWarsGame.getBukkitSpectators().contains(target)) {
                     event.setCancelled(true);
                     enderDragon.setTarget(null);
@@ -178,7 +173,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        plugin.getGameManager().findGame(player).ifPresent(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
             if (skyWarsGame.getBukkitSpectators().contains(player)) {
                 event.setCancelled(true);
                 return;
@@ -196,7 +191,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        plugin.getGameManager().findGame(player).ifPresent(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
             if (skyWarsGame.getBukkitSpectators().contains(player)) {
                 event.setCancelled(true);
                 return;
@@ -212,7 +207,7 @@ public class GameListener implements Listener {
     public void onItemDrop(PlayerDropItemEvent event) {
         Player player = event.getPlayer();
 
-        plugin.getGameManager().findGame(player).ifPresent(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
             if (skyWarsGame.getBukkitSpectators().contains(player)) {
                 event.setCancelled(true);
                 return;
@@ -230,7 +225,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        plugin.getGameManager().findGame(player).ifPresent(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
             if (skyWarsGame.getBukkitSpectators().contains(player)) {
                 event.setCancelled(true);
                 return;
@@ -242,13 +237,27 @@ public class GameListener implements Listener {
         });
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
-        plugin.getGameManager().findGame(player).ifPresent(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
             if (skyWarsGame.getBukkitSpectators().contains(player)) {
                 event.setCancelled(true);
+
+                if (event.getItem() != null) {
+                    switch (event.getItem().getType()) {
+                        case COMPASS:
+                            PlayerTrackerMenu playerTrackerMenu = new PlayerTrackerMenu();
+                            playerTrackerMenu.displayTo(player);
+                            break;
+                        case COMPARATOR:
+                            SpectatorSettingsMenu spectatorSettingsMenu = new SpectatorSettingsMenu();
+                            spectatorSettingsMenu.displayTo(player);
+                            break;
+                    }
+                }
+
                 return;
             }
 
@@ -264,7 +273,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        plugin.getGameManager().findGame(player).ifPresent(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
             if (skyWarsGame.getBukkitSpectators().contains(player)) {
                 event.setCancelled(true);
             }
@@ -277,7 +286,7 @@ public class GameListener implements Listener {
             return;
         }
 
-        plugin.getGameManager().findGame(player).ifPresent(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
             if (skyWarsGame.getBukkitSpectators().contains(player)) {
                 event.setCancelled(true);
             }
@@ -289,7 +298,7 @@ public class GameListener implements Listener {
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
 
-        plugin.getGameManager().findGame(player).ifPresent(skyWarsGame -> {
+        SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
             String format = event.getFormat();
             Predicate<? super Player> filter = null;
 
