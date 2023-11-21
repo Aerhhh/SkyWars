@@ -21,6 +21,10 @@ public final class SkyWarsPlugin extends JavaPlugin {
     private static SkyWarsPlugin instance;
     private GameManager gameManager;
 
+    public static SkyWarsPlugin getInstance() {
+        return instance;
+    }
+
     @Override
     public void onLoad() {
         instance = this;
@@ -48,9 +52,5 @@ public final class SkyWarsPlugin extends JavaPlugin {
 
     public GameManager getGameManager() {
         return gameManager;
-    }
-
-    public static SkyWarsPlugin getInstance() {
-        return instance;
     }
 }

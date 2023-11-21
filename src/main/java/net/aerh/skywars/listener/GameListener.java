@@ -13,6 +13,7 @@ import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -20,6 +21,7 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
@@ -73,6 +75,19 @@ public class GameListener implements Listener {
                 skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " died!");
             }
         });
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onQuitWhileDamaged(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        String damagerName = lastDamager.getIfPresent(player.getName());
+
+        if (damagerName != null) {
+            SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
+                skyWarsGame.addKill(damagerName);
+                skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " was killed by " + ChatColor.GOLD + damagerName);
+            });
+        }
     }
 
     @EventHandler

@@ -8,7 +8,7 @@ public interface ClickAction {
      * Executes when a player clicks an inventory item
      *
      * @param clicker The player who clicked the item
-     * @param event  The event
+     * @param event   The event
      */
     void onClick(Player clicker, InventoryClickEvent event);
 }

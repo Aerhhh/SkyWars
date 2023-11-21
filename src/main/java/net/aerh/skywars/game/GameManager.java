@@ -21,7 +21,6 @@ public class GameManager {
 
     /**
      * Creates a new game manager instance.
-     *
      */
     public GameManager() {
         this.games = new ArrayList<>();

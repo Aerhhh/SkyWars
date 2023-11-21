@@ -444,11 +444,13 @@ public class SkyWarsGame {
             });
     }
 
-    public void addKill(SkyWarsPlayer player) {
-        kills.put(player.getDisplayName(), kills.getOrDefault(player.getDisplayName(), 0) + 1);
+    public void addKill(String username) {
+        kills.put(username, kills.getOrDefault(username, 0) + 1);
 
-        player.getScoreboard().add(5, ChatColor.RESET + "Kills: " + ChatColor.GREEN + getKills(player));
-        player.getScoreboard().update();
+        getPlayer(username).ifPresent(skyWarsPlayer -> {
+            skyWarsPlayer.getScoreboard().add(5, ChatColor.RESET + "Kills: " + ChatColor.GREEN + getKills(getPlayer(username).get()));
+            skyWarsPlayer.getScoreboard().update();
+        });
     }
 
     public int getKills(SkyWarsPlayer player) {
@@ -482,6 +484,18 @@ public class SkyWarsGame {
     public Optional<SkyWarsPlayer> getPlayer(UUID uuid) {
         return players.stream()
             .filter(p -> p.getUuid().equals(uuid))
+            .findFirst();
+    }
+
+    /**
+     * Gets a {@link SkyWarsPlayer} by their display name.
+     *
+     * @param username the display name to get
+     * @return the {@link SkyWarsPlayer} with the display name. Can be null
+     */
+    public Optional<SkyWarsPlayer> getPlayer(String username) {
+        return players.stream()
+            .filter(p -> p.getDisplayName().equals(username))
             .findFirst();
     }
 
