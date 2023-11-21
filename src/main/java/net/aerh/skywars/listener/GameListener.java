@@ -86,6 +86,7 @@ public class GameListener implements Listener {
             SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
                 skyWarsGame.addKill(damagerName);
                 skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " was killed by " + ChatColor.GOLD + damagerName);
+                lastDamager.invalidate(player.getName());
             });
         }
     }

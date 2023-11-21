@@ -37,7 +37,7 @@ public class SkyWarsGame {
     public static final int MIN_PLAYER_COUNT = 2;
     private static final BlockFace[] VALID_CHEST_ROTATIONS = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
 
-    private final World world;
+    private World world;
     private final Location pregameSpawn;
     private final GameLoop gameLoop;
     private final GameSettings settings;
@@ -152,6 +152,7 @@ public class SkyWarsGame {
         players.stream()
             .filter(skyWarsPlayer -> getWinner().isEmpty() || !winner.getUuid().equals(skyWarsPlayer.getUuid()))
             .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().isPresent())
+            .filter(skyWarsPlayer -> getSpectator(skyWarsPlayer.getUuid()).isEmpty())
             .forEach(this::setSpectator);
 
         scheduleGameShutdown();
@@ -351,18 +352,11 @@ public class SkyWarsGame {
                 winner.getBukkitPlayer().ifPresent(player -> player.kickPlayer(ChatColor.GREEN + "You won!"));
             }
 
-            spectators.clear();
-            players.clear();
-            islands.clear();
-            refillableChests.clear();
-            gameEvents.clear();
-            kills.clear();
-
             if (SkyWarsPlugin.getInstance().getServer().unloadWorld(world, false)) {
                 log(Level.INFO, "Unloaded world " + world.getName() + " successfully!");
                 Utils.deleteFolder(world.getWorldFolder().toPath());
             } else {
-                log(Level.SEVERE, "Failed to unload world " + world.getName() + "!");
+                throw new IllegalStateException("Failed to unload world " + world.getName() + "!");
             }
 
             SkyWarsPlugin.getInstance().getGameManager().removeGame(this);
