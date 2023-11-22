@@ -26,6 +26,8 @@ See the below map configuration for an example.
 When the plugin starts and chooses a map, it will generate a pre-defined number of worlds that act as independent games. Each world or
 "game" will be closed off from each other, including chat, stats, players, etc.
 
+When all of the games finish, new worlds will be created and this is repeated until the server is manually shut down.
+
 ## Example Map Config
 
 ```json
