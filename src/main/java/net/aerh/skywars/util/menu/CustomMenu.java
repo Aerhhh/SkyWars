@@ -82,7 +82,7 @@ public abstract class CustomMenu implements InventoryHolder {
      * @param item   The item to add.
      * @param action The ClickAction associated with the item.
      */
-    public void addItem(ItemStack item, ClickAction action) {
+    protected void addItem(ItemStack item, ClickAction action) {
         int slot = inventory.firstEmpty();
 
         if (slot != -1) {
