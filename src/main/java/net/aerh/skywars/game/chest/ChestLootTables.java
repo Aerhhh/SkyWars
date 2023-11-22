@@ -47,11 +47,11 @@ public class ChestLootTables {
         MIDDLE_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.FLINT_AND_STEEL), 8);
         MIDDLE_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.LAVA_BUCKET), 5);
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 1; i <= 2; i++) {
             MIDDLE_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.ENDER_PEARL, i), i * 3);
         }
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 1; i <= 3; i++) {
             MIDDLE_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.GOLDEN_APPLE, i), 5);
         }
     }

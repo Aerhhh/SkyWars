@@ -17,7 +17,7 @@ public class CageOpenEvent extends GameEvent {
     private final GameSettings settings = game.getSettings();
 
     public CageOpenEvent(SkyWarsGame game) {
-        super(game, "Game Start", 15L, TimeUnit.SECONDS);
+        super(game, "Cages Open", 15L, TimeUnit.SECONDS);
     }
 
     @Override

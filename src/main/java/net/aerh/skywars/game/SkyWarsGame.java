@@ -15,13 +15,13 @@ import net.aerh.skywars.game.island.Island;
 import net.aerh.skywars.player.PlayerScoreboard;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import net.aerh.skywars.util.CenteredMessage;
+import net.aerh.skywars.util.ItemBuilder;
 import net.aerh.skywars.util.Utils;
 import net.aerh.skywars.util.WorldSignParser;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Scoreboard;
@@ -281,15 +281,8 @@ public class SkyWarsGame {
             spectator.teleport(pregameSpawn);
             spectator.getInventory().clear();
 
-            ItemStack compass = new ItemStack(Material.COMPASS);
-            ItemMeta compassMeta = compass.getItemMeta();
-            compassMeta.setDisplayName(ChatColor.GREEN + "Teleporter");
-            compass.setItemMeta(compassMeta);
-
-            ItemStack settings = new ItemStack(Material.COMPARATOR);
-            ItemMeta settingsMeta = settings.getItemMeta();
-            settingsMeta.setDisplayName(ChatColor.GREEN + "Spectator Settings");
-            settings.setItemMeta(settingsMeta);
+            ItemStack compass = new ItemBuilder(Material.COMPASS).setDisplayName(ChatColor.GREEN + "Teleporter").build();
+            ItemStack settings = new ItemBuilder(Material.COMPARATOR).setDisplayName(ChatColor.GREEN + "Spectator Settings").build();
 
             spectator.getInventory().setItem(0, compass);
             spectator.getInventory().setItem(4, settings);

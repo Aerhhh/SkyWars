@@ -1,15 +1,13 @@
 package net.aerh.skywars.menu;
 
 import net.aerh.skywars.SkyWarsPlugin;
+import net.aerh.skywars.util.ItemBuilder;
 import net.aerh.skywars.util.Utils;
 import net.aerh.skywars.util.menu.CustomMenu;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
-
-import java.util.List;
 
 public class PlayerTrackerMenu extends CustomMenu {
 
@@ -24,18 +22,15 @@ public class PlayerTrackerMenu extends CustomMenu {
                 .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().isPresent())
                 .map(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().get())
                 .forEach(alivePlayer -> {
-                    ItemStack itemStack = new ItemStack(Material.PLAYER_HEAD);
-                    SkullMeta skullMeta = (SkullMeta) itemStack.getItemMeta();
-                    skullMeta.setOwningPlayer(alivePlayer);
-                    skullMeta.setDisplayName(ChatColor.GOLD + alivePlayer.getDisplayName());
-                    skullMeta.setLore(List.of(
-                        ChatColor.GRAY + "Health: " + ChatColor.WHITE + Utils.TWO_DECIMAL_PLACES_FORMAT.format(alivePlayer.getHealth()) + "❤",
-                        "",
-                        ChatColor.YELLOW + "Click to teleport!"
-                    ));
-                    itemStack.setItemMeta(skullMeta);
+                    ItemStack playerHead = new ItemBuilder(Material.PLAYER_HEAD)
+                        .setPlayer(alivePlayer)
+                        .setDisplayName(ChatColor.GOLD + alivePlayer.getDisplayName())
+                        .setLore(ChatColor.GRAY + "Health: " + ChatColor.WHITE + Utils.TWO_DECIMAL_PLACES_FORMAT.format(alivePlayer.getHealth()) + "❤")
+                        .setLore(" ")
+                        .setLore(ChatColor.YELLOW + "Click to teleport!")
+                        .build();
 
-                    addItem(itemStack, (p, event) -> p.teleport(alivePlayer));
+                    addItem(playerHead, (p, event) -> p.teleport(alivePlayer));
                 });
         });
     }

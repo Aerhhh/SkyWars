@@ -1,6 +1,7 @@
 package net.aerh.skywars.util.menu;
 
 import net.aerh.skywars.SkyWarsPlugin;
+import net.aerh.skywars.util.ItemBuilder;
 import net.aerh.skywars.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -9,7 +10,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
@@ -46,6 +46,7 @@ public abstract class CustomMenu implements InventoryHolder {
      */
     public void displayTo(Player player) {
         tasks.add(Bukkit.getScheduler().runTaskTimer(SkyWarsPlugin.getInstance(), () -> {
+            // I hate this but it works
             actions.clear();
             inventory.clear();
             initializeItems(player);
@@ -93,11 +94,7 @@ public abstract class CustomMenu implements InventoryHolder {
      * Adds a close button to the inventory at the bottom-middle slot.
      */
     private void addCloseButton() {
-        ItemStack closeButton = new ItemStack(Material.BARRIER);
-        ItemMeta closeButtonMeta = closeButton.getItemMeta();
-        closeButtonMeta.setDisplayName(ChatColor.RED + "Close");
-        closeButton.setItemMeta(closeButtonMeta);
-
+        ItemStack closeButton = new ItemBuilder(Material.BARRIER).setDisplayName(ChatColor.RED + "Close").build();
         setItem(inventory.getSize() - 5, closeButton, (player, event) -> player.closeInventory());
     }
 

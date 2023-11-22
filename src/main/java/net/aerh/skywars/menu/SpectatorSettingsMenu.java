@@ -1,15 +1,13 @@
 package net.aerh.skywars.menu;
 
 import net.aerh.skywars.SkyWarsPlugin;
+import net.aerh.skywars.util.ItemBuilder;
 import net.aerh.skywars.util.menu.CustomMenu;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.List;
 
 public class SpectatorSettingsMenu extends CustomMenu {
 
@@ -24,12 +22,11 @@ public class SpectatorSettingsMenu extends CustomMenu {
     @Override
     protected void initializeItems(Player player) {
         for (int i = 0; i < MAX_SPEED; i++) {
-            ItemStack itemStack = new ItemStack(SPEED_ITEMS[i]);
-            ItemMeta itemMeta = itemStack.getItemMeta();
-            itemMeta.setDisplayName(ChatColor.GREEN + "Speed " + convertNumberToRomanNumeral(i + 1));
-            itemMeta.setLore(List.of(ChatColor.GRAY + "Click to select!"));
-            itemMeta.addItemFlags(ItemFlag.values());
-            itemStack.setItemMeta(itemMeta);
+            ItemStack itemStack = new ItemBuilder(SPEED_ITEMS[i])
+                .setDisplayName(ChatColor.GREEN + "Speed " + convertNumberToRomanNumeral(i + 1))
+                .setLore(ChatColor.GRAY + "Click to select!")
+                .addItemFlags(ItemFlag.values())
+                .build();
 
             int finalI = i;
             setItem(FIRST_SPEED_SLOT + i, itemStack, (clicker, event) -> {
@@ -41,28 +38,26 @@ public class SpectatorSettingsMenu extends CustomMenu {
         SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
             skyWarsGame.getSpectator(player).ifPresent(skyWarsPlayer -> {
                 boolean toggle = skyWarsPlayer.canSeeSpectators();
-                // TODO create an item builder for this mess
-                ItemStack hideSpectatorsItemStack = new ItemStack(Material.ENDER_PEARL);
-                ItemMeta hideSpectatorsItemMeta = hideSpectatorsItemStack.getItemMeta();
-                hideSpectatorsItemMeta.setDisplayName(ChatColor.GREEN + "Hide Spectators");
-                hideSpectatorsItemMeta.setLore(List.of(ChatColor.GRAY + "Click to hide other spectators!"));
-                hideSpectatorsItemStack.setItemMeta(hideSpectatorsItemMeta);
-                ItemStack showSpectatorsItemStack = new ItemStack(Material.ENDER_EYE);
-                ItemMeta showSpectatorsItemMeta = showSpectatorsItemStack.getItemMeta();
-                showSpectatorsItemMeta.setDisplayName(ChatColor.RED + "Show Spectators");
-                showSpectatorsItemMeta.setLore(List.of(ChatColor.GRAY + "Click to show other spectators!"));
-                showSpectatorsItemStack.setItemMeta(showSpectatorsItemMeta);
+
+                ItemStack hideSpectators = new ItemBuilder(Material.ENDER_PEARL)
+                        .setDisplayName(ChatColor.YELLOW + "Hide Spectators")
+                        .setLore(ChatColor.GRAY + "Click to hide other spectators!")
+                        .build();
+                ItemStack showSpectators = new ItemBuilder(Material.ENDER_EYE)
+                        .setDisplayName(ChatColor.YELLOW + "Show Spectators")
+                        .setLore(ChatColor.GRAY + "Click to show other spectators!")
+                        .build();
 
                 if (toggle) {
-                    setItem(22, hideSpectatorsItemStack, (clicker, event) -> {
+                    setItem(22, hideSpectators, (clicker, event) -> {
                         skyWarsGame.getBukkitSpectators().forEach(spectator -> clicker.hidePlayer(SkyWarsPlugin.getInstance(), spectator));
-                        clicker.sendMessage(ChatColor.GREEN + "You can no longer see other spectators!");
+                        clicker.sendMessage(ChatColor.YELLOW + "You can no longer see other spectators!");
                         skyWarsPlayer.setCanSeeSpectators(false);
                     });
                 } else {
-                    setItem(22, showSpectatorsItemStack, (clicker, event) -> {
+                    setItem(22, showSpectators, (clicker, event) -> {
                         skyWarsGame.getBukkitSpectators().forEach(spectator -> clicker.showPlayer(SkyWarsPlugin.getInstance(), spectator));
-                        clicker.sendMessage(ChatColor.RED + "You can now see other spectators!");
+                        clicker.sendMessage(ChatColor.YELLOW + "You can now see other spectators!");
                         skyWarsPlayer.setCanSeeSpectators(true);
                     });
                 }
