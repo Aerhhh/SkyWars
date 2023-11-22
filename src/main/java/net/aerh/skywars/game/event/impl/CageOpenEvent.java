@@ -40,6 +40,7 @@ public class CageOpenEvent extends GameEvent {
         }
 
         game.broadcast(ChatColor.YELLOW + "Cages opened! " + ChatColor.RED + "FIGHT!");
+        settings.setInteractable(true);
 
         SkyWarsPlugin.getInstance().getServer().getScheduler().runTaskLater(SkyWarsPlugin.getInstance(), () -> {
             settings.allowDamage(true);
@@ -48,7 +49,6 @@ public class CageOpenEvent extends GameEvent {
             settings.allowItemPickup(true);
             settings.allowBlockBreaking(true);
             settings.allowBlockPlacing(true);
-            settings.setInteractable(true);
         }, Utils.TICKS_PER_SECOND);
     }
 

@@ -2,6 +2,7 @@ package net.aerh.skywars.listener;
 
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.GameState;
+import net.aerh.skywars.game.ServerState;
 import net.aerh.skywars.player.PlayerScoreboard;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Bukkit;
@@ -27,6 +28,11 @@ public class PlayerSessionListener implements Listener {
 
     @EventHandler
     public void onLogin(AsyncPlayerPreLoginEvent event) {
+        if (SkyWarsPlugin.getInstance().getServerState() != ServerState.ACCEPTING_PLAYERS) {
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatColor.RED + "You cannot join yet!");
+            return;
+        }
+
         SkyWarsPlugin.getInstance().getGameManager().findGame(event.getUniqueId()).ifPresent(skyWarsGame -> {
             skyWarsGame.getPlayer(event.getUniqueId()).ifPresent(skyWarsPlayer -> {
                 skyWarsGame.removePlayer(skyWarsPlayer);
@@ -49,7 +55,10 @@ public class PlayerSessionListener implements Listener {
             }
 
             skyWarsGame.getKills().putIfAbsent(event.getName(), 0);
-        }, () -> event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatColor.RED + "No games available!"));
+        }, () -> {
+            SkyWarsPlugin.getInstance().setServerState(ServerState.NO_GAMES_AVAILABLE);
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatColor.RED + "No games available!");
+        });
     }
 
     @EventHandler

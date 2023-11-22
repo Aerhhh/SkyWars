@@ -5,6 +5,7 @@ import net.aerh.skywars.command.GamesCommand;
 import net.aerh.skywars.command.SkipEventCommand;
 import net.aerh.skywars.command.StartGameCommand;
 import net.aerh.skywars.game.GameManager;
+import net.aerh.skywars.game.ServerState;
 import net.aerh.skywars.listener.GameListener;
 import net.aerh.skywars.listener.PlayerSessionListener;
 import net.aerh.skywars.util.Utils;
@@ -19,6 +20,7 @@ public final class SkyWarsPlugin extends JavaPlugin {
     public static final int DESIRED_GAME_COUNT = 5;
 
     private static SkyWarsPlugin instance;
+    private ServerState serverState;
     private GameManager gameManager;
 
     public static SkyWarsPlugin getInstance() {
@@ -52,5 +54,13 @@ public final class SkyWarsPlugin extends JavaPlugin {
 
     public GameManager getGameManager() {
         return gameManager;
+    }
+
+    public ServerState getServerState() {
+        return serverState;
+    }
+
+    public void setServerState(ServerState serverState) {
+        this.serverState = serverState;
     }
 }

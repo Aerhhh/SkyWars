@@ -32,10 +32,14 @@ public class GameManager {
      * @param amount the amount of games to create
      */
     public void createGames(int amount) {
+        SkyWarsPlugin.getInstance().setServerState(ServerState.CREATING_GAMES);
+
         try {
             for (int i = 0; i < amount; i++) {
                 addGame(MapLoader.loadRandomMap(SkyWarsPlugin.getInstance().getDataFolder().getAbsolutePath() + File.separator + "map-templates", "game-" + (i + 1)));
             }
+
+            SkyWarsPlugin.getInstance().setServerState(ServerState.ACCEPTING_PLAYERS);
         } catch (IOException | IllegalStateException exception) {
             Bukkit.getLogger().log(Level.SEVERE, "Could not create games!", exception);
             Bukkit.getServer().shutdown();
@@ -50,8 +54,8 @@ public class GameManager {
             SkyWarsPlugin.getInstance().getLogger().info("Checking if all games have ended");
 
             if (games.isEmpty()) {
-                SkyWarsPlugin.getInstance().getLogger().info("All games ended, shutting down server!");
-                Bukkit.getServer().shutdown();
+                SkyWarsPlugin.getInstance().getLogger().info("All games ended, creating more!");
+                createGames(SkyWarsPlugin.DESIRED_GAME_COUNT);
             } else {
                 SkyWarsPlugin.getInstance().getLogger().info("Remaining games: " + games.size());
             }
