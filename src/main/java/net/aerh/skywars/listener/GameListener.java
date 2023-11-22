@@ -67,9 +67,9 @@ public class GameListener implements Listener {
             event.setCancelled(true);
             player.sendTitle(ChatColor.RED + ChatColor.BOLD.toString() + "YOU DIED!", ChatColor.GRAY + "Better luck next time!", 0, 20 * 5, 20);
             skyWarsGame.getPlayer(player).ifPresent(skyWarsGame::setSpectator);
-            skyWarsGame.getKills().put(damagerName, skyWarsGame.getKills().get(damagerName) + 1);
 
             if (damagerName != null) {
+                skyWarsGame.getKills().put(damagerName, skyWarsGame.getKills().get(damagerName) + 1);
                 skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " was killed by " + ChatColor.GOLD + damagerName);
             } else {
                 skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " died!");

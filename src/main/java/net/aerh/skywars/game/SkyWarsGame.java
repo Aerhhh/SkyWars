@@ -37,7 +37,6 @@ public class SkyWarsGame {
     public static final int MIN_PLAYER_COUNT = 2;
     private static final BlockFace[] VALID_CHEST_ROTATIONS = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
 
-    private World world;
     private final Location pregameSpawn;
     private final GameLoop gameLoop;
     private final GameSettings settings;
@@ -48,6 +47,7 @@ public class SkyWarsGame {
     private final Map<String, Integer> kills;
     private final String mapName;
     private final List<Island> islands;
+    private final World world;
     private GameState state = GameState.PRE_GAME;
     private BukkitTask countdownTask;
     private SkyWarsPlayer winner;
