@@ -5,6 +5,8 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.stream.IntStream;
+
 public class ChestLootTables {
 
     private static final LootTable<ItemStack> ISLAND_CHEST_LOOT = new LootTable<>();
@@ -47,13 +49,8 @@ public class ChestLootTables {
         MIDDLE_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.FLINT_AND_STEEL), 8);
         MIDDLE_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.LAVA_BUCKET), 5);
 
-        for (int i = 1; i <= 2; i++) {
-            MIDDLE_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.ENDER_PEARL, i), i * 3);
-        }
-
-        for (int i = 1; i <= 3; i++) {
-            MIDDLE_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.GOLDEN_APPLE, i), 5);
-        }
+        IntStream.range(1, 4).forEach(i -> MIDDLE_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.GOLDEN_APPLE, i), 5));
+        IntStream.of(1, 2).forEach(i -> MIDDLE_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.ENDER_PEARL, i), i * 3));
     }
 
     private ChestLootTables() {
