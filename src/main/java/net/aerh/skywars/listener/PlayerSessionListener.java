@@ -62,7 +62,7 @@ public class PlayerSessionListener implements Listener {
         player.setHealth(20.0D);
         player.setSaturation(20.0F);
         player.setWalkSpeed(0.2F);
-        player.setFlySpeed(0.2F);
+        player.setFlySpeed(0.1F);
         Arrays.stream(PotionEffectType.values()).forEach(player::removePotionEffect);
 
         SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresentOrElse(skyWarsGame -> {
