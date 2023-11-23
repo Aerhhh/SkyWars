@@ -13,6 +13,7 @@ import net.aerh.skywars.util.menu.CustomMenuListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.util.Arrays;
 
 public final class SkyWarsPlugin extends JavaPlugin {
@@ -30,7 +31,11 @@ public final class SkyWarsPlugin extends JavaPlugin {
     @Override
     public void onLoad() {
         instance = this;
-        Arrays.stream(Bukkit.getWorldContainer().listFiles((dir, name) -> name.startsWith("game-"))).forEach(file -> Utils.deleteFolder(file.toPath()));
+        File[] files = Bukkit.getWorldContainer().listFiles((dir, name) -> name.startsWith("game-"));
+
+        if (files != null) {
+            Arrays.stream(files).forEach(file -> Utils.deleteFolder(file.toPath()));
+        }
     }
 
     @Override
