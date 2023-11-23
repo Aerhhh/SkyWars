@@ -68,6 +68,7 @@ public class MapLoader {
         world.setAutoSave(false);
         world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
         world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
+        world.setTime(6_000L);
 
         return new SkyWarsGame(world, config);
     }

@@ -431,8 +431,18 @@ public class SkyWarsGame {
         players.stream()
             .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().isPresent())
             .forEach(player -> {
-                getIsland(player).ifPresentOrElse(i -> player.getBukkitPlayer().get().teleport(i.getSpawnLocation().clone().add(0.5, 0, 0.5)),
-                    () -> setSpectator(player));
+                getIsland(player).ifPresentOrElse(i -> {
+                    Location playerIslandSpawn = i.getSpawnLocation().clone().add(0.5, 0, 0.5);
+                    double x = pregameSpawn.getX() - playerIslandSpawn.getX();
+                    double z = pregameSpawn.getZ() - playerIslandSpawn.getZ();
+                    double theta = Math.atan2(-x, z);
+                    double yaw = Math.toDegrees(theta);
+
+                    Location location = i.getSpawnLocation().clone().add(0.5, 0, 0.5);
+                    location.setYaw((float) yaw);
+
+                    player.getBukkitPlayer().get().teleport(location);
+                }, () -> setSpectator(player));
             });
     }
 
@@ -583,6 +593,14 @@ public class SkyWarsGame {
      */
     private void parseChests(JsonObject config) {
         log(Level.INFO, "Parsing chest locations from map config...");
+
+        JsonElement locations = config.get("locations");
+
+        if (locations == null || !locations.isJsonObject() || !locations.getAsJsonObject().has("chests") || !locations.getAsJsonObject().get("chests").isJsonArray()) {
+            log(Level.WARNING, "No chest locations found in map config!");
+            return;
+        }
+
 
         parseConfigLocationArray(config, "chests").forEach(chest -> {
             try {
@@ -817,10 +835,15 @@ public class SkyWarsGame {
      */
     private Location parseConfigLocationObject(JsonObject config, World world, String field) {
         JsonObject locationsObject = config.getAsJsonObject("locations");
+
+        if (locationsObject == null) {
+            throw new IllegalStateException("'locations' JSON object is missing in config.json!");
+        }
+
         JsonObject desiredLocation = locationsObject.getAsJsonObject(field);
 
-        if (!desiredLocation.has("x") || !desiredLocation.has("y") || !desiredLocation.has("z")) {
-            throw new IllegalStateException("Location is missing coordinates! " + desiredLocation);
+        if (desiredLocation == null || !desiredLocation.has("x") || !desiredLocation.has("y") || !desiredLocation.has("z")) {
+            throw new IllegalStateException("Location is missing coordinates! " + (desiredLocation != null ? desiredLocation : ""));
         }
 
         Location location = new Location(world, desiredLocation.get("x").getAsDouble(), desiredLocation.get("y").getAsDouble(), desiredLocation.get("z").getAsDouble());
@@ -839,6 +862,14 @@ public class SkyWarsGame {
     private List<JsonObject> parseConfigLocationArray(JsonObject config, String field) {
         JsonObject locationsObject = config.getAsJsonObject("locations");
         List<JsonObject> locations = new ArrayList<>();
+
+        if (locationsObject == null) {
+            throw new IllegalStateException("'locations' JSON object is missing in config.json!");
+        }
+
+        if (locationsObject.getAsJsonArray(field) == null) {
+            throw new IllegalStateException("Array of '" + field + "' is missing in config.json!");
+        }
 
         for (JsonElement locationElement : locationsObject.getAsJsonArray(field)) {
             JsonObject locationObject = locationElement.getAsJsonObject();
