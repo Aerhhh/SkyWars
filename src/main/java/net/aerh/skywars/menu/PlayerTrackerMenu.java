@@ -9,6 +9,9 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PlayerTrackerMenu extends CustomMenu {
 
     public PlayerTrackerMenu() {
@@ -25,9 +28,11 @@ public class PlayerTrackerMenu extends CustomMenu {
                     ItemStack playerHead = new ItemBuilder(Material.PLAYER_HEAD)
                         .setPlayer(alivePlayer)
                         .setDisplayName(ChatColor.GOLD + alivePlayer.getDisplayName())
-                        .setLore(ChatColor.GRAY + "Health: " + ChatColor.WHITE + Utils.TWO_DECIMAL_PLACES_FORMAT.format(alivePlayer.getHealth()) + "❤")
-                        .setLore(" ")
-                        .setLore(ChatColor.YELLOW + "Click to teleport!")
+                        .setLore(new ArrayList<>(List.of(
+                            ChatColor.GRAY + "Health: " + ChatColor.WHITE + Utils.TWO_DECIMAL_PLACES_FORMAT.format(alivePlayer.getHealth()) + "❤",
+                            " ",
+                            ChatColor.YELLOW + "Click to teleport!"
+                        )))
                         .build();
 
                     addItem(playerHead, (p, event) -> p.teleport(alivePlayer));
