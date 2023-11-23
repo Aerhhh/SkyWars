@@ -99,6 +99,11 @@ public class SkyWarsGame {
             refillableChest.spawn(true, sign.getRotation());
             log(Level.INFO, "Registered refillable " + chestType + " chest at " + Utils.parseLocationToString(sign.getLocation()));
         });
+
+        if (refillableChests.isEmpty()) {
+            // We'll remove chest refill events if there are no chests instead of stopping the game
+            gameEvents.removeIf(ChestRefillEvent.class::isInstance);
+        }
     }
 
     /**
