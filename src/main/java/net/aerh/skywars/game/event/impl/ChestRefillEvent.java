@@ -41,9 +41,7 @@ public class ChestRefillEvent extends GameEvent {
 
         game.getRefillableChests().stream()
             .filter(refillableChest -> refillableChest.getTimerHologram() != null)
-            .forEach(refillableChest -> {
-                refillableChest.getTimerHologram().updateText(ChatColor.GREEN + timeUntilNextEvent);
-            });
+            .forEach(refillableChest -> refillableChest.getTimerHologram().updateText(ChatColor.GREEN + timeUntilNextEvent));
     }
 
     @Override
