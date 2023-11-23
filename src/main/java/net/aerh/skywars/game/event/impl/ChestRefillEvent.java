@@ -25,23 +25,25 @@ public class ChestRefillEvent extends GameEvent {
     public void onSchedule() {
         boolean nextRefill = game.getGameLoop().getCurrentEvent().isPresent() && game.getGameLoop().getCurrentEvent().get() instanceof ChestRefillEvent;
 
-        game.getRefillableChests().forEach(refillableChest -> {
-            if (nextRefill && refillableChest.getTimerHologram() == null) {
-                refillableChest.setTimerHologram(new Hologram(refillableChest.getLocation().clone().add(0.5, 1, 0.5), ""));
-                refillableChest.getTimerHologram().spawn();
-            }
-        });
+        if (nextRefill) {
+            game.getRefillableChests().stream()
+                .filter(refillableChest -> refillableChest.getTimerHologram() != null)
+                .forEach(refillableChest -> {
+                    refillableChest.setTimerHologram(new Hologram(refillableChest.getLocation().clone().add(0.5, 1, 0.5), ""));
+                    refillableChest.getTimerHologram().spawn();
+            });
+        }
     }
 
     @Override
     public void onTick() {
         String timeUntilNextEvent = Utils.formatTimeMillis(game.getGameLoop().getNextEventTime() - System.currentTimeMillis());
 
-        game.getRefillableChests().forEach(refillableChest -> {
-            if (refillableChest.getTimerHologram() != null) {
+        game.getRefillableChests().stream()
+            .filter(refillableChest -> refillableChest.getTimerHologram() != null)
+            .forEach(refillableChest -> {
                 refillableChest.getTimerHologram().updateText(ChatColor.GREEN + timeUntilNextEvent);
-            }
-        });
+            });
     }
 
     @Override
