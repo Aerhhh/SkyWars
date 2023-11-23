@@ -13,14 +13,15 @@ public class ChestLootTables {
     private static final LootTable<ItemStack> MIDDLE_CHEST_LOOT = new LootTable<>();
 
     static {
+        ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.WOODEN_SWORD), 30);
         ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.STONE_SWORD), 20);
         ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.IRON_SWORD), 5);
         ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.BOW), 10);
         ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.ARROW, 8), 10);
-        ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.OAK_PLANKS, 8), 50);
-        ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.OAK_PLANKS, 16), 30);
+        ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.OAK_PLANKS, 8), 30);
+        ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.OAK_PLANKS, 16), 20);
         ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.OAK_PLANKS, 32), 10);
-        MIDDLE_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.WATER_BUCKET), 5);
+        ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.WATER_BUCKET), 5);
 
         ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.LEATHER_HELMET), 10);
         ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.LEATHER_CHESTPLATE), 10);
