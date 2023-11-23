@@ -23,6 +23,7 @@ public class CageOpenEvent extends GameEvent {
     @Override
     public void onSchedule() {
         game.teleportPlayers();
+        game.removePregameSpawn(10);
     }
 
     @Override

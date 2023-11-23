@@ -19,6 +19,7 @@ import net.aerh.skywars.util.ItemBuilder;
 import net.aerh.skywars.util.Utils;
 import net.aerh.skywars.util.WorldSignParser;
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -677,6 +678,22 @@ public class SkyWarsGame {
      */
     public Location getPregameSpawn() {
         return pregameSpawn;
+    }
+
+    /**
+     * Removes the pregame spawn area.
+     */
+    public void removePregameSpawn(int radius) {
+        for (int x = -radius; x <= radius; x++) {
+            for (int y = -radius; y <= radius; y++) {
+                for (int z = -radius; z <= radius; z++) {
+                    Location location = pregameSpawn.clone().add(x, y, z);
+                    Block block = location.getBlock();
+
+                    block.setType(Material.AIR);
+                }
+            }
+        }
     }
 
     /**

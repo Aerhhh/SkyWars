@@ -124,6 +124,10 @@ public class GameListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onTimeChange(TimeSkipEvent event) {
+        if (event.getSkipReason() == TimeSkipEvent.SkipReason.CUSTOM) {
+            return;
+        }
+
         event.setCancelled(true);
     }
 

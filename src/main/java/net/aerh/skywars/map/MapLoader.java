@@ -20,6 +20,10 @@ public class MapLoader {
 
     private static final Gson GSON = new Gson();
 
+    private MapLoader() {
+        throw new UnsupportedOperationException("Cannot instantiate utility class");
+    }
+
     /**
      * Loads a random map from the given file path and creates a world with the given name.
      *
@@ -28,13 +32,13 @@ public class MapLoader {
      * @return the {@link SkyWarsGame game} instance
      */
     public static SkyWarsGame loadRandomMap(String filePath, String worldName) {
-        File[] mapDirs = new File(filePath).listFiles(File::isDirectory);
+        File[] mapDirs = new File(filePath).listFiles(file -> file.isDirectory() && new File(file, "config.json").exists());
 
         if (mapDirs == null || mapDirs.length == 0) {
             throw new IllegalStateException("No map directory found");
         }
 
-        SkyWarsPlugin.getInstance().getLogger().info("Found " + mapDirs.length + " map directories!");
+        SkyWarsPlugin.getInstance().getLogger().info("Found " + mapDirs.length + " valid map directories!");
 
         File mapDir = mapDirs[ThreadLocalRandom.current().nextInt(mapDirs.length)];
         File configFile = new File(mapDir, "config.json");
