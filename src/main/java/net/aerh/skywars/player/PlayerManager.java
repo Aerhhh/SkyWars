@@ -20,6 +20,11 @@ public class PlayerManager {
     private final Set<SkyWarsPlayer> players;
     private final Set<SkyWarsPlayer> spectators;
 
+    /**
+     * Represents the player manager for a {@link SkyWarsGame}.
+     *
+     * @param skyWarsGame the {@link SkyWarsGame} to initialize the {@link PlayerManager} for
+     */
     public PlayerManager(@NotNull SkyWarsGame skyWarsGame) {
         this.skyWarsGame = skyWarsGame;
         this.players = new HashSet<>();
