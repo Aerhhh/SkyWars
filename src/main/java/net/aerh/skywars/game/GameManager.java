@@ -41,7 +41,7 @@ public class GameManager {
 
             SkyWarsPlugin.getInstance().setServerState(ServerState.ACCEPTING_PLAYERS);
         } catch (IllegalStateException exception) {
-            Bukkit.getLogger().log(Level.SEVERE, "Could not create games!", exception);
+            SkyWarsPlugin.getInstance().getLogger().log(Level.SEVERE, "Could not create games", exception);
             Bukkit.getServer().shutdown();
         }
     }

@@ -27,7 +27,7 @@ public class ChestRefillEvent extends GameEvent {
 
         if (nextRefill) {
             game.getRefillableChests().stream()
-                .filter(refillableChest -> refillableChest.getTimerHologram() != null)
+                .filter(refillableChest -> refillableChest.getTimerHologram() == null)
                 .forEach(refillableChest -> {
                     refillableChest.setTimerHologram(new Hologram(refillableChest.getLocation().clone().add(0.5, 1, 0.5), ""));
                     refillableChest.getTimerHologram().spawn();
