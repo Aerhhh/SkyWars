@@ -26,9 +26,8 @@ public class MapLoader {
      * @param filePath  the path to the map directory
      * @param worldName the name of the world to create
      * @return the {@link SkyWarsGame game} instance
-     * @throws IOException If the map directory could not be copied or the config.json could not be read
      */
-    public static SkyWarsGame loadRandomMap(String filePath, String worldName) throws IOException {
+    public static SkyWarsGame loadRandomMap(String filePath, String worldName) {
         File[] mapDirs = new File(filePath).listFiles(File::isDirectory);
 
         if (mapDirs == null || mapDirs.length == 0) {
@@ -44,15 +43,15 @@ public class MapLoader {
             throw new IllegalStateException("No config.json found in map directory '" + mapDir.getName() + "' (" + mapDir.getAbsolutePath() + ")");
         }
 
-        SkyWarsPlugin.getInstance().getLogger().info("Loading map " + mapDir.getName() + "... (" + mapDir.getAbsolutePath() + ")");
-
-        File worldDir = new File(SkyWarsPlugin.getInstance().getServer().getWorldContainer(), worldName);
-
-        SkyWarsPlugin.getInstance().getLogger().info("Copying map directory " + mapDir.getName() + " to " + worldDir.getName() + "...");
-        Utils.copyDirectory(mapDir, worldDir);
-
         JsonObject config;
         try (FileReader reader = new FileReader(configFile)) {
+            SkyWarsPlugin.getInstance().getLogger().info("Loading map " + mapDir.getName() + "... (" + mapDir.getAbsolutePath() + ")");
+
+            File worldDir = new File(SkyWarsPlugin.getInstance().getServer().getWorldContainer(), worldName);
+
+            SkyWarsPlugin.getInstance().getLogger().info("Copying map directory " + mapDir.getName() + " to " + worldDir.getName() + "...");
+            Utils.copyDirectory(mapDir, worldDir);
+
             config = GSON.fromJson(reader, JsonObject.class);
             SkyWarsPlugin.getInstance().getLogger().info("Loaded config.json for map " + config.get("name").getAsString());
         } catch (IOException | JsonSyntaxException e) {
