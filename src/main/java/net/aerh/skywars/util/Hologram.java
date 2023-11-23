@@ -1,7 +1,6 @@
 package net.aerh.skywars.util;
 
 import net.aerh.skywars.SkyWarsPlugin;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;

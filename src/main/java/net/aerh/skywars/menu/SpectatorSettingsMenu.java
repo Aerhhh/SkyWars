@@ -40,13 +40,13 @@ public class SpectatorSettingsMenu extends CustomMenu {
                 boolean toggle = skyWarsPlayer.canSeeSpectators();
 
                 ItemStack hideSpectators = new ItemBuilder(Material.ENDER_PEARL)
-                        .setDisplayName(ChatColor.YELLOW + "Hide Spectators")
-                        .setLore(ChatColor.GRAY + "Click to hide other spectators!")
-                        .build();
+                    .setDisplayName(ChatColor.YELLOW + "Hide Spectators")
+                    .setLore(ChatColor.GRAY + "Click to hide other spectators!")
+                    .build();
                 ItemStack showSpectators = new ItemBuilder(Material.ENDER_EYE)
-                        .setDisplayName(ChatColor.YELLOW + "Show Spectators")
-                        .setLore(ChatColor.GRAY + "Click to show other spectators!")
-                        .build();
+                    .setDisplayName(ChatColor.YELLOW + "Show Spectators")
+                    .setLore(ChatColor.GRAY + "Click to show other spectators!")
+                    .build();
 
                 if (toggle) {
                     setItem(22, hideSpectators, (clicker, event) -> {
@@ -72,7 +72,7 @@ public class SpectatorSettingsMenu extends CustomMenu {
             case 3 -> "III";
             case 4 -> "IV";
             case 5 -> "V";
-            default -> "";
+            default -> String.valueOf(number);
         };
     }
 }

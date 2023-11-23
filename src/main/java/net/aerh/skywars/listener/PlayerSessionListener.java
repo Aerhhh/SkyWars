@@ -66,8 +66,10 @@ public class PlayerSessionListener implements Listener {
         Player player = event.getPlayer();
 
         event.setJoinMessage(null);
-        player.getInventory().clear();
+
+        player.removeMetadata(GameListener.FALL_DAMAGE_IMMUNITY_METADATA_KEY, SkyWarsPlugin.getInstance());
         player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20.0D);
+        player.getInventory().clear();
         player.setHealth(20.0D);
         player.setSaturation(20.0F);
         player.setWalkSpeed(0.2F);

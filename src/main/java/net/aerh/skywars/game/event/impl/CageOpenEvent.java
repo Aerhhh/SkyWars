@@ -1,13 +1,10 @@
 package net.aerh.skywars.game.event.impl;
 
-import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.GameSettings;
 import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.game.event.GameEvent;
 import net.aerh.skywars.game.island.Island;
-import net.aerh.skywars.util.Utils;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;

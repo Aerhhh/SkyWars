@@ -12,7 +12,6 @@ import net.aerh.skywars.game.event.impl.ChestRefillEvent;
 import net.aerh.skywars.game.event.impl.DragonSpawnEvent;
 import net.aerh.skywars.game.event.impl.GameEndEvent;
 import net.aerh.skywars.game.island.Island;
-import net.aerh.skywars.listener.GameListener;
 import net.aerh.skywars.player.PlayerScoreboard;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import net.aerh.skywars.util.CenteredMessage;
@@ -43,7 +42,6 @@ public class SkyWarsGame {
     private final GameLoop gameLoop;
     private final GameSettings settings;
     private final Set<SkyWarsPlayer> players;
-    private final Set<UUID> fallDamageImmunePlayers;
     private final Set<SkyWarsPlayer> spectators;
     private final Queue<GameEvent> gameEvents;
     private final Set<RefillableChest> refillableChests;
@@ -68,7 +66,6 @@ public class SkyWarsGame {
 
         this.islands = new ArrayList<>();
         this.players = new HashSet<>();
-        this.fallDamageImmunePlayers = new HashSet<>();
         this.spectators = new HashSet<>();
         this.gameEvents = new LinkedList<>();
         this.refillableChests = new HashSet<>();
@@ -827,10 +824,6 @@ public class SkyWarsGame {
      */
     public Set<SkyWarsPlayer> getPlayers() {
         return players;
-    }
-
-    public Set<UUID> getFallDamageImmunePlayers() {
-        return fallDamageImmunePlayers;
     }
 
     /**

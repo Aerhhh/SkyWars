@@ -26,14 +26,14 @@ import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.world.TimeSkipEvent;
+import org.bukkit.metadata.FixedMetadataValue;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 public class GameListener implements Listener {
+
+    public static final String FALL_DAMAGE_IMMUNITY_METADATA_KEY = "has_taken_fall_damage";
 
     private final Cache<String, String> lastDamager = Caffeine.newBuilder()
         .expireAfterWrite(10, TimeUnit.SECONDS)
@@ -61,10 +61,9 @@ public class GameListener implements Listener {
                 return;
             }
 
-            // Stop players taking fall damage when they fall out of the cage
-            if (!skyWarsGame.getFallDamageImmunePlayers().contains(player.getUniqueId())) {
+            if (!player.hasMetadata(FALL_DAMAGE_IMMUNITY_METADATA_KEY) && event.getCause() == EntityDamageEvent.DamageCause.FALL) {
+                player.setMetadata(FALL_DAMAGE_IMMUNITY_METADATA_KEY, new FixedMetadataValue(SkyWarsPlugin.getInstance(), true));
                 event.setCancelled(true);
-                skyWarsGame.getFallDamageImmunePlayers().add(player.getUniqueId());
                 return;
             }
 

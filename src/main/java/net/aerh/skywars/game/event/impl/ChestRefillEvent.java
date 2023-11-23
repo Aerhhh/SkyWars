@@ -31,7 +31,7 @@ public class ChestRefillEvent extends GameEvent {
                 .forEach(refillableChest -> {
                     refillableChest.setTimerHologram(new Hologram(refillableChest.getLocation().clone().add(0.5, 1, 0.5), ""));
                     refillableChest.getTimerHologram().spawn();
-            });
+                });
         }
     }
 
