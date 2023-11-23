@@ -2,6 +2,7 @@ package net.aerh.skywars.game;
 
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.event.GameEvent;
+import net.aerh.skywars.game.state.GameState;
 import net.aerh.skywars.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

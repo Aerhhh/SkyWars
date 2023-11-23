@@ -1,7 +1,7 @@
 package net.aerh.skywars.player;
 
 import net.aerh.skywars.SkyWarsPlugin;
-import net.aerh.skywars.game.GameState;
+import net.aerh.skywars.game.state.GameState;
 import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.game.island.Island;
 import net.aerh.skywars.util.Utils;

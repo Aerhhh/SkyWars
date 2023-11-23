@@ -1,7 +1,7 @@
 package net.aerh.skywars.command;
 
 import net.aerh.skywars.SkyWarsPlugin;
-import net.aerh.skywars.game.GameState;
+import net.aerh.skywars.game.state.GameState;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

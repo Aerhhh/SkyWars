@@ -4,7 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Scheduler;
 import net.aerh.skywars.SkyWarsPlugin;
-import net.aerh.skywars.game.GameState;
+import net.aerh.skywars.game.state.GameState;
 import net.aerh.skywars.menu.PlayerTrackerMenu;
 import net.aerh.skywars.menu.SpectatorSettingsMenu;
 import org.bukkit.ChatColor;

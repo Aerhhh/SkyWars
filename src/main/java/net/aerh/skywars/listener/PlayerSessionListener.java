@@ -1,8 +1,8 @@
 package net.aerh.skywars.listener;
 
 import net.aerh.skywars.SkyWarsPlugin;
-import net.aerh.skywars.game.GameState;
-import net.aerh.skywars.game.ServerState;
+import net.aerh.skywars.game.state.GameState;
+import net.aerh.skywars.game.state.ServerState;
 import net.aerh.skywars.player.PlayerScoreboard;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Bukkit;

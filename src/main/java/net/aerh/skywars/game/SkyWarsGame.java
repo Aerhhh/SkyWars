@@ -10,6 +10,7 @@ import net.aerh.skywars.game.event.impl.ChestRefillEvent;
 import net.aerh.skywars.game.event.impl.DragonSpawnEvent;
 import net.aerh.skywars.game.event.impl.GameEndEvent;
 import net.aerh.skywars.game.island.Island;
+import net.aerh.skywars.game.state.GameState;
 import net.aerh.skywars.player.PlayerManager;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import net.aerh.skywars.util.CenteredMessage;

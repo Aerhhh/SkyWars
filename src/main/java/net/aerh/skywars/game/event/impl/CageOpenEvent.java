@@ -14,8 +14,6 @@ import java.util.logging.Level;
 
 public class CageOpenEvent extends GameEvent {
 
-    private final GameSettings settings = game.getSettings();
-
     public CageOpenEvent(SkyWarsGame game) {
         super(game, "Cages Open", 15L, TimeUnit.SECONDS);
     }
@@ -31,8 +29,9 @@ public class CageOpenEvent extends GameEvent {
         game.log(Level.INFO, "Opening cages!");
 
         game.getIslands().forEach(Island::removeCage);
-
         game.broadcast(ChatColor.YELLOW + "Cages opened! " + ChatColor.RED + "FIGHT!");
+
+        GameSettings settings = game.getSettings();
         settings.setInteractable(true);
         settings.allowDamage(true);
         settings.setHunger(true);

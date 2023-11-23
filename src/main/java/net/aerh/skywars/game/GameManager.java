@@ -1,6 +1,8 @@
 package net.aerh.skywars.game;
 
 import net.aerh.skywars.SkyWarsPlugin;
+import net.aerh.skywars.game.state.GameState;
+import net.aerh.skywars.game.state.ServerState;
 import net.aerh.skywars.map.MapLoader;
 import net.aerh.skywars.util.Utils;
 import org.bukkit.Bukkit;
