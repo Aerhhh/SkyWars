@@ -17,7 +17,9 @@ public class ChestLootTables {
         ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.IRON_SWORD), 5);
         ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.BOW), 10);
         ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.ARROW, 8), 10);
-        ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.OAK_PLANKS, 16), 50);
+        ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.OAK_PLANKS, 8), 50);
+        ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.OAK_PLANKS, 16), 30);
+        ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.OAK_PLANKS, 32), 10);
         MIDDLE_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.WATER_BUCKET), 5);
 
         ISLAND_CHEST_LOOT.addItemWithWeight(new ItemStack(Material.LEATHER_HELMET), 10);
