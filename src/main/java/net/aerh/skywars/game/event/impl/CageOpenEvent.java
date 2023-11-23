@@ -30,27 +30,16 @@ public class CageOpenEvent extends GameEvent {
     public void onTrigger() {
         game.log(Level.INFO, "Opening cages!");
 
-        for (Island island : game.getIslands()) {
-            for (int x = -2; x <= 2; x++) {
-                for (int y = -1; y <= 3; y++) {
-                    for (int z = -2; z <= 2; z++) {
-                        island.getSpawnLocation().clone().add(x, y, z).getBlock().setType(Material.AIR);
-                    }
-                }
-            }
-        }
+        game.getIslands().forEach(Island::removeCage);
 
         game.broadcast(ChatColor.YELLOW + "Cages opened! " + ChatColor.RED + "FIGHT!");
         settings.setInteractable(true);
-
-        SkyWarsPlugin.getInstance().getServer().getScheduler().runTaskLater(SkyWarsPlugin.getInstance(), () -> {
-            settings.allowDamage(true);
-            settings.setHunger(true);
-            settings.allowItemDrops(true);
-            settings.allowItemPickup(true);
-            settings.allowBlockBreaking(true);
-            settings.allowBlockPlacing(true);
-        }, Utils.TICKS_PER_SECOND);
+        settings.allowDamage(true);
+        settings.setHunger(true);
+        settings.allowItemDrops(true);
+        settings.allowItemPickup(true);
+        settings.allowBlockBreaking(true);
+        settings.allowBlockPlacing(true);
     }
 
     @Override

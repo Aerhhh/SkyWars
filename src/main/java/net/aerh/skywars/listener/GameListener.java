@@ -27,6 +27,9 @@ import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.world.TimeSkipEvent;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -55,6 +58,13 @@ public class GameListener implements Listener {
 
             if (skyWarsGame.getBukkitSpectators().contains(player)) {
                 event.setCancelled(true);
+                return;
+            }
+
+            // Stop players taking fall damage when they fall out of the cage
+            if (!skyWarsGame.getFallDamageImmunePlayers().contains(player.getUniqueId())) {
+                event.setCancelled(true);
+                skyWarsGame.getFallDamageImmunePlayers().add(player.getUniqueId());
                 return;
             }
 
@@ -322,10 +332,10 @@ public class GameListener implements Listener {
             String format = event.getFormat();
             Predicate<? super Player> filter = null;
 
-            if (skyWarsGame.getPlayer(player) != null) {
+            if (skyWarsGame.getPlayer(player).isPresent()) {
                 format = ChatColor.GOLD + "[PLAYER] " + "%s" + ChatColor.RESET + ": %s";
                 filter = recipient -> !recipient.getWorld().equals(player.getWorld());
-            } else if (skyWarsGame.getBukkitSpectators().contains(player)) {
+            } else if (skyWarsGame.getSpectator(player).isPresent()) {
                 format = ChatColor.GRAY + "[SPECTATOR] " + "%s" + ChatColor.RESET + ": %s";
                 filter = recipient -> !skyWarsGame.getBukkitSpectators().contains(recipient);
             }

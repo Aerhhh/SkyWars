@@ -67,6 +67,18 @@ public class Island {
         }
     }
 
+    /**
+     * Removes the glass cage around the island spawn location.
+     */
+    public void removeCage() {
+        for (int x = -2; x <= 2; x++) {
+            for (int y = -1; y <= 3; y++) {
+                for (int z = -2; z <= 2; z++) {
+                    getSpawnLocation().clone().add(x, y, z).getBlock().setType(Material.AIR);
+                }
+            }
+        }
+    }
 
     /**
      * Gets the player assigned to this island. Can be null.
