@@ -2,6 +2,7 @@ package net.aerh.skywars.map;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.util.Utils;
@@ -54,7 +55,7 @@ public class MapLoader {
         try (FileReader reader = new FileReader(configFile)) {
             config = GSON.fromJson(reader, JsonObject.class);
             SkyWarsPlugin.getInstance().getLogger().info("Loaded config.json for map " + config.get("name").getAsString());
-        } catch (IOException e) {
+        } catch (IOException | JsonSyntaxException e) {
             throw new IllegalStateException("Could not read config.json", e);
         }
 
