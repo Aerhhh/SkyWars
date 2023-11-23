@@ -57,7 +57,7 @@ public class ChestRefillEvent extends GameEvent {
         });
 
         game.broadcastTitle("", ChatColor.YELLOW + "Chests have been refilled!", 10, Utils.TICKS_PER_SECOND * 3, 10);
-        game.getBukkitPlayers().forEach(bukkitPlayer -> bukkitPlayer.playSound(bukkitPlayer.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0F, 1.0F));
+        game.getPlayerManager().getPlayersBukkit().forEach(bukkitPlayer -> bukkitPlayer.playSound(bukkitPlayer.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0F, 1.0F));
         game.log(Level.INFO, "Refilled all chests!");
     }
 }

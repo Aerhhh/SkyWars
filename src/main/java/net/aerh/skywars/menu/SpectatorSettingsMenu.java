@@ -36,7 +36,7 @@ public class SpectatorSettingsMenu extends CustomMenu {
         }
 
         SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
-            skyWarsGame.getSpectator(player).ifPresent(skyWarsPlayer -> {
+            skyWarsGame.getPlayerManager().getSpectator(player.getUniqueId()).ifPresent(skyWarsPlayer -> {
                 boolean toggle = skyWarsPlayer.canSeeSpectators();
 
                 ItemStack hideSpectators = new ItemBuilder(Material.ENDER_PEARL)
@@ -50,13 +50,13 @@ public class SpectatorSettingsMenu extends CustomMenu {
 
                 if (toggle) {
                     setItem(22, hideSpectators, (clicker, event) -> {
-                        skyWarsGame.getBukkitSpectators().forEach(spectator -> clicker.hidePlayer(SkyWarsPlugin.getInstance(), spectator));
+                        skyWarsGame.getPlayerManager().getSpectatorsBukkit().forEach(spectator -> clicker.hidePlayer(SkyWarsPlugin.getInstance(), spectator));
                         clicker.sendMessage(ChatColor.YELLOW + "You can no longer see other spectators!");
                         skyWarsPlayer.setCanSeeSpectators(false);
                     });
                 } else {
                     setItem(22, showSpectators, (clicker, event) -> {
-                        skyWarsGame.getBukkitSpectators().forEach(spectator -> clicker.showPlayer(SkyWarsPlugin.getInstance(), spectator));
+                        skyWarsGame.getPlayerManager().getSpectatorsBukkit().forEach(spectator -> clicker.showPlayer(SkyWarsPlugin.getInstance(), spectator));
                         clicker.sendMessage(ChatColor.YELLOW + "You can now see other spectators!");
                         skyWarsPlayer.setCanSeeSpectators(true);
                     });

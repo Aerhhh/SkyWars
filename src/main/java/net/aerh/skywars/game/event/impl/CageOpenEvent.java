@@ -5,6 +5,9 @@ import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.game.event.GameEvent;
 import net.aerh.skywars.game.island.Island;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -20,7 +23,7 @@ public class CageOpenEvent extends GameEvent {
     @Override
     public void onSchedule() {
         game.teleportPlayers();
-        game.removePregameSpawn(10);
+        removePregameSpawn(10);
     }
 
     @Override
@@ -42,5 +45,21 @@ public class CageOpenEvent extends GameEvent {
     @Override
     public void onTick() {
         // Not needed
+    }
+
+    /**
+     * Removes the pregame spawn area.
+     */
+    public void removePregameSpawn(int radius) {
+        for (int x = -radius; x <= radius; x++) {
+            for (int y = -radius; y <= radius; y++) {
+                for (int z = -radius; z <= radius; z++) {
+                    Location location = game.getPregameSpawn().clone().add(x, y, z);
+                    Block block = location.getBlock();
+
+                    block.setType(Material.AIR);
+                }
+            }
+        }
     }
 }

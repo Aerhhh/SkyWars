@@ -21,8 +21,7 @@ public class PlayerTrackerMenu extends CustomMenu {
     @Override
     protected void initializeItems(Player player) {
         SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
-            skyWarsGame.getAlivePlayers().stream()
-                .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().isPresent())
+            skyWarsGame.getPlayerManager().getAlivePlayers().stream()
                 .map(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().get())
                 .forEach(alivePlayer -> {
                     ItemStack playerHead = new ItemBuilder(Material.PLAYER_HEAD)

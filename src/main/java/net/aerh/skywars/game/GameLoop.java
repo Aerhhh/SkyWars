@@ -62,7 +62,7 @@ public class GameLoop {
         Bukkit.getScheduler().runTaskTimer(SkyWarsPlugin.getInstance(), task -> {
             gameEndTaskId = task.getTaskId();
 
-            if (game.getAlivePlayers().size() <= 1) {
+            if (game.getPlayerManager().getAlivePlayers().size() <= 1) {
                 game.end();
                 task.cancel();
                 return;
@@ -73,7 +73,7 @@ public class GameLoop {
                 return;
             }
 
-            game.getOnlinePlayers().forEach(skyWarsPlayer -> {
+            game.getPlayerManager().getOnlinePlayers().forEach(skyWarsPlayer -> {
                 getNextEvent().ifPresentOrElse(event -> {
                     skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + currentEvent.getDisplayName()
                         + " " + Utils.formatTimeMillis(nextEventTime - System.currentTimeMillis()));

@@ -24,10 +24,6 @@ public class StartGameCommand implements CommandExecutor {
                 return;
             }
 
-            if (skyWarsGame.getCountdownTask() != null) {
-                skyWarsGame.setCountdownTask(null);
-            }
-
             skyWarsGame.start();
             player.sendMessage(ChatColor.GREEN + "You started the game!");
         }, () -> player.sendMessage(ChatColor.RED + "You are not in a game!"));

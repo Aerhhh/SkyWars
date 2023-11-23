@@ -34,9 +34,9 @@ public class PlayerSessionListener implements Listener {
         }
 
         SkyWarsPlugin.getInstance().getGameManager().findGame(event.getUniqueId()).ifPresent(skyWarsGame -> {
-            skyWarsGame.getPlayer(event.getUniqueId()).ifPresent(skyWarsPlayer -> {
-                skyWarsGame.removePlayer(skyWarsPlayer);
-                skyWarsGame.getPlayers().remove(skyWarsPlayer);
+            skyWarsGame.getPlayerManager().getPlayer(event.getUniqueId()).ifPresent(skyWarsPlayer -> {
+                skyWarsGame.getPlayerManager().removePlayer(skyWarsPlayer);
+                skyWarsGame.getPlayerManager().getPlayers().remove(skyWarsPlayer);
                 skyWarsGame.log(Level.INFO, "Removed player " + event.getName() + " from old game: " + skyWarsGame.getWorld().getName() + "!");
             });
         });
@@ -44,7 +44,7 @@ public class PlayerSessionListener implements Listener {
         SkyWarsPlugin.getInstance().getGameManager().findNextFreeGame().ifPresentOrElse(skyWarsGame -> {
             SkyWarsPlayer skyWarsPlayer = new SkyWarsPlayer(event.getUniqueId(), event.getName());
 
-            if (!skyWarsGame.addPlayer(skyWarsPlayer)) {
+            if (!skyWarsGame.getPlayerManager().addPlayer(skyWarsPlayer)) {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, GENERIC_KICK_MESSAGE);
                 return;
             }
@@ -82,11 +82,11 @@ public class PlayerSessionListener implements Listener {
 
             if (skyWarsGame.getState() == GameState.PRE_GAME || skyWarsGame.getState() == GameState.STARTING) {
                 skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " joined! "
-                    + ChatColor.GRAY + "(" + skyWarsGame.getBukkitPlayers().size() + "/" + skyWarsGame.getMaxPlayers() + ")");
+                    + ChatColor.GRAY + "(" + skyWarsGame.getPlayerManager().getPlayersBukkit().size() + "/" + skyWarsGame.getMaxPlayers() + ")");
                 skyWarsGame.checkPlayerCountForCountdown();
             }
 
-            skyWarsGame.getPlayer(player).ifPresentOrElse(skyWarsPlayer -> {
+            skyWarsGame.getPlayerManager().getPlayer(player.getUniqueId()).ifPresentOrElse(skyWarsPlayer -> {
                 skyWarsGame.getIsland(skyWarsPlayer).ifPresentOrElse(island -> player.teleport(skyWarsGame.getPregameSpawn()),
                     () -> skyWarsGame.setSpectator(skyWarsPlayer));
 
@@ -100,7 +100,7 @@ public class PlayerSessionListener implements Listener {
             });
 
             SkyWarsPlugin.getInstance().getServer().getScheduler().runTaskLater(SkyWarsPlugin.getInstance(), () -> {
-                skyWarsGame.getOnlinePlayers().stream()
+                skyWarsGame.getPlayerManager().getOnlinePlayers().stream()
                     .map(SkyWarsPlayer::getBukkitPlayer)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
@@ -118,14 +118,13 @@ public class PlayerSessionListener implements Listener {
 
         SkyWarsPlugin.getInstance().getServer().getScheduler().runTaskLater(SkyWarsPlugin.getInstance(), () -> {
             SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
-                skyWarsGame.getPlayer(player).ifPresent(skywarsPlayer -> {
-                    skyWarsGame.removePlayer(skywarsPlayer);
-                    // We don't remove the player from the list of players here so they can show up in the leaderboard after the game
+                skyWarsGame.getPlayerManager().getPlayer(player.getUniqueId()).ifPresent(skywarsPlayer -> {
+                    skyWarsGame.getPlayerManager().removePlayer(skywarsPlayer);
                     skyWarsGame.log(Level.INFO, "Player " + player.getName() + " left the game!");
 
                     if (skyWarsGame.getState() == GameState.PRE_GAME || skyWarsGame.getState() == GameState.STARTING) {
                         skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left! "
-                            + ChatColor.GRAY + "(" + skyWarsGame.getBukkitPlayers().size() + "/" + skyWarsGame.getMaxPlayers() + ")");
+                            + ChatColor.GRAY + "(" + skyWarsGame.getPlayerManager().getPlayersBukkit().size() + "/" + skyWarsGame.getMaxPlayers() + ")");
                         skyWarsGame.checkPlayerCountForCountdown();
                     } else {
                         skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left!");

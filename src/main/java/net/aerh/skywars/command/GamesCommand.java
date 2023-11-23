@@ -44,10 +44,10 @@ public class GamesCommand implements CommandExecutor {
             stringBuilder.append("\n")
                 .append(ChatColor.YELLOW).append("  Islands: ").append(ChatColor.RESET).append(skyWarsGame.getIslands().size()).append("\n")
                 .append(ChatColor.YELLOW).append("  Chests: ").append(ChatColor.RESET).append(skyWarsGame.getRefillableChests().size()).append("\n")
-                .append(ChatColor.YELLOW).append("  Players: ").append(ChatColor.RESET).append(skyWarsGame.getBukkitPlayers().size()).append("/")
+                .append(ChatColor.YELLOW).append("  Players: ").append(ChatColor.RESET).append(skyWarsGame.getPlayerManager().getPlayersBukkit().size()).append("/")
                 .append(skyWarsGame.getMaxPlayers()).append("\n")
-                .append(ChatColor.YELLOW).append("  Spectators: ").append(ChatColor.RESET).append(skyWarsGame.getBukkitSpectators().size()).append("\n")
-                .append(ChatColor.YELLOW).append("  Online: ").append(ChatColor.RESET).append(skyWarsGame.getOnlinePlayers().size()).append("\n")
+                .append(ChatColor.YELLOW).append("  Spectators: ").append(ChatColor.RESET).append(skyWarsGame.getPlayerManager().getSpectatorsBukkit().size()).append("\n")
+                .append(ChatColor.YELLOW).append("  Online: ").append(ChatColor.RESET).append(skyWarsGame.getPlayerManager().getOnlinePlayers().size()).append("\n")
                 .append(ChatColor.YELLOW).append("  Winner: ").append(ChatColor.RESET);
 
             skyWarsGame.getWinner().ifPresentOrElse(skyWarsPlayer -> stringBuilder.append(skyWarsPlayer.getUuid()).append("\n"),
