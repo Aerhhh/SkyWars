@@ -40,7 +40,7 @@ public class PlayerManager {
         skyWarsGame.log(Level.INFO, "Adding player " + player.getUuid());
 
         Optional<Island> island = skyWarsGame.getIslands().stream()
-            .filter(i -> i.getAssignedPlayer() == null)
+            .filter(i -> i.getAssignedPlayer().isEmpty())
             .findFirst();
 
         if (island.isEmpty()) {
@@ -52,7 +52,8 @@ public class PlayerManager {
             return false;
         }
 
-        skyWarsGame.getPlayerManager().getPlayers().add(player);
+        players.add(player);
+        skyWarsGame.getKills().putIfAbsent(player.getDisplayName(), 0);
         island.get().assignPlayer(player);
 
         skyWarsGame.log(Level.INFO, "Added player " + player.getUuid() + " to island " + Utils.parseLocationToString(island.get().getSpawnLocation()) + "!");
@@ -61,7 +62,7 @@ public class PlayerManager {
             getOnlinePlayers().stream()
                 .filter(skyWarsPlayer -> skyWarsPlayer.getScoreboard() != null)
                 .forEach(skyWarsPlayer -> {
-                    skyWarsPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + skyWarsGame.getPlayerManager().getAlivePlayers().size());
+                    skyWarsPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getAlivePlayers().size());
                     skyWarsPlayer.getScoreboard().update();
                 });
         }
@@ -75,14 +76,14 @@ public class PlayerManager {
      * @param player the {@link SkyWarsPlayer} to remove
      */
     public void removePlayer(SkyWarsPlayer player) {
-        skyWarsGame.getPlayerManager().getPlayers().remove(player);
-        skyWarsGame.getPlayerManager().getSpectators().remove(player);
+        players.remove(player);
+        spectators.remove(player);
 
         skyWarsGame.getIsland(player).ifPresent(Island::removePlayer);
 
         if (skyWarsGame.getState() != GameState.STARTING) {
             getOnlinePlayers().forEach(skyWarsPlayer -> {
-                skyWarsPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + skyWarsGame.getPlayerManager().getAlivePlayers().size());
+                skyWarsPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getAlivePlayers().size());
                 skyWarsPlayer.getScoreboard().update();
             });
         }
@@ -135,22 +136,22 @@ public class PlayerManager {
     }
 
     /**
-     * Gets a {@link List} of the {@link Player players} in this game.
+     * Gets a {@link Set} of the {@link Player players} in this game.
      *
-     * @return the {@link List} of the {@link Player players} in this game
+     * @return the {@link Set} of the {@link Player players} in this game
      */
-    public List<Player> getPlayersBukkit() {
+    public Set<Player> getPlayersBukkit() {
         return players.stream()
             .map(SkyWarsPlayer::getBukkitPlayer)
             .filter(Optional::isPresent)
             .map(Optional::get)
-            .toList();
+            .collect(Collectors.toSet());
     }
 
     /**
-     * Gets the spectators in this game. Can be empty.
+     * Gets a {@link Set} of spectators in this game. Can be empty.
      *
-     * @return a {@link List} of {@link SkyWarsPlayer players} who are spectating
+     * @return a {@link Set} of {@link SkyWarsPlayer players} who are spectating
      */
     public Set<Player> getSpectatorsBukkit() {
         return spectators.stream()
@@ -168,8 +169,9 @@ public class PlayerManager {
      */
     public boolean isPlayer(Player player) {
         return players.stream()
-            .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().isPresent())
-            .anyMatch(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().get().equals(player));
+            .map(SkyWarsPlayer::getBukkitPlayer)
+            .filter(Optional::isPresent)
+            .anyMatch(optional -> optional.get().equals(player));
     }
 
     /**
@@ -180,8 +182,9 @@ public class PlayerManager {
      */
     public boolean isSpectator(Player player) {
         return spectators.stream()
-            .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().isPresent())
-            .anyMatch(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().get().equals(player));
+            .map(SkyWarsPlayer::getBukkitPlayer)
+            .filter(Optional::isPresent)
+            .anyMatch(optional -> optional.get().equals(player));
     }
 
     public Set<SkyWarsPlayer> getPlayers() {

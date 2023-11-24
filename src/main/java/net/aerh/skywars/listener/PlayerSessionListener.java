@@ -46,15 +46,14 @@ public class PlayerSessionListener implements Listener {
 
             if (!skyWarsGame.getPlayerManager().addPlayer(skyWarsPlayer)) {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, GENERIC_KICK_MESSAGE);
+                SkyWarsPlugin.getInstance().getLogger().severe("Could not add player " + event.getName() + " to game " + skyWarsGame.getWorld().getName() + "!");
                 return;
             }
 
             if (skyWarsGame.getIsland(skyWarsPlayer).isEmpty()) {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, GENERIC_KICK_MESSAGE);
-                return;
+                SkyWarsPlugin.getInstance().getLogger().severe("Could not find island for player " + event.getName() + "!");
             }
-
-            skyWarsGame.getKills().putIfAbsent(event.getName(), 0);
         }, () -> {
             SkyWarsPlugin.getInstance().setServerState(ServerState.NO_GAMES_AVAILABLE);
             event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatColor.RED + "No games available!");
