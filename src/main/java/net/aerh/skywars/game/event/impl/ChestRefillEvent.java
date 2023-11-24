@@ -23,7 +23,7 @@ public class ChestRefillEvent extends GameEvent {
 
     @Override
     public void onSchedule() {
-        boolean nextRefill = game.getGameLoop().getCurrentEvent().isPresent() && game.getGameLoop().getCurrentEvent().get() instanceof ChestRefillEvent;
+        boolean nextRefill = game.getGameLoop().getCurrentEvent().stream().anyMatch(ChestRefillEvent.class::isInstance);
 
         if (nextRefill) {
             game.getRefillableChests().stream()

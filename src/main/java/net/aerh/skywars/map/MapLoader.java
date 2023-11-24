@@ -81,6 +81,7 @@ public class MapLoader {
         world.setTime(6_000L);
 
         SkyWarsGame skyWarsGame = new SkyWarsGame(world, config);
+
         parseIslands(skyWarsGame, config);
         parseChests(skyWarsGame, config);
         skyWarsGame.setPregameSpawn(MapLoader.parseConfigLocationObject(config, skyWarsGame.getWorld(), "pregame"));

@@ -1,9 +1,8 @@
 package net.aerh.skywars.player;
 
-import net.aerh.skywars.SkyWarsPlugin;
-import net.aerh.skywars.game.state.GameState;
 import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.game.island.Island;
+import net.aerh.skywars.game.state.GameState;
 import net.aerh.skywars.util.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -55,7 +54,6 @@ public class PlayerManager {
 
         skyWarsGame.getPlayerManager().getPlayers().add(player);
         island.get().assignPlayer(player);
-        SkyWarsPlugin.getInstance().getServer().getScheduler().runTask(SkyWarsPlugin.getInstance(), () -> island.get().spawnCage());
 
         skyWarsGame.log(Level.INFO, "Added player " + player.getUuid() + " to island " + Utils.parseLocationToString(island.get().getSpawnLocation()) + "!");
 

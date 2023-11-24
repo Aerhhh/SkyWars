@@ -1,5 +1,6 @@
 package net.aerh.skywars.game.event.impl;
 
+import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.GameSettings;
 import net.aerh.skywars.game.SkyWarsGame;
 import net.aerh.skywars.game.event.GameEvent;
@@ -20,8 +21,12 @@ public class CageOpenEvent extends GameEvent {
 
     @Override
     public void onSchedule() {
+        game.getIslands().forEach(Island::spawnCage);
         game.teleportPlayers();
-        removePregameSpawn(10);
+
+        SkyWarsPlugin.getInstance().getServer().getScheduler().runTaskLater(SkyWarsPlugin.getInstance(), () -> {
+            removePregameSpawn(10);
+        }, 1L);
     }
 
     @Override
