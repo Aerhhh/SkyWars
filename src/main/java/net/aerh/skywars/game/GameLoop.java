@@ -13,7 +13,6 @@ import java.util.logging.Level;
 
 public class GameLoop {
 
-
     private final SkyWarsGame game;
     private GameEvent currentEvent;
     private long nextEventTime;

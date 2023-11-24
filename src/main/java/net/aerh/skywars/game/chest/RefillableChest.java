@@ -1,6 +1,5 @@
 package net.aerh.skywars.game.chest;
 
-import net.aerh.skywars.game.loottable.LootTable;
 import net.aerh.skywars.util.Hologram;
 import net.aerh.skywars.util.Utils;
 import org.bukkit.Location;
@@ -17,7 +16,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public class RefillableChest {
 
     private final Location location;
-    private final LootTable<ItemStack> loot;
     private final ChestType type;
     private int timesRefilled;
     private Hologram timerHologram;
@@ -31,7 +29,6 @@ public class RefillableChest {
     public RefillableChest(Location location, ChestType type) {
         this.location = location;
         this.type = type;
-        this.loot = ChestLootTables.getLootForChestType(type);
     }
 
     /**
@@ -58,7 +55,7 @@ public class RefillableChest {
      * Refills the chest with loot.
      */
     public void refillChest() {
-        if (loot.isEmpty()) {
+        if (ChestLootTables.getLootForChestType(type).isEmpty()) {
             throw new IllegalStateException("Cannot refill chest at " + Utils.parseLocationToString(location) + " with empty loot pool!");
         }
 
@@ -81,7 +78,7 @@ public class RefillableChest {
                 randomSlot = ThreadLocalRandom.current().nextInt(chestInventory.getSize());
             }
 
-            ItemStack randomItem = loot.getRandomItem().getObject();
+            ItemStack randomItem = ChestLootTables.getLootForChestType(type).getRandomItem().getObject();
             chestInventory.setItem(randomSlot, randomItem);
         }
 
