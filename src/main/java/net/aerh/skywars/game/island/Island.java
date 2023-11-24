@@ -4,7 +4,8 @@ import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 public class Island {
 
@@ -85,8 +86,7 @@ public class Island {
      *
      * @return the {@link SkyWarsPlayer player} assigned to this island
      */
-    @Nullable
-    public SkyWarsPlayer getAssignedPlayer() {
-        return assignedPlayer;
+    public Optional<SkyWarsPlayer> getAssignedPlayer() {
+        return Optional.ofNullable(assignedPlayer);
     }
 }

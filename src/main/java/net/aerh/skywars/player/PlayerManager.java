@@ -160,6 +160,30 @@ public class PlayerManager {
             .collect(Collectors.toSet());
     }
 
+    /**
+     * Checks if the specified {@link Player} is a member of this game.
+     *
+     * @param player the {@link Player} to check
+     * @return true if the {@link Player} is a member of this game, otherwise false
+     */
+    public boolean isPlayer(Player player) {
+        return players.stream()
+            .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().isPresent())
+            .anyMatch(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().get().equals(player));
+    }
+
+    /**
+     * Checks if the specified {@link Player} is a spectator of this game.
+     *
+     * @param player the {@link Player} to check
+     * @return true if the {@link Player} is a spectator of this game, otherwise false
+     */
+    public boolean isSpectator(Player player) {
+        return spectators.stream()
+            .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().isPresent())
+            .anyMatch(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().get().equals(player));
+    }
+
     public Set<SkyWarsPlayer> getPlayers() {
         return players;
     }

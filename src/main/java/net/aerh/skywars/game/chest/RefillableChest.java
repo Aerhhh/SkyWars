@@ -11,6 +11,7 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class RefillableChest {
@@ -119,6 +120,11 @@ public class RefillableChest {
      */
     public void addItemToRandomSlot(ItemStack itemStack) {
         Inventory inventory = getInventory();
+
+        if (inventory.firstEmpty() == -1) {
+            return;
+        }
+
         int randomSlot = ThreadLocalRandom.current().nextInt(inventory.getSize());
 
         while (inventory.getItem(randomSlot) != null) {
@@ -142,8 +148,8 @@ public class RefillableChest {
      *
      * @return the {@link Hologram} that displays the refill timer
      */
-    public Hologram getTimerHologram() {
-        return timerHologram;
+    public Optional<Hologram> getTimerHologram() {
+        return Optional.ofNullable(timerHologram);
     }
 
     /**
@@ -159,9 +165,9 @@ public class RefillableChest {
      * Removes the {@link Hologram} that displays the refill timer.
      */
     public void removeTimerHologram() {
-        if (timerHologram != null) {
-            timerHologram.remove();
+        getTimerHologram().ifPresent(hologram -> {
+            hologram.remove();
             timerHologram = null;
-        }
+        });
     }
 }

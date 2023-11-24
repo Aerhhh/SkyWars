@@ -1,7 +1,6 @@
 package net.aerh.skywars.command;
 
 import net.aerh.skywars.SkyWarsPlugin;
-import net.aerh.skywars.util.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -13,7 +12,12 @@ public class GamesCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(ChatColor.GOLD).append("Games (").append(SkyWarsPlugin.getInstance().getGameManager().getGames().size()).append("):").append("\n");
+
+        stringBuilder.append(ChatColor.GOLD)
+            .append("Games (")
+            .append(SkyWarsPlugin.getInstance().getGameManager().getGames().size())
+            .append("):")
+            .append("\n");
 
         SkyWarsPlugin.getInstance().getGameManager().getGames().forEach(skyWarsGame -> {
             stringBuilder.append(ChatColor.YELLOW)
@@ -23,7 +27,7 @@ public class GamesCommand implements CommandExecutor {
             skyWarsGame.getGameLoop().getNextEvent().ifPresentOrElse(gameEvent -> {
                 stringBuilder.append(gameEvent.getDisplayName())
                     .append(" in ")
-                    .append(Utils.formatTimeMillis(skyWarsGame.getGameLoop().getNextEventTime() - System.currentTimeMillis()))
+                    .append(skyWarsGame.getGameLoop().getFormattedTimeToNextEvent())
                     .append(ChatColor.GRAY)
                     .append(" (")
                     .append(gameEvent.getClass().getSimpleName())

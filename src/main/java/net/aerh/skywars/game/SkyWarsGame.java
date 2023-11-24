@@ -362,7 +362,8 @@ public class SkyWarsGame {
      */
     public Optional<Island> getIsland(SkyWarsPlayer skyWarsPlayer) {
         return islands.stream()
-            .filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(skyWarsPlayer))
+            .filter(island -> island.getAssignedPlayer().isPresent())
+            .filter(island -> island.getAssignedPlayer().get().equals(skyWarsPlayer))
             .findFirst();
     }
 
