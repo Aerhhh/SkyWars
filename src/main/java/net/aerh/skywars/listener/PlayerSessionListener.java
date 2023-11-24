@@ -33,14 +33,6 @@ public class PlayerSessionListener implements Listener {
             return;
         }
 
-        SkyWarsPlugin.getInstance().getGameManager().findGame(event.getUniqueId()).ifPresent(skyWarsGame -> {
-            skyWarsGame.getPlayerManager().getPlayer(event.getUniqueId()).ifPresent(skyWarsPlayer -> {
-                skyWarsGame.getPlayerManager().removePlayer(skyWarsPlayer);
-                skyWarsGame.getPlayerManager().getPlayers().remove(skyWarsPlayer);
-                skyWarsGame.log(Level.INFO, "Removed player " + event.getName() + " from old game: " + skyWarsGame.getWorld().getName() + "!");
-            });
-        });
-
         SkyWarsPlugin.getInstance().getGameManager().findNextFreeGame().ifPresentOrElse(skyWarsGame -> {
             SkyWarsPlayer skyWarsPlayer = new SkyWarsPlayer(event.getUniqueId(), event.getName());
 
