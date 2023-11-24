@@ -137,4 +137,8 @@ public class GameLoop {
     public long getNextEventTime() {
         return nextEventTime;
     }
+
+    public String getFormattedTimeToNextEvent() {
+        return Utils.formatTimeMillis(game.getGameLoop().getNextEventTime() - System.currentTimeMillis());
+    }
 }
