@@ -1,7 +1,5 @@
 package net.aerh.skywars.game;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.chest.ChestType;
@@ -12,42 +10,35 @@ import net.aerh.skywars.game.event.impl.ChestRefillEvent;
 import net.aerh.skywars.game.event.impl.DragonSpawnEvent;
 import net.aerh.skywars.game.event.impl.GameEndEvent;
 import net.aerh.skywars.game.island.Island;
-import net.aerh.skywars.player.PlayerScoreboard;
+import net.aerh.skywars.game.state.GameState;
+import net.aerh.skywars.player.PlayerManager;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import net.aerh.skywars.util.CenteredMessage;
 import net.aerh.skywars.util.ItemBuilder;
 import net.aerh.skywars.util.Utils;
 import net.aerh.skywars.util.WorldSignParser;
 import org.bukkit.*;
-import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
 
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SkyWarsGame {
 
     public static final int MIN_PLAYER_COUNT = 2;
-    private static final BlockFace[] VALID_CHEST_ROTATIONS = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
-
-    private final Location pregameSpawn;
     private final GameLoop gameLoop;
     private final GameSettings settings;
-    private final Set<SkyWarsPlayer> players;
-    private final Set<SkyWarsPlayer> spectators;
+    private final PlayerManager playerManager;
     private final Queue<GameEvent> gameEvents;
     private final Set<RefillableChest> refillableChests;
     private final Map<String, Integer> kills;
     private final String mapName;
     private final List<Island> islands;
     private final World world;
+    private Location pregameSpawn;
     private GameState state = GameState.PRE_GAME;
     private BukkitTask countdownTask;
     private SkyWarsPlayer winner;
@@ -61,11 +52,9 @@ public class SkyWarsGame {
     public SkyWarsGame(World world, JsonObject config) {
         this.world = world;
         this.mapName = config.get("name").getAsString();
-        this.pregameSpawn = parseConfigLocationObject(config, this.world, "pregame");
 
+        this.playerManager = new PlayerManager(this);
         this.islands = new ArrayList<>();
-        this.players = new HashSet<>();
-        this.spectators = new HashSet<>();
         this.gameEvents = new LinkedList<>();
         this.refillableChests = new HashSet<>();
         this.kills = new HashMap<>();
@@ -76,20 +65,6 @@ public class SkyWarsGame {
         addGameEvents(new CageOpenEvent(this), new ChestRefillEvent(this), new ChestRefillEvent(this), new DragonSpawnEvent(this), new GameEndEvent(this));
         this.gameLoop = new GameLoop(this);
 
-        try {
-            parseIslands(config);
-        } catch (IllegalArgumentException exception) {
-            Bukkit.getLogger().log(Level.SEVERE, "Failed to parse islands!", exception);
-            Bukkit.getServer().shutdown();
-        }
-
-        try {
-            parseChests(config);
-        } catch (IllegalArgumentException exception) {
-            Bukkit.getLogger().log(Level.SEVERE, "Failed to parse chests!", exception);
-        }
-
-        // I made this because the map I'm using to test already has chest signs so it'll be quicker to just use them
         WorldSignParser signParser = new WorldSignParser(world, true);
 
         signParser.getParsedSigns("chest").forEach(sign -> {
@@ -99,15 +74,27 @@ public class SkyWarsGame {
             refillableChest.spawn(true, sign.getRotation());
             log(Level.INFO, "Registered refillable " + chestType + " chest at " + Utils.parseLocationToString(sign.getLocation()));
         });
+
+        if (refillableChests.isEmpty()) {
+            // We'll remove chest refill events if there are no chests instead of stopping the game
+            gameEvents.removeIf(ChestRefillEvent.class::isInstance);
+        }
     }
 
     /**
      * Starts the game.
      */
     public void start() {
-        state = GameState.IN_GAME;
-        broadcast(ChatColor.GREEN + "Game started!");
+        if (countdownTask != null) {
+            if (!countdownTask.isCancelled()) {
+                countdownTask.cancel();
+            }
+            countdownTask = null;
+        }
 
+        state = GameState.IN_GAME;
+
+        broadcast(ChatColor.GREEN + "Game started!");
         broadcast(Utils.SEPARATOR);
         broadcast(CenteredMessage.generate(ChatColor.RESET + ChatColor.BOLD.toString() + "SkyWars"));
         broadcast("\n");
@@ -118,13 +105,12 @@ public class SkyWarsGame {
         broadcast("\n");
         broadcast(Utils.SEPARATOR);
 
-        getOnlinePlayers().stream()
+        playerManager.getOnlinePlayers().stream()
             .filter(Objects::nonNull)
+            .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().isPresent())
             .forEach(skyWarsPlayer -> {
-                skyWarsPlayer.getBukkitPlayer().ifPresent(player -> {
-                    setupScoreboard(player, skyWarsPlayer.getScoreboard());
-                    player.setGameMode(GameMode.SURVIVAL);
-                });
+                skyWarsPlayer.setupScoreboard(this);
+                skyWarsPlayer.getBukkitPlayer().get().setGameMode(GameMode.SURVIVAL);
             });
 
         gameLoop.next();
@@ -138,94 +124,31 @@ public class SkyWarsGame {
 
         gameLoop.cancelTasks();
 
-        getOnlinePlayers().forEach(skyWarsPlayer -> {
+        playerManager.getOnlinePlayers().forEach(skyWarsPlayer -> {
             skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + "Game over!");
             skyWarsPlayer.getScoreboard().update();
         });
 
-        if (getAlivePlayers().size() == 1) {
-            winner = getAlivePlayers().iterator().next();
+        if (playerManager.getAlivePlayers().size() == 1) {
+            winner = playerManager.getAlivePlayers().iterator().next();
         }
 
         sendGameEndMessage();
 
-        players.stream()
+        playerManager.getPlayers().stream()
             .filter(skyWarsPlayer -> getWinner().isEmpty() || !winner.getUuid().equals(skyWarsPlayer.getUuid()))
             .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().isPresent())
-            .filter(skyWarsPlayer -> getSpectator(skyWarsPlayer.getUuid()).isEmpty())
+            .filter(skyWarsPlayer -> playerManager.getSpectator(skyWarsPlayer.getUuid()).isEmpty())
             .forEach(this::setSpectator);
 
         scheduleGameShutdown();
     }
 
     /**
-     * Set up the scoreboard for a {@link Player}.
-     *
-     * @param player     the {@link Player} to set up the scoreboard for
-     * @param scoreboard the {@link PlayerScoreboard} to set up
-     */
-    private void setupScoreboard(Player player, PlayerScoreboard scoreboard) {
-        scoreboard.add(10, " ");
-        scoreboard.add(9, ChatColor.RESET + "Next Event:");
-        scoreboard.add(8, ChatColor.GRAY + "???");
-        scoreboard.add(7, "  ");
-        scoreboard.add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getOnlinePlayers().size());
-        scoreboard.add(5, ChatColor.RESET + "Kills: " + ChatColor.GREEN + "0");
-        scoreboard.add(4, "   ");
-        scoreboard.add(3, ChatColor.RESET + "Map: " + ChatColor.GREEN + mapName);
-        scoreboard.add(2, "    ");
-        scoreboard.add(1, ChatColor.YELLOW + "www.aerh.net");
-        scoreboard.update();
-        scoreboard.send(player);
-
-        setupPlayerNameColors(player, scoreboard.getScoreboard());
-    }
-
-    /**
-     * Sets up player name colors on the scoreboard. Players will see other players as red and themselves as green.
-     *
-     * @param player the {@link Player} to set up the colors for
-     */
-    private void setupPlayerNameColors(Player player, Scoreboard scoreboard) {
-        Team green;
-        Team gray;
-        Team red;
-
-        if (scoreboard.getTeam("green") == null) {
-            green = scoreboard.registerNewTeam("green");
-        } else {
-            green = scoreboard.getTeam("green");
-        }
-
-        if (scoreboard.getTeam("gray") == null) {
-            gray = scoreboard.registerNewTeam("gray");
-        } else {
-            gray = scoreboard.getTeam("gray");
-        }
-
-        if (scoreboard.getTeam("red") == null) {
-            red = scoreboard.registerNewTeam("red");
-        } else {
-            red = scoreboard.getTeam("red");
-        }
-
-        green.setColor(ChatColor.GREEN);
-        green.setAllowFriendlyFire(false);
-        red.setColor(ChatColor.RED);
-        gray.setColor(ChatColor.GRAY);
-
-        green.addEntry(player.getName());
-
-        getBukkitPlayers().stream()
-            .filter(otherPlayer -> !otherPlayer.getUniqueId().equals(player.getUniqueId()))
-            .forEach(otherPlayer -> red.addEntry(otherPlayer.getName()));
-    }
-
-    /**
      * Checks the player count to start the countdown.
      */
     public void checkPlayerCountForCountdown() {
-        if (getOnlinePlayers().size() >= MIN_PLAYER_COUNT && (countdownTask == null)) {
+        if (playerManager.getOnlinePlayers().size() >= MIN_PLAYER_COUNT && (countdownTask == null)) {
             startCountdown();
         }
     }
@@ -241,7 +164,7 @@ public class SkyWarsGame {
 
             @Override
             public void run() {
-                if (getOnlinePlayers().size() < MIN_PLAYER_COUNT) {
+                if (playerManager.getOnlinePlayers().size() < MIN_PLAYER_COUNT) {
                     cancel();
                     countdownTask = null;
                     broadcast(ChatColor.RED + "Not enough players to start the game!");
@@ -266,11 +189,12 @@ public class SkyWarsGame {
      * @param skyWarsPlayer the {@link SkyWarsPlayer} to set
      */
     public void setSpectator(SkyWarsPlayer skyWarsPlayer) {
-        spectators.add(skyWarsPlayer);
+        playerManager.getSpectators().add(skyWarsPlayer);
 
         skyWarsPlayer.getBukkitPlayer().ifPresentOrElse(spectator -> {
             log(Level.INFO, "Setting " + spectator.getName() + " to spectator mode!");
 
+            spectator.setGameMode(GameMode.ADVENTURE);
             spectator.setHealth(20.0D);
             spectator.setFoodLevel(20);
             spectator.setAllowFlight(true);
@@ -281,13 +205,13 @@ public class SkyWarsGame {
             spectator.teleport(pregameSpawn);
             spectator.getInventory().clear();
 
-            ItemStack compass = new ItemBuilder(Material.COMPASS).setDisplayName(ChatColor.GREEN + "Teleporter").build();
-            ItemStack settings = new ItemBuilder(Material.COMPARATOR).setDisplayName(ChatColor.GREEN + "Spectator Settings").build();
+            ItemStack teleporterItem = new ItemBuilder(Material.COMPASS).setDisplayName(ChatColor.GREEN + "Teleporter").build();
+            ItemStack settingsItem = new ItemBuilder(Material.COMPARATOR).setDisplayName(ChatColor.GREEN + "Spectator Settings").build();
 
-            spectator.getInventory().setItem(0, compass);
-            spectator.getInventory().setItem(4, settings);
+            spectator.getInventory().setItem(0, teleporterItem);
+            spectator.getInventory().setItem(4, settingsItem);
 
-            getOnlinePlayers().stream()
+            playerManager.getOnlinePlayers().stream()
                 .filter(p -> p.getBukkitPlayer().isPresent())
                 .forEach(swPlayer -> {
                     if (swPlayer.canSeeSpectators()) {
@@ -297,7 +221,7 @@ public class SkyWarsGame {
                     }
 
                     swPlayer.getScoreboard().getScoreboard().getTeam("gray").addEntry(spectator.getName());
-                    swPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getAlivePlayers().size());
+                    swPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + playerManager.getAlivePlayers().size());
                     swPlayer.getScoreboard().update();
                 });
         }, () -> log(Level.SEVERE, "Failed to set " + skyWarsPlayer.getUuid() + " to spectator mode as they could not be found!"));
@@ -339,9 +263,9 @@ public class SkyWarsGame {
      */
     private void scheduleGameShutdown() {
         SkyWarsPlugin.getInstance().getServer().getScheduler().runTaskLater(SkyWarsPlugin.getInstance(), () -> {
-            getBukkitSpectators().forEach(spectator -> spectator.kickPlayer(ChatColor.RED + "Game ended!"));
+            playerManager.getSpectatorsBukkit().forEach(spectator -> spectator.kickPlayer(ChatColor.RED + "Game ended!"));
 
-            if (winner != null && getOnlinePlayers().contains(winner)) {
+            if (winner != null && playerManager.getOnlinePlayers().contains(winner)) {
                 winner.getBukkitPlayer().ifPresent(player -> player.kickPlayer(ChatColor.GREEN + "You won!"));
             }
 
@@ -357,175 +281,54 @@ public class SkyWarsGame {
     }
 
     /**
-     * Adds a {@link SkyWarsPlayer} to the game. Returns false if the game is already running or if there are no islands left.
-     *
-     * @param player the {@link SkyWarsPlayer} to add
-     * @return true if the {@link SkyWarsPlayer} was added, false otherwise
-     */
-    public boolean addPlayer(SkyWarsPlayer player) {
-        log(Level.INFO, "Adding player " + player.getUuid());
-
-        Optional<Island> island = islands.stream()
-            .filter(i -> i.getAssignedPlayer() == null)
-            .findFirst();
-
-        if (island.isEmpty()) {
-            return false;
-        }
-
-        if (state == GameState.IN_GAME || state == GameState.ENDING) {
-            log(Level.INFO, "Player " + player.getUuid() + " tried to join but the game is already running!");
-            return false;
-        }
-
-        players.add(player);
-        island.get().assignPlayer(player);
-        SkyWarsPlugin.getInstance().getServer().getScheduler().runTask(SkyWarsPlugin.getInstance(), () -> island.get().spawnCage());
-
-        log(Level.INFO, "Added player " + player.getUuid() + " to island " + Utils.parseLocationToString(island.get().getSpawnLocation()) + "!");
-
-        if (state != GameState.STARTING) {
-            getOnlinePlayers().stream()
-                .filter(skyWarsPlayer -> skyWarsPlayer.getScoreboard() != null)
-                .forEach(skyWarsPlayer -> {
-                    skyWarsPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getAlivePlayers().size());
-                    skyWarsPlayer.getScoreboard().update();
-                });
-        }
-
-        return true;
-    }
-
-    /**
-     * Removes a {@link SkyWarsPlayer} from the game.
-     *
-     * @param player the {@link SkyWarsPlayer} to remove
-     */
-    public void removePlayer(SkyWarsPlayer player) {
-        players.remove(player);
-        spectators.remove(player);
-
-        /*if (state == GameState.PRE_GAME) {
-            checkPlayerCountForCountdown();
-        }*/
-
-        getIsland(player).ifPresent(Island::removePlayer);
-
-        if (state != GameState.STARTING) {
-            getOnlinePlayers().forEach(skyWarsPlayer -> {
-                skyWarsPlayer.getScoreboard().add(6, ChatColor.RESET + "Players: " + ChatColor.GREEN + getAlivePlayers().size());
-                skyWarsPlayer.getScoreboard().update();
-            });
-        }
-    }
-
-    /**
      * Teleports all players to their island spawn locations.
      */
     public void teleportPlayers() {
-        players.stream()
+        playerManager.getPlayers().stream()
             .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().isPresent())
             .forEach(player -> {
-                getIsland(player).ifPresentOrElse(i -> player.getBukkitPlayer().get().teleport(i.getSpawnLocation().clone().add(0.5, 0, 0.5)),
-                    () -> setSpectator(player));
+                getIsland(player).ifPresentOrElse(i -> {
+                    Location playerIslandSpawn = i.getSpawnLocation().clone().add(0.5, 0, 0.5);
+                    double x = pregameSpawn.getX() - playerIslandSpawn.getX();
+                    double z = pregameSpawn.getZ() - playerIslandSpawn.getZ();
+                    double theta = Math.atan2(-x, z);
+                    double yaw = Math.toDegrees(theta);
+                    playerIslandSpawn.setYaw((float) yaw);
+
+                    player.getBukkitPlayer().get().teleport(playerIslandSpawn);
+                }, () -> setSpectator(player));
             });
     }
 
-    public void addKill(String username) {
-        kills.put(username, kills.getOrDefault(username, 0) + 1);
+    /**
+     * Adds a kill to the specified {@link SkyWarsPlayer}.
+     *
+     * @param skyWarsPlayer The {@link SkyWarsPlayer} to add the kill to
+     */
+    public void addKill(SkyWarsPlayer skyWarsPlayer) {
+        kills.put(skyWarsPlayer.getDisplayName(), kills.getOrDefault(skyWarsPlayer.getDisplayName(), 0) + 1);
 
-        getPlayer(username).ifPresent(skyWarsPlayer -> {
-            skyWarsPlayer.getScoreboard().add(5, ChatColor.RESET + "Kills: " + ChatColor.GREEN + getKills(getPlayer(username).get()));
-            skyWarsPlayer.getScoreboard().update();
-        });
+        skyWarsPlayer.getScoreboard().add(5, ChatColor.RESET + "Kills: " + ChatColor.GREEN + getKills(skyWarsPlayer));
+        skyWarsPlayer.getScoreboard().update();
     }
 
+    /**
+     * Gets the amount of kills a player has
+     *
+     * @param player The player to get the kills of
+     * @return The amount of kills the player has
+     */
     public int getKills(SkyWarsPlayer player) {
         return kills.getOrDefault(player.getDisplayName(), 0);
     }
 
+    /**
+     * Gets the map of kills.
+     *
+     * @return The map of kills
+     */
     public Map<String, Integer> getKills() {
         return kills;
-    }
-
-    /**
-     * Gets a {@link SkyWarsPlayer} by their {@link Player} object.
-     *
-     * @param player the {@link Player} to get
-     * @return the {@link SkyWarsPlayer} with the {@link Player}. Can be null
-     */
-    public Optional<SkyWarsPlayer> getPlayer(Player player) {
-        return getPlayer(player.getUniqueId());
-    }
-
-    public Optional<SkyWarsPlayer> getSpectator(Player player) {
-        return getSpectator(player.getUniqueId());
-    }
-
-    /**
-     * Gets a {@link SkyWarsPlayer} by their {@link UUID}.
-     *
-     * @param uuid the {@link UUID} to get
-     * @return the {@link SkyWarsPlayer} with the {@link UUID}. Can be null
-     */
-    public Optional<SkyWarsPlayer> getPlayer(UUID uuid) {
-        return players.stream()
-            .filter(p -> p.getUuid().equals(uuid))
-            .findFirst();
-    }
-
-    /**
-     * Gets a {@link SkyWarsPlayer} by their display name.
-     *
-     * @param username the display name to get
-     * @return the {@link SkyWarsPlayer} with the display name. Can be null
-     */
-    public Optional<SkyWarsPlayer> getPlayer(String username) {
-        return players.stream()
-            .filter(p -> p.getDisplayName().equals(username))
-            .findFirst();
-    }
-
-    /**
-     * Gets a {@link SkyWarsPlayer} who is a spectator.
-     *
-     * @param uuid the {@link UUID} of the {@link SkyWarsPlayer} to get
-     * @return the {@link SkyWarsPlayer} who is a spectator. Returns null if the {@link SkyWarsPlayer} is not a spectator
-     */
-    public Optional<SkyWarsPlayer> getSpectator(UUID uuid) {
-        return spectators.stream()
-            .filter(p -> p.getUuid().equals(uuid))
-            .findFirst();
-    }
-
-    public Set<SkyWarsPlayer> getOnlinePlayers() {
-        return Stream.concat(players.stream(), spectators.stream())
-            .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().isPresent())
-            .collect(Collectors.toSet());
-    }
-
-    /**
-     * Gets a {@link List} of all alive {@link SkyWarsPlayer players} in this game.
-     *
-     * @return the {@link List} of the alive {@link SkyWarsPlayer players} in this game
-     */
-    public List<SkyWarsPlayer> getAlivePlayers() {
-        return players.stream()
-            .filter(skyWarsPlayer -> skyWarsPlayer.getBukkitPlayer().isPresent() && !spectators.contains(skyWarsPlayer))
-            .toList();
-    }
-
-    /**
-     * Gets a {@link List} of the {@link Player players} in this game.
-     *
-     * @return the {@link List} of the {@link Player players} in this game
-     */
-    public List<Player> getBukkitPlayers() {
-        return players.stream()
-            .map(SkyWarsPlayer::getBukkitPlayer)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .toList();
     }
 
     /**
@@ -543,66 +346,12 @@ public class SkyWarsGame {
     }
 
     /**
-     * Returns a list of spectators in the game.
+     * Get the maximum amount of players this game can hold.
      *
-     * @return A list of spectators.
+     * @return The maximum amount of players this game can hold.
      */
-    public Set<SkyWarsPlayer> getSpectators() {
-        return spectators;
-    }
-
-    /**
-     * Parses the islands from a {@link JsonArray}.
-     *
-     * @param config the {@link JsonObject} to parse from
-     */
-    private void parseIslands(JsonObject config) {
-        parseConfigLocationArray(config, "islands").forEach(island -> {
-            try {
-                double x = island.get("x").getAsDouble();
-                double y = island.get("y").getAsDouble();
-                double z = island.get("z").getAsDouble();
-                Location location = new Location(world, x, y, z);
-                islands.add(new Island(location));
-                log(Level.INFO, "Registered island: " + island);
-            } catch (NumberFormatException exception) {
-                throw new IllegalArgumentException("Failed to parse island: " + island);
-            }
-        });
-    }
-
-    /**
-     * Parses the chests from a {@link JsonObject}.
-     *
-     * @param config the {@link JsonObject} to parse from
-     */
-    private void parseChests(JsonObject config) {
-        log(Level.INFO, "Parsing chest locations from map config...");
-
-        parseConfigLocationArray(config, "chests").forEach(chest -> {
-            try {
-                double x = chest.get("x").getAsDouble();
-                double y = chest.get("y").getAsDouble();
-                double z = chest.get("z").getAsDouble();
-                Optional<BlockFace> rotation = Utils.parseEnum(BlockFace.class, chest.get("rotation").getAsString());
-                Optional<ChestType> chestType = Utils.parseEnum(ChestType.class, chest.get("type").getAsString());
-
-                if (rotation.isEmpty() || chestType.isEmpty()) {
-                    return;
-                }
-
-                if (Arrays.stream(VALID_CHEST_ROTATIONS).noneMatch(face -> face.equals(rotation.get()))) {
-                    throw new IllegalArgumentException("Invalid chest rotation: " + rotation.get() + " for chest: " + chest);
-                }
-
-                RefillableChest refillableChest = new RefillableChest(new Location(world, x, y, z), chestType.get());
-                refillableChests.add(refillableChest);
-                refillableChest.spawn(true, rotation.get());
-                log(Level.INFO, "Registered refillable chest: " + chest);
-            } catch (NumberFormatException exception) {
-                throw new IllegalArgumentException("Failed to parse chest: " + chest);
-            }
-        });
+    public int getMaxPlayers() {
+        return islands.size();
     }
 
     /**
@@ -613,8 +362,18 @@ public class SkyWarsGame {
      */
     public Optional<Island> getIsland(SkyWarsPlayer skyWarsPlayer) {
         return islands.stream()
-            .filter(island -> island.getAssignedPlayer() != null && island.getAssignedPlayer().equals(skyWarsPlayer))
+            .filter(island -> island.getAssignedPlayer().isPresent())
+            .filter(island -> island.getAssignedPlayer().get().equals(skyWarsPlayer))
             .findFirst();
+    }
+
+    /**
+     * Gets the {@link PlayerManager} of this game.
+     *
+     * @return the {@link PlayerManager} of this game.
+     */
+    public PlayerManager getPlayerManager() {
+        return playerManager;
     }
 
     /**
@@ -623,7 +382,7 @@ public class SkyWarsGame {
      * @param message the message
      */
     public void broadcast(String message) {
-        getOnlinePlayers().stream()
+        playerManager.getOnlinePlayers().stream()
             .map(SkyWarsPlayer::getBukkitPlayer)
             .filter(Optional::isPresent)
             .map(Optional::get)
@@ -640,7 +399,7 @@ public class SkyWarsGame {
      * @param fadeOut  the fade out time in ticks
      */
     public void broadcastTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
-        getOnlinePlayers().stream()
+        playerManager.getOnlinePlayers().stream()
             .map(SkyWarsPlayer::getBukkitPlayer)
             .filter(Optional::isPresent)
             .map(Optional::get)
@@ -654,6 +413,15 @@ public class SkyWarsGame {
      */
     public Location getPregameSpawn() {
         return pregameSpawn;
+    }
+
+    /**
+     * Sets the pregame spawn {@link Location location}.
+     *
+     * @param pregameSpawn the pregame spawn location
+     */
+    public void setPregameSpawn(Location pregameSpawn) {
+        this.pregameSpawn = pregameSpawn;
     }
 
     /**
@@ -681,10 +449,6 @@ public class SkyWarsGame {
      */
     public List<Island> getIslands() {
         return islands;
-    }
-
-    public int getMaxPlayers() {
-        return islands.size();
     }
 
     /**
@@ -729,33 +493,21 @@ public class SkyWarsGame {
     }
 
     /**
-     * Gets the {@link BukkitTask} for the countdown.
-     *
-     * @return the {@link BukkitTask} for the countdown
-     */
-    public BukkitTask getCountdownTask() {
-        return countdownTask;
-    }
-
-    /**
-     * Sets the {@link BukkitTask} for the countdown and cancels the previous one if it exists.
-     *
-     * @param countdownTask the {@link BukkitTask} for the countdown
-     */
-    public void setCountdownTask(BukkitTask countdownTask) {
-        if (!this.countdownTask.isCancelled()) {
-            this.countdownTask.cancel();
-        }
-        this.countdownTask = countdownTask;
-    }
-
-    /**
      * Gets the {@link Queue} of {@link GameEvent events} for this game.
      *
      * @return the {@link Queue} of {@link GameEvent events}
      */
     public Queue<GameEvent> getGameEvents() {
         return gameEvents;
+    }
+
+    /**
+     * Adds {@link GameEvent events} to this game.
+     *
+     * @param gameEvents the {@link GameEvent events} to add
+     */
+    public void addGameEvents(GameEvent... gameEvents) {
+        this.gameEvents.addAll(Arrays.asList(gameEvents));
     }
 
     /**
@@ -768,25 +520,12 @@ public class SkyWarsGame {
     }
 
     /**
-     * Gets the spectators in this game. Can be empty.
+     * Gets the name of the map.
      *
-     * @return a {@link List} of {@link SkyWarsPlayer players} who are spectating
+     * @return The name of the map.
      */
-    public Set<Player> getBukkitSpectators() {
-        return spectators.stream()
-            .map(SkyWarsPlayer::getBukkitPlayer)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toSet());
-    }
-
-    /**
-     * Gets the {@link Set} of {@link SkyWarsPlayer players} in this game.
-     *
-     * @return the {@link Set} of {@link SkyWarsPlayer players}
-     */
-    public Set<SkyWarsPlayer> getPlayers() {
-        return players;
+    public String getMapName() {
+        return mapName;
     }
 
     /**
@@ -797,54 +536,5 @@ public class SkyWarsGame {
      */
     public void log(Level level, String message) {
         SkyWarsPlugin.getInstance().getLogger().log(level, "[" + world.getName() + "] " + message);
-    }
-
-    private void addGameEvents(GameEvent... events) {
-        gameEvents.addAll(Arrays.asList(events));
-    }
-
-    /**
-     * Parses a {@link Location} from a {@link JsonObject}.
-     *
-     * @param config the {@link JsonObject} to parse from
-     * @param field  the field to parse
-     * @return the parsed {@link Location}
-     */
-    private Location parseConfigLocationObject(JsonObject config, World world, String field) {
-        JsonObject locationsObject = config.getAsJsonObject("locations");
-        JsonObject desiredLocation = locationsObject.getAsJsonObject(field);
-
-        if (!desiredLocation.has("x") || !desiredLocation.has("y") || !desiredLocation.has("z")) {
-            throw new IllegalStateException("Location is missing coordinates! " + desiredLocation);
-        }
-
-        Location location = new Location(world, desiredLocation.get("x").getAsDouble(), desiredLocation.get("y").getAsDouble(), desiredLocation.get("z").getAsDouble());
-
-        if (desiredLocation.has("yaw")) {
-            location.setYaw(desiredLocation.get("yaw").getAsFloat());
-        }
-
-        if (desiredLocation.has("pitch")) {
-            location.setPitch(desiredLocation.get("pitch").getAsFloat());
-        }
-
-        return location;
-    }
-
-    private List<JsonObject> parseConfigLocationArray(JsonObject config, String field) {
-        JsonObject locationsObject = config.getAsJsonObject("locations");
-        List<JsonObject> locations = new ArrayList<>();
-
-        for (JsonElement locationElement : locationsObject.getAsJsonArray(field)) {
-            JsonObject locationObject = locationElement.getAsJsonObject();
-
-            if (!locationObject.has("x") || !locationObject.has("y") || !locationObject.has("z")) {
-                throw new IllegalStateException("Location is missing coordinates! " + locationObject);
-            }
-
-            locations.add(locationObject);
-        }
-
-        return locations;
     }
 }

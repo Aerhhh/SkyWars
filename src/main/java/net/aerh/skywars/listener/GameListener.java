@@ -4,10 +4,11 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Scheduler;
 import net.aerh.skywars.SkyWarsPlugin;
-import net.aerh.skywars.game.GameState;
+import net.aerh.skywars.game.state.GameState;
 import net.aerh.skywars.menu.PlayerTrackerMenu;
 import net.aerh.skywars.menu.SpectatorSettingsMenu;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.Player;
@@ -26,11 +27,14 @@ import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.world.TimeSkipEvent;
+import org.bukkit.metadata.FixedMetadataValue;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 public class GameListener implements Listener {
+
+    public static final String FALL_DAMAGE_IMMUNITY_METADATA_KEY = "has_taken_fall_damage";
 
     private final Cache<String, String> lastDamager = Caffeine.newBuilder()
         .expireAfterWrite(10, TimeUnit.SECONDS)
@@ -53,7 +57,13 @@ public class GameListener implements Listener {
                 return;
             }
 
-            if (skyWarsGame.getBukkitSpectators().contains(player)) {
+            if (skyWarsGame.getPlayerManager().isSpectator(player)) {
+                event.setCancelled(true);
+                return;
+            }
+
+            if (!player.hasMetadata(FALL_DAMAGE_IMMUNITY_METADATA_KEY) && event.getCause() == EntityDamageEvent.DamageCause.FALL) {
+                player.setMetadata(FALL_DAMAGE_IMMUNITY_METADATA_KEY, new FixedMetadataValue(SkyWarsPlugin.getInstance(), true));
                 event.setCancelled(true);
                 return;
             }
@@ -66,7 +76,7 @@ public class GameListener implements Listener {
 
             event.setCancelled(true);
             player.sendTitle(ChatColor.RED + ChatColor.BOLD.toString() + "YOU DIED!", ChatColor.GRAY + "Better luck next time!", 0, 20 * 5, 20);
-            skyWarsGame.getPlayer(player).ifPresent(skyWarsGame::setSpectator);
+            skyWarsGame.getPlayerManager().getPlayer(player.getUniqueId()).ifPresent(skyWarsGame::setSpectator);
 
             if (damagerName != null) {
                 skyWarsGame.getKills().put(damagerName, skyWarsGame.getKills().get(damagerName) + 1);
@@ -84,7 +94,7 @@ public class GameListener implements Listener {
 
         if (damagerName != null) {
             SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
-                skyWarsGame.addKill(damagerName);
+                skyWarsGame.getPlayerManager().getPlayer(player.getUniqueId()).ifPresent(skyWarsGame::addKill);
                 skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " was killed by " + ChatColor.GOLD + damagerName);
                 lastDamager.invalidate(player.getName());
             });
@@ -108,7 +118,7 @@ public class GameListener implements Listener {
         }
 
         SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
-            if (skyWarsGame.getBukkitSpectators().contains(damager)) {
+            if (skyWarsGame.getPlayerManager().isSpectator(damager)) {
                 event.setCancelled(true);
                 return;
             }
@@ -124,6 +134,10 @@ public class GameListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onTimeChange(TimeSkipEvent event) {
+        if (event.getSkipReason() == TimeSkipEvent.SkipReason.CUSTOM) {
+            return;
+        }
+
         event.setCancelled(true);
     }
 
@@ -132,7 +146,7 @@ public class GameListener implements Listener {
         Player player = event.getPlayer();
 
         SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
-            if (skyWarsGame.getBukkitSpectators().contains(player)) {
+            if (skyWarsGame.getPlayerManager().isSpectator(player)) {
                 event.setCancelled(true);
                 return;
             }
@@ -160,7 +174,7 @@ public class GameListener implements Listener {
         Player player = event.getPlayer();
 
         SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
-            if (skyWarsGame.getBukkitSpectators().contains(player)) {
+            if (skyWarsGame.getPlayerManager().isSpectator(player)) {
                 event.setCancelled(true);
                 return;
             }
@@ -175,7 +189,7 @@ public class GameListener implements Listener {
     public void onEntityTarget(EntityTargetEvent event) {
         if (event.getEntity() instanceof EnderDragon enderDragon && event.getTarget() instanceof Player target) {
             SkyWarsPlugin.getInstance().getGameManager().findGame(target).ifPresent(skyWarsGame -> {
-                if (skyWarsGame.getBukkitSpectators().contains(target)) {
+                if (skyWarsGame.getPlayerManager().isSpectator(target)) {
                     event.setCancelled(true);
                     enderDragon.setTarget(null);
                 }
@@ -190,7 +204,7 @@ public class GameListener implements Listener {
         }
 
         SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
-            if (skyWarsGame.getBukkitSpectators().contains(player)) {
+            if (skyWarsGame.getPlayerManager().isSpectator(player)) {
                 event.setCancelled(true);
                 return;
             }
@@ -208,7 +222,7 @@ public class GameListener implements Listener {
         }
 
         SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
-            if (skyWarsGame.getBukkitSpectators().contains(player)) {
+            if (skyWarsGame.getPlayerManager().isSpectator(player)) {
                 event.setCancelled(true);
                 return;
             }
@@ -224,7 +238,7 @@ public class GameListener implements Listener {
         Player player = event.getPlayer();
 
         SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
-            if (skyWarsGame.getBukkitSpectators().contains(player)) {
+            if (skyWarsGame.getPlayerManager().isSpectator(player)) {
                 event.setCancelled(true);
                 return;
             }
@@ -242,7 +256,7 @@ public class GameListener implements Listener {
         }
 
         SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
-            if (skyWarsGame.getBukkitSpectators().contains(player)) {
+            if (skyWarsGame.getPlayerManager().isSpectator(player)) {
                 event.setCancelled(true);
                 return;
             }
@@ -258,19 +272,16 @@ public class GameListener implements Listener {
         Player player = event.getPlayer();
 
         SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
-            if (skyWarsGame.getBukkitSpectators().contains(player)) {
+            if (skyWarsGame.getPlayerManager().isSpectator(player)) {
                 event.setCancelled(true);
 
                 if (event.getItem() != null) {
-                    switch (event.getItem().getType()) {
-                        case COMPASS:
-                            PlayerTrackerMenu playerTrackerMenu = new PlayerTrackerMenu();
-                            playerTrackerMenu.displayTo(player);
-                            break;
-                        case COMPARATOR:
-                            SpectatorSettingsMenu spectatorSettingsMenu = new SpectatorSettingsMenu();
-                            spectatorSettingsMenu.displayTo(player);
-                            break;
+                    if (event.getItem().getType() == Material.COMPASS) {
+                        PlayerTrackerMenu playerTrackerMenu = new PlayerTrackerMenu();
+                        playerTrackerMenu.displayTo(player);
+                    } else if (event.getItem().getType() == Material.COMPARATOR) {
+                        SpectatorSettingsMenu spectatorSettingsMenu = new SpectatorSettingsMenu();
+                        spectatorSettingsMenu.displayTo(player);
                     }
                 }
 
@@ -290,7 +301,7 @@ public class GameListener implements Listener {
         }
 
         SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
-            if (skyWarsGame.getBukkitSpectators().contains(player)) {
+            if (skyWarsGame.getPlayerManager().isSpectator(player)) {
                 event.setCancelled(true);
             }
         });
@@ -303,7 +314,7 @@ public class GameListener implements Listener {
         }
 
         SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
-            if (skyWarsGame.getBukkitSpectators().contains(player)) {
+            if (skyWarsGame.getPlayerManager().isSpectator(player)) {
                 event.setCancelled(true);
             }
         });
@@ -318,12 +329,12 @@ public class GameListener implements Listener {
             String format = event.getFormat();
             Predicate<? super Player> filter = null;
 
-            if (skyWarsGame.getPlayer(player) != null) {
+            if (skyWarsGame.getPlayerManager().getPlayer(player.getUniqueId()).isPresent()) {
                 format = ChatColor.GOLD + "[PLAYER] " + "%s" + ChatColor.RESET + ": %s";
                 filter = recipient -> !recipient.getWorld().equals(player.getWorld());
-            } else if (skyWarsGame.getBukkitSpectators().contains(player)) {
+            } else if (skyWarsGame.getPlayerManager().getSpectator(player.getUniqueId()).isPresent()) {
                 format = ChatColor.GRAY + "[SPECTATOR] " + "%s" + ChatColor.RESET + ": %s";
-                filter = recipient -> !skyWarsGame.getBukkitSpectators().contains(recipient);
+                filter = recipient -> !skyWarsGame.getPlayerManager().isSpectator(recipient);
             }
 
             if (!skyWarsGame.getSettings().isChatEnabled()) {

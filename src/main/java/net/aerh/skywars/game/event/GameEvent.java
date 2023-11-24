@@ -54,12 +54,18 @@ public abstract class GameEvent {
     }
 
     /**
-     * Executes the event.
+     * Executes when the event is scheduled to start.
      */
     public abstract void onSchedule();
 
+    /**
+     * Executes when the event is triggered.
+     */
     public abstract void onTrigger();
 
+    /**
+     * Triggered every second while the event is running.
+     */
     public abstract void onTick();
 }
 

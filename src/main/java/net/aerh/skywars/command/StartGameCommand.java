@@ -1,7 +1,7 @@
 package net.aerh.skywars.command;
 
 import net.aerh.skywars.SkyWarsPlugin;
-import net.aerh.skywars.game.GameState;
+import net.aerh.skywars.game.state.GameState;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -22,10 +22,6 @@ public class StartGameCommand implements CommandExecutor {
             if (skyWarsGame.getState() != GameState.PRE_GAME && skyWarsGame.getState() != GameState.STARTING) {
                 player.sendMessage(ChatColor.RED + "You can only start the game in the pre-game state!");
                 return;
-            }
-
-            if (skyWarsGame.getCountdownTask() != null) {
-                skyWarsGame.setCountdownTask(null);
             }
 
             skyWarsGame.start();

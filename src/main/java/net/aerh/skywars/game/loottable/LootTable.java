@@ -7,8 +7,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class LootTable<T> {
 
-    public static final int GUARANTEED_WEIGHT = -1;
-
     private final List<Item> table;
 
     /**
@@ -40,19 +38,9 @@ public class LootTable<T> {
             return null;
         }
 
-        Item guaranteedItem = table.stream()
-            .filter(item -> item.getWeight() == GUARANTEED_WEIGHT)
-            .findAny()
-            .orElse(null);
-
-        if (guaranteedItem != null) {
-            return guaranteedItem;
-        }
-
         AtomicLong randomWeight = new AtomicLong(ThreadLocalRandom.current().nextInt(totalWeight));
 
         return table.stream()
-            .filter(item -> item.getWeight() != GUARANTEED_WEIGHT)
             .reduce((accumulator, currentItem) -> {
                 if (randomWeight.get() >= 0) {
                     randomWeight.addAndGet(-currentItem.getWeight());
@@ -63,7 +51,6 @@ public class LootTable<T> {
             })
             .orElse(null);
     }
-
 
     /**
      * Checks if the {@link LootTable} is empty.

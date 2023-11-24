@@ -5,7 +5,7 @@ import net.aerh.skywars.command.GamesCommand;
 import net.aerh.skywars.command.SkipEventCommand;
 import net.aerh.skywars.command.StartGameCommand;
 import net.aerh.skywars.game.GameManager;
-import net.aerh.skywars.game.ServerState;
+import net.aerh.skywars.game.state.ServerState;
 import net.aerh.skywars.listener.GameListener;
 import net.aerh.skywars.listener.PlayerSessionListener;
 import net.aerh.skywars.util.Utils;

@@ -1,5 +1,6 @@
 package net.aerh.skywars.util;
 
+import net.aerh.skywars.SkyWarsPlugin;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
@@ -25,6 +26,11 @@ public class Hologram {
      * Spawns the hologram.
      */
     public void spawn() {
+        if (location.getWorld() == null) {
+            SkyWarsPlugin.getInstance().getLogger().severe("Could not spawn hologram at " + location + " because the world is null");
+            return;
+        }
+
         armorStand = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
         armorStand.setGravity(false);
         armorStand.setVisible(false);
@@ -33,6 +39,7 @@ public class Hologram {
         armorStand.setSmall(true);
         armorStand.setInvulnerable(true);
         armorStand.setMarker(true);
+        armorStand.setCollidable(false);
     }
 
     /**

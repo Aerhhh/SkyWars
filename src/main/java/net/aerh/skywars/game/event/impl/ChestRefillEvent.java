@@ -1,6 +1,7 @@
 package net.aerh.skywars.game.event.impl;
 
 import net.aerh.skywars.game.SkyWarsGame;
+import net.aerh.skywars.game.chest.RefillableChest;
 import net.aerh.skywars.game.event.GameEvent;
 import net.aerh.skywars.util.Hologram;
 import net.aerh.skywars.util.Utils;
@@ -9,6 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -23,25 +25,25 @@ public class ChestRefillEvent extends GameEvent {
 
     @Override
     public void onSchedule() {
-        boolean nextRefill = game.getGameLoop().getCurrentEvent().isPresent() && game.getGameLoop().getCurrentEvent().get() instanceof ChestRefillEvent;
+        boolean nextRefill = game.getGameLoop().getCurrentEvent().stream().anyMatch(ChestRefillEvent.class::isInstance);
 
         if (nextRefill) {
             game.getRefillableChests().stream()
-                .filter(refillableChest -> refillableChest.getTimerHologram() != null)
+                .filter(refillableChest -> refillableChest.getTimerHologram().isEmpty())
                 .forEach(refillableChest -> {
                     refillableChest.setTimerHologram(new Hologram(refillableChest.getLocation().clone().add(0.5, 1, 0.5), ""));
-                    refillableChest.getTimerHologram().spawn();
-            });
+                    refillableChest.getTimerHologram().get().spawn();
+                });
         }
     }
 
     @Override
     public void onTick() {
-        String timeUntilNextEvent = Utils.formatTimeMillis(game.getGameLoop().getNextEventTime() - System.currentTimeMillis());
-
         game.getRefillableChests().stream()
-            .filter(refillableChest -> refillableChest.getTimerHologram() != null)
-            .forEach(refillableChest -> refillableChest.getTimerHologram().updateText(ChatColor.GREEN + timeUntilNextEvent));
+            .map(RefillableChest::getTimerHologram)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .forEach(hologram -> hologram.updateText(ChatColor.GREEN + game.getGameLoop().getFormattedTimeToNextEvent()));
     }
 
     @Override
@@ -57,7 +59,7 @@ public class ChestRefillEvent extends GameEvent {
         });
 
         game.broadcastTitle("", ChatColor.YELLOW + "Chests have been refilled!", 10, Utils.TICKS_PER_SECOND * 3, 10);
-        game.getBukkitPlayers().forEach(bukkitPlayer -> bukkitPlayer.playSound(bukkitPlayer.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0F, 1.0F));
+        game.getPlayerManager().getPlayersBukkit().forEach(bukkitPlayer -> bukkitPlayer.playSound(bukkitPlayer.getLocation(), Sound.BLOCK_CHEST_OPEN, 1.0F, 1.0F));
         game.log(Level.INFO, "Refilled all chests!");
     }
 }

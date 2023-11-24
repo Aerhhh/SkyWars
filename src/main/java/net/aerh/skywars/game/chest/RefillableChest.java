@@ -1,6 +1,5 @@
 package net.aerh.skywars.game.chest;
 
-import net.aerh.skywars.game.loottable.LootTable;
 import net.aerh.skywars.util.Hologram;
 import net.aerh.skywars.util.Utils;
 import org.bukkit.Location;
@@ -12,12 +11,12 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class RefillableChest {
 
     private final Location location;
-    private final LootTable<ItemStack> loot;
     private final ChestType type;
     private int timesRefilled;
     private Hologram timerHologram;
@@ -31,7 +30,6 @@ public class RefillableChest {
     public RefillableChest(Location location, ChestType type) {
         this.location = location;
         this.type = type;
-        this.loot = ChestLootTables.getLootForChestType(type);
     }
 
     /**
@@ -58,7 +56,7 @@ public class RefillableChest {
      * Refills the chest with loot.
      */
     public void refillChest() {
-        if (loot.isEmpty()) {
+        if (ChestLootTables.getLootForChestType(type).isEmpty()) {
             throw new IllegalStateException("Cannot refill chest at " + Utils.parseLocationToString(location) + " with empty loot pool!");
         }
 
@@ -81,7 +79,7 @@ public class RefillableChest {
                 randomSlot = ThreadLocalRandom.current().nextInt(chestInventory.getSize());
             }
 
-            ItemStack randomItem = loot.getRandomItem().getObject();
+            ItemStack randomItem = ChestLootTables.getLootForChestType(type).getRandomItem().getObject();
             chestInventory.setItem(randomSlot, randomItem);
         }
 
@@ -122,6 +120,11 @@ public class RefillableChest {
      */
     public void addItemToRandomSlot(ItemStack itemStack) {
         Inventory inventory = getInventory();
+
+        if (inventory.firstEmpty() == -1) {
+            return;
+        }
+
         int randomSlot = ThreadLocalRandom.current().nextInt(inventory.getSize());
 
         while (inventory.getItem(randomSlot) != null) {
@@ -145,8 +148,8 @@ public class RefillableChest {
      *
      * @return the {@link Hologram} that displays the refill timer
      */
-    public Hologram getTimerHologram() {
-        return timerHologram;
+    public Optional<Hologram> getTimerHologram() {
+        return Optional.ofNullable(timerHologram);
     }
 
     /**
@@ -162,9 +165,9 @@ public class RefillableChest {
      * Removes the {@link Hologram} that displays the refill timer.
      */
     public void removeTimerHologram() {
-        if (timerHologram != null) {
-            timerHologram.remove();
+        getTimerHologram().ifPresent(hologram -> {
+            hologram.remove();
             timerHologram = null;
-        }
+        });
     }
 }

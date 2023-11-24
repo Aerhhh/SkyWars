@@ -34,7 +34,7 @@ public class DragonSpawnEvent extends GameEvent {
             dragon.setRemoveWhenFarAway(false);
         }
 
-        game.getBukkitPlayers().forEach(bukkitPlayer -> bukkitPlayer.playSound(bukkitPlayer.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0F, 1.0F));
+        game.getPlayerManager().getPlayersBukkit().forEach(bukkitPlayer -> bukkitPlayer.playSound(bukkitPlayer.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0F, 1.0F));
     }
 
     @Override

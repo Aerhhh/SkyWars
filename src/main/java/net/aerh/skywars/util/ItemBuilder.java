@@ -35,6 +35,11 @@ public class ItemBuilder {
         return stack.getItemMeta();
     }
 
+    public ItemBuilder setItemMeta(ItemMeta meta) {
+        stack.setItemMeta(meta);
+        return this;
+    }
+
     public ItemBuilder setColor(Color color) {
         LeatherArmorMeta meta = (LeatherArmorMeta) stack.getItemMeta();
         meta.setColor(color);
@@ -78,11 +83,6 @@ public class ItemBuilder {
 
     public ItemBuilder setAmount(int amount) {
         stack.setAmount(amount);
-        return this;
-    }
-
-    public ItemBuilder setItemMeta(ItemMeta meta) {
-        stack.setItemMeta(meta);
         return this;
     }
 
