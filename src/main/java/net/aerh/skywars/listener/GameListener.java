@@ -5,8 +5,8 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Scheduler;
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.state.GameState;
-import net.aerh.skywars.menu.PlayerTrackerMenu;
-import net.aerh.skywars.menu.SpectatorSettingsMenu;
+import net.aerh.skywars.menu.PlayerTrackerCustomMenu;
+import net.aerh.skywars.util.menu.MenuManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -277,11 +277,10 @@ public class GameListener implements Listener {
 
                 if (event.getItem() != null) {
                     if (event.getItem().getType() == Material.COMPASS) {
-                        PlayerTrackerMenu playerTrackerMenu = new PlayerTrackerMenu();
-                        playerTrackerMenu.displayTo(player);
+                        MenuManager.getInstance().openInventory(player, new PlayerTrackerCustomMenu(skyWarsGame));
                     } else if (event.getItem().getType() == Material.COMPARATOR) {
-                        SpectatorSettingsMenu spectatorSettingsMenu = new SpectatorSettingsMenu();
-                        spectatorSettingsMenu.displayTo(player);
+                        //SpectatorSettingsMenu spectatorSettingsMenu = new SpectatorSettingsMenu();
+                        //spectatorSettingsMenu.displayTo(player);
                     }
                 }
 

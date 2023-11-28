@@ -1,17 +1,8 @@
 package net.aerh.skywars.menu;
 
-import net.aerh.skywars.SkyWarsPlugin;
-import net.aerh.skywars.util.ItemBuilder;
-import net.aerh.skywars.util.menu.CustomMenu;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemFlag;
-import org.bukkit.inventory.ItemStack;
+public class SpectatorSettingsMenu /*extends CustomMenu*/ {
 
-public class SpectatorSettingsMenu extends CustomMenu {
-
-    private static final int MAX_SPEED = 5;
+    /*private static final int MAX_SPEED = 5;
     private static final Material[] SPEED_ITEMS = {Material.LEATHER_BOOTS, Material.CHAINMAIL_BOOTS, Material.IRON_BOOTS, Material.GOLDEN_BOOTS, Material.DIAMOND_BOOTS};
     private static final int FIRST_SPEED_SLOT = 11;
 
@@ -74,5 +65,5 @@ public class SpectatorSettingsMenu extends CustomMenu {
             case 5 -> "V";
             default -> String.valueOf(number);
         };
-    }
+    }*/
 }
