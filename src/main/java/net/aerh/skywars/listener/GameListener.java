@@ -1,12 +1,10 @@
 package net.aerh.skywars.listener;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.Scheduler;
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.state.GameState;
 import net.aerh.skywars.menu.PlayerTrackerCustomMenu;
 import net.aerh.skywars.util.menu.MenuManager;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -29,17 +27,15 @@ import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.world.TimeSkipEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 
-import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Predicate;
 
 public class GameListener implements Listener {
 
     public static final String FALL_DAMAGE_IMMUNITY_METADATA_KEY = "has_taken_fall_damage";
 
-    private final Cache<String, String> lastDamager = Caffeine.newBuilder()
-        .expireAfterWrite(10, TimeUnit.SECONDS)
-        .scheduler(Scheduler.systemScheduler())
-        .build();
+    private final Map<String, String> lastDamager = new HashMap<>();
 
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
@@ -72,7 +68,7 @@ public class GameListener implements Listener {
                 return;
             }
 
-            String damagerName = lastDamager.getIfPresent(player.getName());
+            String damagerName = lastDamager.get(player.getName());
 
             event.setCancelled(true);
             player.sendTitle(ChatColor.RED + ChatColor.BOLD.toString() + "YOU DIED!", ChatColor.GRAY + "Better luck next time!", 0, 20 * 5, 20);
@@ -90,13 +86,13 @@ public class GameListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onQuitWhileDamaged(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        String damagerName = lastDamager.getIfPresent(player.getName());
+        String damagerName = lastDamager.get(player.getName());
 
         if (damagerName != null) {
             SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
                 skyWarsGame.getPlayerManager().getPlayer(player.getUniqueId()).ifPresent(skyWarsGame::addKill);
                 skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " was killed by " + ChatColor.GOLD + damagerName);
-                lastDamager.invalidate(player.getName());
+                lastDamager.remove(player.getName());
             });
         }
     }
@@ -124,6 +120,7 @@ public class GameListener implements Listener {
             }
 
             lastDamager.put(player.getName(), damager.getName());
+            Bukkit.getScheduler().runTaskLater(SkyWarsPlugin.getInstance(), () -> lastDamager.remove(player.getName()), 20L * 10L);
         });
     }
 
