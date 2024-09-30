@@ -2,6 +2,9 @@
 
 This is my implementation of the SkyWars minigame. It is quite basic but contains the classic SkyWars experience.
 
+It is still somewhat unfinished, but at this time there are no plans to continue development. The basic game, however,
+works as it should once everything is configured correctly.
+
 # Setup
 
 This plugin was created for Spigot 1.20.1.
