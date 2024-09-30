@@ -1,112 +1,135 @@
 package net.aerh.skywars.util.menu;
 
 import net.aerh.skywars.SkyWarsPlugin;
-import net.aerh.skywars.util.ItemBuilder;
-import net.aerh.skywars.util.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public abstract class CustomMenu implements InventoryHolder {
+public abstract class CustomMenu {
 
+    private final Map<Integer, InventoryItem> elements = new HashMap<>();
+    private final Map<Integer, PlayerTaskWrapper> wrappedTasks = new HashMap<>();
+    private final Map<Integer, BukkitTask> tasks = new HashMap<>();
     private final Inventory inventory;
-    private final Map<Integer, ClickAction> actions;
-    private final List<BukkitTask> tasks;
-    private final boolean closeOnInteract;
-    private final boolean addCloseButton;
 
-    protected CustomMenu(String title, int size, boolean closeOnInteract, boolean addCloseButton) {
-        this.closeOnInteract = closeOnInteract;
-        this.addCloseButton = addCloseButton;
-        this.inventory = Bukkit.createInventory(this, size, title);
-        this.actions = new HashMap<>();
-        this.tasks = new ArrayList<>();
+    protected CustomMenu(String title, int rows) {
+        this.inventory = Bukkit.createInventory(null, 9 * rows, title);
     }
 
-    /**
-     * Initializes the items in the inventory.
-     */
-    protected abstract void initializeItems(Player player);
+    public void initializeElements(Player player) {
+        inventory.clear();
 
-    /**
-     * Opens this menu for the specified player after initializing items.
-     *
-     * @param player The player for whom to open the menu.
-     */
-    public void displayTo(Player player) {
-        tasks.add(Bukkit.getScheduler().runTaskTimer(SkyWarsPlugin.getInstance(), () -> {
-            // I hate this but it works
-            actions.clear();
-            inventory.clear();
-            initializeItems(player);
+        elements.forEach((integer, inventoryItem) -> {
+            inventory.setItem(integer, inventoryItem.getItemStack());
 
-            if (addCloseButton) {
-                addCloseButton();
-            }
-        }, 0L, Utils.TICKS_PER_SECOND));
+            PlayerTaskWrapper task = wrappedTasks.get(integer);
+            task.setPlayer(player);
+            task.setInventoryItem(inventoryItem);
+            task.startTask(1);
 
-        player.openInventory(inventory);
+            BukkitTask bukkitTask = SkyWarsPlugin.getInstance().getServer().getScheduler().runTaskTimer(SkyWarsPlugin.getInstance(), () -> {
+                if (player != null) {
+                    updateElement(integer, inventoryItem.getItemStack());
+                }
+            }, 0L, 1L);
+
+            tasks.put(integer, bukkitTask);
+        });
     }
 
-    @Override
-    public @NotNull Inventory getInventory() {
-        return inventory;
+    public void addElement(ItemStack element, ClickHandler clickHandler) {
+        setElement(elements.size(), element, clickHandler);
     }
 
-    /**
-     * Sets an item in the inventory at the specified slot.
-     *
-     * @param slot   The slot to set the item in.
-     * @param item   The item to set.
-     * @param action The ClickAction associated with the item.
-     */
-    protected void setItem(int slot, ItemStack item, ClickAction action) {
-        inventory.setItem(slot, item);
-        actions.put(slot, action);
+    public void addAnimatedElement(ItemStack element, ClickHandler clickHandler, PlayerTaskWrapper taskWrapper) {
+        setAnimatedElement(elements.size(), element, clickHandler, taskWrapper);
     }
 
-    /**
-     * Adds an item to the next available slot in the inventory.
-     *
-     * @param item   The item to add.
-     * @param action The ClickAction associated with the item.
-     */
-    protected void addItem(ItemStack item, ClickAction action) {
-        int slot = inventory.firstEmpty();
+    public void setElement(int slot, ItemStack element, ClickHandler clickHandler) {
+        elements.put(slot, new InventoryItem(element, clickHandler));
+        inventory.setItem(slot, element);
+    }
 
-        if (slot != -1) {
-            setItem(slot, item, action);
+    public void setAnimatedElement(int slot, ItemStack element, ClickHandler clickHandler, PlayerTaskWrapper taskWrapper) {
+        setElement(slot, element, clickHandler);
+        wrappedTasks.put(slot, taskWrapper);
+    }
+
+    public void updateElement(int slot, ItemStack element) {
+        if (inventory.getItem(slot) != null && inventory.getItem(slot).equals(element)) {
+            Bukkit.broadcastMessage("Element is the same:\n" + element + "\nvs.\n" + inventory.getItem(slot).toString());
+            return;
         }
+
+        elements.get(slot).setItemStack(element);
+        inventory.setItem(slot, element);
     }
 
-    /**
-     * Adds a close button to the inventory at the bottom-middle slot.
-     */
-    private void addCloseButton() {
-        ItemStack closeButton = new ItemBuilder(Material.BARRIER).setDisplayName(ChatColor.RED + "Close").build();
-        setItem(inventory.getSize() - 5, closeButton, (player, event) -> player.closeInventory());
+    public void removeElement(int slot) {
+        elements.remove(slot);
+        wrappedTasks.remove(slot).stopTask();
+        tasks.remove(slot).cancel();
+        inventory.setItem(slot, null);
     }
 
-    public Map<Integer, ClickAction> getActions() {
-        return actions;
+    public void removeElement(InventoryItem element) {
+        elements.entrySet()
+            .stream()
+            .filter(entry -> entry.getValue().equals(element))
+            .findFirst()
+            .ifPresent(entry -> removeElement(entry.getKey()));
     }
 
-    public boolean shouldCloseOnInteract() {
-        return closeOnInteract;
+    public void removeElement(ItemStack element) {
+        elements.entrySet()
+            .stream()
+            .filter(entry -> entry.getValue().getItemStack().equals(element))
+            .findFirst()
+            .ifPresent(entry -> removeElement(entry.getKey()));
     }
 
-    public List<BukkitTask> getTasks() {
-        return tasks;
+    public void onOpen(InventoryOpenEvent event) {
+        if (!(event.getPlayer() instanceof Player player)) {
+            return;
+        }
+
+        initializeElements(player);
+    }
+
+    public void onClick(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player)) {
+            return;
+        }
+
+        InventoryItem element = elements.get(event.getSlot());
+
+        if (element == null) {
+            return;
+        }
+
+        element.getClickHandler().onClick(event);
+        event.setCancelled(true);
+    }
+
+    public void onClose() {
+        wrappedTasks.values().forEach(PlayerTaskWrapper::stopTask);
+        wrappedTasks.clear();
+        tasks.values().forEach(BukkitTask::cancel);
+        tasks.clear();
+    }
+
+    public Map<Integer, InventoryItem> getElements() {
+        return elements;
+    }
+
+    public Inventory getInventory() {
+        return inventory;
     }
 }

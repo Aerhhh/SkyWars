@@ -4,7 +4,8 @@ import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 public class Island {
 
@@ -67,14 +68,25 @@ public class Island {
         }
     }
 
+    /**
+     * Removes the glass cage around the island spawn location.
+     */
+    public void removeCage() {
+        for (int x = -2; x <= 2; x++) {
+            for (int y = -1; y <= 3; y++) {
+                for (int z = -2; z <= 2; z++) {
+                    getSpawnLocation().clone().add(x, y, z).getBlock().setType(Material.AIR);
+                }
+            }
+        }
+    }
 
     /**
      * Gets the player assigned to this island. Can be null.
      *
      * @return the {@link SkyWarsPlayer player} assigned to this island
      */
-    @Nullable
-    public SkyWarsPlayer getAssignedPlayer() {
-        return assignedPlayer;
+    public Optional<SkyWarsPlayer> getAssignedPlayer() {
+        return Optional.ofNullable(assignedPlayer);
     }
 }

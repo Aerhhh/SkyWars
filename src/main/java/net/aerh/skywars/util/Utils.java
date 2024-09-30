@@ -160,6 +160,10 @@ public class Utils {
         long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
         long seconds = TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(minutes);
 
+        if (millis < 0) {
+            return "00:00";
+        }
+
         return String.format("%02d:%02d", minutes, seconds);
     }
 }

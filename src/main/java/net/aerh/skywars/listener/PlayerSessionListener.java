@@ -1,8 +1,8 @@
 package net.aerh.skywars.listener;
 
 import net.aerh.skywars.SkyWarsPlugin;
-import net.aerh.skywars.game.GameState;
-import net.aerh.skywars.game.ServerState;
+import net.aerh.skywars.game.state.GameState;
+import net.aerh.skywars.game.state.ServerState;
 import net.aerh.skywars.player.PlayerScoreboard;
 import net.aerh.skywars.player.SkyWarsPlayer;
 import org.bukkit.Bukkit;
@@ -33,28 +33,19 @@ public class PlayerSessionListener implements Listener {
             return;
         }
 
-        SkyWarsPlugin.getInstance().getGameManager().findGame(event.getUniqueId()).ifPresent(skyWarsGame -> {
-            skyWarsGame.getPlayer(event.getUniqueId()).ifPresent(skyWarsPlayer -> {
-                skyWarsGame.removePlayer(skyWarsPlayer);
-                skyWarsGame.getPlayers().remove(skyWarsPlayer);
-                skyWarsGame.log(Level.INFO, "Removed player " + event.getName() + " from old game: " + skyWarsGame.getWorld().getName() + "!");
-            });
-        });
-
         SkyWarsPlugin.getInstance().getGameManager().findNextFreeGame().ifPresentOrElse(skyWarsGame -> {
             SkyWarsPlayer skyWarsPlayer = new SkyWarsPlayer(event.getUniqueId(), event.getName());
 
-            if (!skyWarsGame.addPlayer(skyWarsPlayer)) {
+            if (!skyWarsGame.getPlayerManager().addPlayer(skyWarsPlayer)) {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, GENERIC_KICK_MESSAGE);
+                SkyWarsPlugin.getInstance().getLogger().severe("Could not add player " + event.getName() + " to game " + skyWarsGame.getWorld().getName() + "!");
                 return;
             }
 
             if (skyWarsGame.getIsland(skyWarsPlayer).isEmpty()) {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, GENERIC_KICK_MESSAGE);
-                return;
+                SkyWarsPlugin.getInstance().getLogger().severe("Could not find island for player " + event.getName() + "!");
             }
-
-            skyWarsGame.getKills().putIfAbsent(event.getName(), 0);
         }, () -> {
             SkyWarsPlugin.getInstance().setServerState(ServerState.NO_GAMES_AVAILABLE);
             event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatColor.RED + "No games available!");
@@ -66,8 +57,10 @@ public class PlayerSessionListener implements Listener {
         Player player = event.getPlayer();
 
         event.setJoinMessage(null);
-        player.getInventory().clear();
+
+        player.removeMetadata(GameListener.FALL_DAMAGE_IMMUNITY_METADATA_KEY, SkyWarsPlugin.getInstance());
         player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20.0D);
+        player.getInventory().clear();
         player.setHealth(20.0D);
         player.setSaturation(20.0F);
         player.setWalkSpeed(0.2F);
@@ -80,11 +73,11 @@ public class PlayerSessionListener implements Listener {
 
             if (skyWarsGame.getState() == GameState.PRE_GAME || skyWarsGame.getState() == GameState.STARTING) {
                 skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " joined! "
-                    + ChatColor.GRAY + "(" + skyWarsGame.getBukkitPlayers().size() + "/" + skyWarsGame.getMaxPlayers() + ")");
+                    + ChatColor.GRAY + "(" + skyWarsGame.getPlayerManager().getPlayersBukkit().size() + "/" + skyWarsGame.getMaxPlayers() + ")");
                 skyWarsGame.checkPlayerCountForCountdown();
             }
 
-            skyWarsGame.getPlayer(player).ifPresentOrElse(skyWarsPlayer -> {
+            skyWarsGame.getPlayerManager().getPlayer(player.getUniqueId()).ifPresentOrElse(skyWarsPlayer -> {
                 skyWarsGame.getIsland(skyWarsPlayer).ifPresentOrElse(island -> player.teleport(skyWarsGame.getPregameSpawn()),
                     () -> skyWarsGame.setSpectator(skyWarsPlayer));
 
@@ -98,7 +91,7 @@ public class PlayerSessionListener implements Listener {
             });
 
             SkyWarsPlugin.getInstance().getServer().getScheduler().runTaskLater(SkyWarsPlugin.getInstance(), () -> {
-                skyWarsGame.getOnlinePlayers().stream()
+                skyWarsGame.getPlayerManager().getOnlinePlayers().stream()
                     .map(SkyWarsPlayer::getBukkitPlayer)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
@@ -116,14 +109,13 @@ public class PlayerSessionListener implements Listener {
 
         SkyWarsPlugin.getInstance().getServer().getScheduler().runTaskLater(SkyWarsPlugin.getInstance(), () -> {
             SkyWarsPlugin.getInstance().getGameManager().findGame(player).ifPresent(skyWarsGame -> {
-                skyWarsGame.getPlayer(player).ifPresent(skywarsPlayer -> {
-                    skyWarsGame.removePlayer(skywarsPlayer);
-                    // We don't remove the player from the list of players here so they can show up in the leaderboard after the game
+                skyWarsGame.getPlayerManager().getPlayer(player.getUniqueId()).ifPresent(skywarsPlayer -> {
+                    skyWarsGame.getPlayerManager().removePlayer(skywarsPlayer);
                     skyWarsGame.log(Level.INFO, "Player " + player.getName() + " left the game!");
 
                     if (skyWarsGame.getState() == GameState.PRE_GAME || skyWarsGame.getState() == GameState.STARTING) {
                         skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left! "
-                            + ChatColor.GRAY + "(" + skyWarsGame.getBukkitPlayers().size() + "/" + skyWarsGame.getMaxPlayers() + ")");
+                            + ChatColor.GRAY + "(" + skyWarsGame.getPlayerManager().getPlayersBukkit().size() + "/" + skyWarsGame.getMaxPlayers() + ")");
                         skyWarsGame.checkPlayerCountForCountdown();
                     } else {
                         skyWarsGame.broadcast(ChatColor.GOLD + player.getName() + ChatColor.YELLOW + " left!");

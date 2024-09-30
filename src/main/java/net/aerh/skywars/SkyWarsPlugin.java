@@ -5,11 +5,11 @@ import net.aerh.skywars.command.GamesCommand;
 import net.aerh.skywars.command.SkipEventCommand;
 import net.aerh.skywars.command.StartGameCommand;
 import net.aerh.skywars.game.GameManager;
-import net.aerh.skywars.game.ServerState;
+import net.aerh.skywars.game.state.ServerState;
 import net.aerh.skywars.listener.GameListener;
 import net.aerh.skywars.listener.PlayerSessionListener;
 import net.aerh.skywars.util.Utils;
-import net.aerh.skywars.util.menu.CustomMenuListener;
+import net.aerh.skywars.util.menu.MenuListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -47,7 +47,7 @@ public final class SkyWarsPlugin extends JavaPlugin {
             gameManager.registerCleanupTask();
         });
 
-        getServer().getPluginManager().registerEvents(new CustomMenuListener(), this);
+        getServer().getPluginManager().registerEvents(new MenuListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerSessionListener(), this);
         getServer().getPluginManager().registerEvents(new GameListener(), this);
 

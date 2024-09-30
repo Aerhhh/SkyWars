@@ -1,6 +1,8 @@
 package net.aerh.skywars.game;
 
 import net.aerh.skywars.SkyWarsPlugin;
+import net.aerh.skywars.game.state.GameState;
+import net.aerh.skywars.game.state.ServerState;
 import net.aerh.skywars.map.MapLoader;
 import net.aerh.skywars.util.Utils;
 import org.bukkit.Bukkit;
@@ -8,7 +10,6 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,16 +35,18 @@ public class GameManager {
     public void createGames(int amount) {
         SkyWarsPlugin.getInstance().setServerState(ServerState.CREATING_GAMES);
 
-        try {
-            for (int i = 0; i < amount; i++) {
-                addGame(MapLoader.loadRandomMap(SkyWarsPlugin.getInstance().getDataFolder().getAbsolutePath() + File.separator + "map-templates", "game-" + (i + 1)));
-            }
+        SkyWarsPlugin.getInstance().getServer().getScheduler().runTask(SkyWarsPlugin.getInstance(), () -> {
+            try {
+                for (int i = 0; i < amount; i++) {
+                    addGame(MapLoader.loadRandomMap(SkyWarsPlugin.getInstance().getDataFolder().getAbsolutePath() + File.separator + "map-templates", "game-" + (i + 1)));
+                }
 
-            SkyWarsPlugin.getInstance().setServerState(ServerState.ACCEPTING_PLAYERS);
-        } catch (IOException | IllegalStateException exception) {
-            Bukkit.getLogger().log(Level.SEVERE, "Could not create games!", exception);
-            Bukkit.getServer().shutdown();
-        }
+                SkyWarsPlugin.getInstance().setServerState(ServerState.ACCEPTING_PLAYERS);
+            } catch (IllegalStateException exception) {
+                SkyWarsPlugin.getInstance().getLogger().log(Level.SEVERE, "Could not create games", exception);
+                Bukkit.getServer().shutdown();
+            }
+        });
     }
 
     /**
@@ -88,7 +91,7 @@ public class GameManager {
     public Optional<SkyWarsGame> findNextFreeGame() {
         return games.stream()
             .filter(game -> game.getState() == GameState.PRE_GAME || game.getState() == GameState.STARTING)
-            .filter(game -> game.getOnlinePlayers().size() < game.getMaxPlayers())
+            .filter(game -> game.getPlayerManager().getOnlinePlayers().size() < game.getMaxPlayers())
             .findFirst();
     }
 
@@ -110,7 +113,7 @@ public class GameManager {
      */
     public Optional<SkyWarsGame> findGame(UUID uuid) {
         return games.stream()
-            .filter(game -> game.getPlayer(uuid).isPresent())
+            .filter(game -> game.getPlayerManager().getPlayer(uuid).isPresent())
             .findFirst();
     }
 

@@ -2,6 +2,7 @@ package net.aerh.skywars.game;
 
 import net.aerh.skywars.SkyWarsPlugin;
 import net.aerh.skywars.game.event.GameEvent;
+import net.aerh.skywars.game.state.GameState;
 import net.aerh.skywars.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -11,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class GameLoop {
-
 
     private final SkyWarsGame game;
     private GameEvent currentEvent;
@@ -62,7 +62,7 @@ public class GameLoop {
         Bukkit.getScheduler().runTaskTimer(SkyWarsPlugin.getInstance(), task -> {
             gameEndTaskId = task.getTaskId();
 
-            if (game.getAlivePlayers().size() <= 1) {
+            if (game.getPlayerManager().getAlivePlayers().size() <= 1) {
                 game.end();
                 task.cancel();
                 return;
@@ -73,7 +73,7 @@ public class GameLoop {
                 return;
             }
 
-            game.getOnlinePlayers().forEach(skyWarsPlayer -> {
+            game.getPlayerManager().getOnlinePlayers().forEach(skyWarsPlayer -> {
                 getNextEvent().ifPresentOrElse(event -> {
                     skyWarsPlayer.getScoreboard().add(8, ChatColor.GREEN + currentEvent.getDisplayName()
                         + " " + Utils.formatTimeMillis(nextEventTime - System.currentTimeMillis()));
@@ -136,5 +136,9 @@ public class GameLoop {
      */
     public long getNextEventTime() {
         return nextEventTime;
+    }
+
+    public String getFormattedTimeToNextEvent() {
+        return Utils.formatTimeMillis(game.getGameLoop().getNextEventTime() - System.currentTimeMillis());
     }
 }
